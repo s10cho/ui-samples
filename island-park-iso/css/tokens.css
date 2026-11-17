@@ -1,0 +1,206 @@
+/*
+ * 디자인 토큰 — docs/ui/island-park-iso.md 4-1절의 임시 토큰.
+ * UI 토큰은 3D 판(island-park)과 같은 값이다. 그림 색(--iso-*)만 이 판에서 더했다.
+ * 화면 코드는 이 변수만 쓴다.
+ */
+:root {
+  /* 색 — UI */
+  --ds-color-bg-surface: #FFFFFF;
+  --ds-color-bg-subtle: #F3F1EC;
+  --ds-color-bg-accent-subtle: #FBEAE5;
+  --ds-color-text-primary: #1C2430;
+  --ds-color-text-secondary: #5A6472;
+  --ds-color-text-on-accent: #FFFFFF;
+  --ds-color-accent: #C43D22;
+  --ds-color-border-subtle: rgba(28, 36, 48, 0.12);
+  --ds-color-focus-inner: #FFFFFF;
+  --ds-color-focus-outer: #1C2430;
+  --ds-color-tooltip-bg: #1C2430;
+  --ds-color-tooltip-fg: #FFFFFF;
+  --ds-color-banner-bg: #F3F1EC;
+
+  /* 글꼴 */
+  /* 화면 글자만 담은 Pretendard → 빠진 글자는 다이나믹 서브셋 조각 → 시스템 한글 글꼴 */
+  --ds-font-family: "Pretendard Page", "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --ds-font-weight-regular: 400;
+  --ds-font-weight-medium: 500;
+  --ds-font-weight-semibold: 600;
+  --ds-font-weight-bold: 700;
+
+  /* 글자 스타일 — 크기(rem) · 행간(비율) */
+  --ds-text-display-size: 1.75rem;   /* 28 */
+  --ds-text-display-leading: 1.357;  /* 38/28 */
+  --ds-text-display-tracking: -0.02em;
+  --ds-text-title-size: 1.25rem;     /* 20 */
+  --ds-text-title-leading: 1.4;      /* 28/20 */
+  --ds-text-title-tracking: -0.01em;
+  --ds-text-label-size: 1rem;        /* 16 */
+  --ds-text-label-leading: 1.375;    /* 22/16 */
+  --ds-text-body-size: 1rem;         /* 16 */
+  --ds-text-body-leading: 1.5;       /* 24/16 */
+  --ds-text-caption-size: 0.8125rem; /* 13 */
+  --ds-text-caption-leading: 1.385;  /* 18/13 */
+
+  /* 글자 스타일 — 굵기. 7종: display · title · label · label-strong · body · caption · caption-strong */
+  --ds-text-display-weight: var(--ds-font-weight-bold);
+  --ds-text-title-weight: var(--ds-font-weight-semibold);
+  --ds-text-label-weight: var(--ds-font-weight-medium);
+  --ds-text-label-strong-weight: var(--ds-font-weight-semibold);
+  --ds-text-body-weight: var(--ds-font-weight-regular);
+  --ds-text-caption-weight: var(--ds-font-weight-regular);
+  --ds-text-caption-strong-weight: var(--ds-font-weight-semibold);
+
+  /* 간격 — 4 · 8 · 12 · 16 · 24 · 32 · 48 */
+  --ds-space-1: 0.25rem;
+  --ds-space-2: 0.5rem;
+  --ds-space-3: 0.75rem;
+  --ds-space-4: 1rem;
+  --ds-space-6: 1.5rem;
+  --ds-space-8: 2rem;
+  --ds-space-12: 3rem;
+
+  /* 크기 */
+  --ds-size-touch: 2.75rem;      /* 44 — 터치 대상 최소 */
+  --ds-size-topbar: 3.5rem;      /* 56 */
+  --ds-size-row: 3.5rem;         /* 56 — 명소 목록 행 */
+  --ds-size-panel: min(22.5rem, 42vw); /* 360 — 넓은 폭 정보 패널. 글자를 키워도 화면의 42% 를 넘지 않는다 */
+  --ds-size-dot: 0.75rem;        /* 12 — 좁은 폭 명소 표지 점 */
+  --ds-size-icon: 1.25rem;       /* 20 */
+  --ds-size-scene-min: 20rem;    /* 320 */
+  --ds-size-scene-height: 60svh; /* 좁은·중간 폭 그림 높이 */
+  --ds-size-hairline: 1px;
+  --ds-size-focus-ring: 2px;
+  --ds-size-underline: 1px;
+  --ds-size-underline-offset: 0.2em;
+
+  /* 모서리 */
+  --ds-radius-md: 0.5rem;   /* 8 */
+  --ds-radius-pill: 62.5rem;
+
+  /* 그림자 — 그림 위에 뜨는 요소: 반투명 테두리 + 두 겹 그림자 */
+  --ds-shadow-float: 0 1px 2px rgba(28, 36, 48, 0.08), 0 4px 12px rgba(28, 36, 48, 0.12);
+  --ds-shadow-focus: 0 0 0 var(--ds-size-focus-ring) var(--ds-color-focus-inner);
+
+  /* 투명도 */
+  --ds-opacity-disabled: 0.45;
+
+  /* 움직임 — JS 도 이 값을 읽는다 */
+  --ds-motion-hover: 100ms;
+  --ds-motion-label-enter: 150ms;
+  --ds-motion-label-exit: 100ms;
+  --ds-motion-camera: 600ms;        /* 명소로 확대·이동 — 설계서 10절 MOT-01 예외 */
+  --ds-motion-camera-step: 400ms;   /* 이동·가까이·멀리 버튼 한 번 */
+  --ds-motion-time-shift: 600ms;    /* 낮·밤 전환 */
+  --ds-motion-hint-hold: 1500ms;    /* 터치로 한계 버튼을 눌렀을 때 이유를 보이는 시간 */
+  --ds-easing-enter: cubic-bezier(0.2, 0, 0, 1);
+  --ds-easing-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* 쌓임 순서 */
+  --ds-z-base: 0;
+  --ds-z-raise: 1;
+  --ds-z-scene-labels: 2;
+  --ds-z-scene-ui: 4;
+  --ds-z-panel: 5;
+  --ds-z-skip-link: 10;
+
+  /* ---------- 그림 색(UI 토큰이 아니다) — 설계서 4-1절 그림 색 표 ----------
+     재질마다 면 밝기 4단계: t 윗면 · l 햇빛 쪽 · m 비스듬한 면 · d 그늘 면 */
+
+
+  --iso-sea-deep: #2F6F96;
+  --iso-sea-mid: #3D86AD;
+  --iso-sea-shallow: #4F9CBF;
+  --iso-wave: #5A98BC;
+  --iso-shadow: rgba(16, 32, 40, 0.16);
+  --iso-glow: #FFC46B;
+  --iso-glow-opacity: 0;
+  --iso-glow-dot-opacity: 0;
+  --iso-glint-opacity: 0;
+  --iso-bulb: #F4F2EE;
+  --iso-beam: #FFE3A3;
+  --iso-beam-far-opacity: 0.12;
+  --iso-beam-near-opacity: 0.2;
+
+  --iso-grass-t: #86AE5C;
+  --iso-grass-l: #799D53;
+  --iso-grass-m: #6A8949;
+  --iso-grass-d: #58733D;
+  --iso-sand-t: #E6D5AE;
+  --iso-sand-l: #CFC09D;
+  --iso-sand-m: #B6A889;
+  --iso-sand-d: #988D73;
+  --iso-path-t: #EFE3C4;
+  --iso-rock-t: #8C8F8A;
+  --iso-rock-l: #7E817C;
+  --iso-rock-m: #6F716D;
+  --iso-rock-d: #5C5E5B;
+  --iso-tree-t: #5E8F48;
+  --iso-tree-l: #558141;
+  --iso-tree-m: #4A7139;
+  --iso-tree-d: #3E5E30;
+  --iso-white-t: #F4F2EE;
+  --iso-white-l: #DCDAD6;
+  --iso-white-m: #C1BFBC;
+  --iso-white-d: #A1A09D;
+  --iso-red-t: #C43D22;
+  --iso-red-l: #B0371F;
+  --iso-red-m: #9B301B;
+  --iso-red-d: #812816;
+  --iso-window-t: #5B7184;
+  --iso-window-l: #526677;
+  --iso-window-m: #485968;
+  --iso-window-d: #3C4B57;
+  --iso-lamp-t: #F4F2EE;
+  --iso-lamp-l: #DCDAD6;
+  --iso-lamp-m: #C1BFBC;
+  --iso-lamp-d: #A1A09D;
+}
+
+/* 밤 — 모양은 같고 색만 바뀐다. 불빛은 따뜻한 노란색 하나(SLOP-01) */
+[data-time="night"] {
+  --iso-sea-deep: #13304A;
+  --iso-sea-mid: #173A55;
+  --iso-sea-shallow: #1E4560;
+  --iso-wave: #234C68;
+  --iso-shadow: rgba(4, 10, 20, 0.22);
+  --iso-glow-opacity: 0.12;
+  --iso-glow-dot-opacity: 0.32;
+  --iso-glint-opacity: 0.7;
+  --iso-bulb: #FFC46B;
+  --iso-beam-far-opacity: 0.3;
+  --iso-beam-near-opacity: 0.45;
+
+  --iso-grass-t: #2D483E;
+  --iso-grass-l: #263E35;
+  --iso-grass-m: #21352E;
+  --iso-grass-d: #1B2B25;
+  --iso-sand-t: #4E5B6B;
+  --iso-sand-l: #434E5D;
+  --iso-sand-m: #39424F;
+  --iso-sand-d: #2E3540;
+  --iso-path-t: #56637A;
+  --iso-rock-t: #3A4659;
+  --iso-rock-l: #323D4E;
+  --iso-rock-m: #2A3342;
+  --iso-rock-d: #222A36;
+  --iso-tree-t: #213D34;
+  --iso-tree-l: #1D342D;
+  --iso-tree-m: #192D26;
+  --iso-tree-d: #14241F;
+  --iso-white-t: #7D8BA8;
+  --iso-white-l: #6C7893;
+  --iso-white-m: #5D6880;
+  --iso-white-d: #4C566B;
+  --iso-red-t: #7A2A22;
+  --iso-red-l: #6A251E;
+  --iso-red-m: #5B201A;
+  --iso-red-d: #4A1A16;
+  --iso-window-t: #FFCF80;
+  --iso-window-l: #FFC46B;
+  --iso-window-m: #F0B45C;
+  --iso-window-d: #DDA04D;
+  --iso-lamp-t: #FFD08A;
+  --iso-lamp-l: #FFC46B;
+  --iso-lamp-m: #F2B45A;
+  --iso-lamp-d: #E0A24A;
+}

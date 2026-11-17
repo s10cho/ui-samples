@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ko" data-mode="loading" data-weather="clear">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>겨울 산 스키장</title>
+  <meta name="description" content="눈 덮인 산 하나에 리프트와 슬로프, 산장이 모인 스키장을 3D 로 둘러봐요.">
+  <link rel="icon" href="data:,">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="preload" href="vendor/pretendard/PretendardVariable.page.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+  <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.custom.min.js" } }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#landmarks">명소 목록으로 건너뛰기</a>
+
+  <main class="page">
+    <div class="panel-backdrop" aria-hidden="true"></div>
+
+    <div class="topbar">
+      <h1 class="resort-name">겨울 산 스키장</h1>
+    </div>
+
+    <section class="scene" id="scene" aria-label="3D 산 장면">
+      <picture class="scene__poster">
+        <source media="(min-width: 1024px)" srcset="assets/poster-clear-wide.webp" width="2400" height="1400" data-size="wide">
+        <source media="(min-width: 600px)" srcset="assets/poster-clear-medium.webp" width="2000" height="1120" data-size="medium">
+        <img src="assets/poster-clear-narrow.webp" width="900" height="1170"
+             alt="눈 덮인 산 하나에 리프트, 초급 슬로프, 상급 슬로프, 산장, 정상 전망대가 있는 3D 장면">
+      </picture>
+
+      <div class="scene__labels" aria-hidden="true"></div>
+
+      <div class="scene__toggles">
+        <button class="text-btn" type="button" data-action="motion">움직임 멈추기</button>
+        <button class="text-btn" type="button" data-action="weather">눈 내리게 하기</button>
+      </div>
+
+      <div class="scene__controls" role="group" aria-label="시점 조작">
+        <button class="icon-btn" type="button" data-action="rotate-left" aria-label="왼쪽으로 돌리기">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.7 17.7A8 8 0 1 0 6.3 6.3"/><path d="M6.3 1.8v4.5h4.5"/></svg>
+          <span class="tooltip" role="tooltip" id="tip-rotate-left">왼쪽으로 돌리기</span>
+        </button>
+        <button class="icon-btn" type="button" data-action="rotate-right" aria-label="오른쪽으로 돌리기">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.3 17.7A8 8 0 1 1 17.7 6.3"/><path d="M17.7 1.8v4.5h-4.5"/></svg>
+          <span class="tooltip" role="tooltip" id="tip-rotate-right">오른쪽으로 돌리기</span>
+        </button>
+        <button class="icon-btn" type="button" data-action="zoom-in" aria-label="가까이 보기">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="tooltip" role="tooltip" id="tip-zoom-in" data-limit="더 가까이 갈 수 없어요">가까이 보기</span>
+        </button>
+        <button class="icon-btn" type="button" data-action="zoom-out" aria-label="멀리 보기">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+          <span class="tooltip" role="tooltip" id="tip-zoom-out" data-limit="더 멀리 갈 수 없어요">멀리 보기</span>
+        </button>
+        <button class="icon-btn" type="button" data-action="reset" aria-label="처음 시점으로 돌아가기">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v10h12V10"/><path d="M10 20v-5h4v5"/></svg>
+          <span class="tooltip" role="tooltip" id="tip-reset">처음 시점으로 돌아가기</span>
+        </button>
+      </div>
+
+      <p class="scene__progress" role="status"></p>
+    </section>
+
+    <section class="panel" aria-label="명소 안내">
+      <div class="banner-region" aria-live="polite"></div>
+
+      <section class="landmarks" id="landmarks" tabindex="-1" aria-labelledby="landmarks-title">
+        <h2 class="section-title" id="landmarks-title">명소</h2>
+        <ul class="landmark-list">
+          <li><button class="landmark" type="button" data-id="lift"><span class="landmark__name">리프트</span><span class="landmark__where">산 아래에서 정상까지</span><span class="landmark__current">보는 중</span></button></li>
+          <li><button class="landmark" type="button" data-id="easy"><span class="landmark__name">초급 슬로프</span><span class="landmark__where">남동쪽 완만한 비탈</span><span class="landmark__current">보는 중</span></button></li>
+          <li><button class="landmark" type="button" data-id="expert"><span class="landmark__name">상급 슬로프</span><span class="landmark__where">남서쪽 가파른 비탈</span><span class="landmark__current">보는 중</span></button></li>
+          <li><button class="landmark" type="button" data-id="lodge"><span class="landmark__name">산장</span><span class="landmark__where">산 아래 광장</span><span class="landmark__current">보는 중</span></button></li>
+          <li><button class="landmark" type="button" data-id="summit"><span class="landmark__name">정상 전망대</span><span class="landmark__where">산꼭대기</span><span class="landmark__current">보는 중</span></button></li>
+        </ul>
+      </section>
+
+      <section class="detail" aria-label="명소 설명">
+        <div class="detail__item is-current" data-detail="intro">
+          <p class="detail__text">눈 덮인 산 하나에 리프트와 슬로프 둘, 쉬어 갈 산장이 모여 있어요.</p>
+          <p class="detail__hint hint--mouse-wide">끌어서 산을 돌리고, 휠로 가까이 볼 수 있어요.</p>
+          <p class="detail__hint hint--mouse">옆으로 끌어 산을 돌리고, 가까이 보기 버튼으로 다가갈 수 있어요.</p>
+          <p class="detail__hint hint--touch">옆으로 밀어 산을 돌리고, 두 손가락으로 가까이 볼 수 있어요.</p>
+          <p class="detail__hint">명소를 고르면 그곳으로 가까이 가요.</p>
+        </div>
+        <article class="detail__item" data-detail="lift" aria-labelledby="detail-lift">
+          <h3 class="detail__title" id="detail-lift">리프트</h3>
+          <p class="detail__where">산 아래에서 정상까지</p>
+          <p class="detail__text">산 아래 광장에서 정상 바로 아래까지 의자가 오르내려요. 두 슬로프 모두 여기서 올라가요.</p>
+        </article>
+        <article class="detail__item" data-detail="easy" aria-labelledby="detail-easy">
+          <h3 class="detail__title" id="detail-easy">초급 슬로프</h3>
+          <p class="detail__where">남동쪽 완만한 비탈</p>
+          <p class="detail__text">남동쪽 비탈을 넓고 완만하게 굽어 내려가요. 처음 타는 사람도 천천히 내려올 수 있어요.</p>
+        </article>
+        <article class="detail__item" data-detail="expert" aria-labelledby="detail-expert">
+          <h3 class="detail__title" id="detail-expert">상급 슬로프</h3>
+          <p class="detail__where">남서쪽 가파른 비탈</p>
+          <p class="detail__text">정상 가까이에서 남서쪽 비탈을 곧게 내려가요. 이 산에서 가장 가파른 길이에요.</p>
+        </article>
+        <article class="detail__item" data-detail="lodge" aria-labelledby="detail-lodge">
+          <h3 class="detail__title" id="detail-lodge">산장</h3>
+          <p class="detail__where">산 아래 광장</p>
+          <p class="detail__text">두 슬로프가 끝나는 광장에 있는 쉼터예요. 몸을 녹이며 쉬어 갈 수 있어요.</p>
+        </article>
+        <article class="detail__item" data-detail="summit" aria-labelledby="detail-summit">
+          <h3 class="detail__title" id="detail-summit">정상 전망대</h3>
+          <p class="detail__where">산꼭대기</p>
+          <p class="detail__text">이 산에서 가장 높은 곳이에요. 둘레의 먼 산줄기까지 다 보여요.</p>
+        </article>
+      </section>
+    </section>
+
+    <p class="sr-only" role="status" data-announcer></p>
+  </main>
+
+  <!--
+    화면 스크립트 불러오기
+    - 서버(http·https)로 열면 ES 모듈 js/main.js 를 쓴다. 3D 파일은 필요할 때 따로 받는다.
+    - 파일을 더블클릭해 file:// 로 열면 브라우저가 모듈을 막는다. 그래서 한 파일로 묶은 dist/app.bundle.js 를 쓴다.
+    - 스크립트를 받지 못했거나 6초 안에 시작하지 않으면, 동작하지 않는 버튼을 숨기고 명소 설명을 모두 펼친다.
+  -->
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var script = document.createElement('script');
+      function giveUp() {
+        if (window.skiMountainBooted) return;
+        root.classList.remove('js');
+        root.setAttribute('data-mode', 'fallback');
+      }
+      if (location.protocol === 'file:') {
+        script.src = 'dist/app.bundle.js';
+      } else {
+        script.type = 'module';
+        script.src = 'js/main.js';
+      }
+      script.onerror = giveUp;
+      document.body.appendChild(script);
+      setTimeout(giveUp, 6000);
+    })();
+  </script>
+</body>
+</html>

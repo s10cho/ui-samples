@@ -1,0 +1,104 @@
+/*
+ * 섬 그림(인라인 SVG) — 색은 css/tokens.css 의 --iso-* 변수만 쓴다.
+ * 낮·밤은 html[data-time] 이 그 변수를 바꿔서 전환한다(설계서 3-1절).
+ * 면 클래스: m-<재질>-<밝기>. 밝기 t 윗면 · l 햇빛 쪽 · m 비스듬한 면 · d 그늘 면.
+ */
+
+.iso {
+  position: absolute;
+  inset: 0;
+  z-index: var(--ds-z-base);
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.iso.is-dragging {
+  cursor: grabbing;
+}
+
+/* 면 사이에 바다색 실선이 비치지 않게 면과 같은 색으로 테두리를 그린다(굵기는 svg 의 stroke-width 속성) */
+.iso polygon,
+.iso polyline,
+.iso line,
+.iso circle {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transition:
+    fill var(--ds-motion-time-shift) var(--ds-easing-enter),
+    stroke var(--ds-motion-time-shift) var(--ds-easing-enter),
+    opacity var(--ds-motion-time-shift) var(--ds-easing-enter);
+}
+
+/* 매 프레임 움직이는 면은 색이 밝기 단계 사이를 오가므로 전환하지 않는다 */
+.iso [data-cabin] *,
+.iso [data-horse] *,
+.iso [data-car] *,
+.is-instant .iso polygon,
+.is-instant .iso polyline,
+.is-instant .iso line,
+.is-instant .iso circle {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iso polygon,
+  .iso polyline,
+  .iso line,
+  .iso circle {
+    transition: none;
+  }
+}
+
+.m-grass-t { fill: var(--iso-grass-t); stroke: var(--iso-grass-t); }
+.m-grass-l { fill: var(--iso-grass-l); stroke: var(--iso-grass-l); }
+.m-grass-m { fill: var(--iso-grass-m); stroke: var(--iso-grass-m); }
+.m-grass-d { fill: var(--iso-grass-d); stroke: var(--iso-grass-d); }
+.m-sand-t { fill: var(--iso-sand-t); stroke: var(--iso-sand-t); }
+.m-sand-l { fill: var(--iso-sand-l); stroke: var(--iso-sand-l); }
+.m-sand-m { fill: var(--iso-sand-m); stroke: var(--iso-sand-m); }
+.m-sand-d { fill: var(--iso-sand-d); stroke: var(--iso-sand-d); }
+.m-rock-t { fill: var(--iso-rock-t); stroke: var(--iso-rock-t); }
+.m-rock-l { fill: var(--iso-rock-l); stroke: var(--iso-rock-l); }
+.m-rock-m { fill: var(--iso-rock-m); stroke: var(--iso-rock-m); }
+.m-rock-d { fill: var(--iso-rock-d); stroke: var(--iso-rock-d); }
+.m-tree-t { fill: var(--iso-tree-t); stroke: var(--iso-tree-t); }
+.m-tree-l { fill: var(--iso-tree-l); stroke: var(--iso-tree-l); }
+.m-tree-m { fill: var(--iso-tree-m); stroke: var(--iso-tree-m); }
+.m-tree-d { fill: var(--iso-tree-d); stroke: var(--iso-tree-d); }
+.m-white-t { fill: var(--iso-white-t); stroke: var(--iso-white-t); }
+.m-white-l { fill: var(--iso-white-l); stroke: var(--iso-white-l); }
+.m-white-m { fill: var(--iso-white-m); stroke: var(--iso-white-m); }
+.m-white-d { fill: var(--iso-white-d); stroke: var(--iso-white-d); }
+.m-red-t { fill: var(--iso-red-t); stroke: var(--iso-red-t); }
+.m-red-l { fill: var(--iso-red-l); stroke: var(--iso-red-l); }
+.m-red-m { fill: var(--iso-red-m); stroke: var(--iso-red-m); }
+.m-red-d { fill: var(--iso-red-d); stroke: var(--iso-red-d); }
+.m-window-t { fill: var(--iso-window-t); stroke: var(--iso-window-t); }
+.m-window-l { fill: var(--iso-window-l); stroke: var(--iso-window-l); }
+.m-window-m { fill: var(--iso-window-m); stroke: var(--iso-window-m); }
+.m-window-d { fill: var(--iso-window-d); stroke: var(--iso-window-d); }
+.m-lamp-t { fill: var(--iso-lamp-t); stroke: var(--iso-lamp-t); }
+.m-lamp-l { fill: var(--iso-lamp-l); stroke: var(--iso-lamp-l); }
+.m-lamp-m { fill: var(--iso-lamp-m); stroke: var(--iso-lamp-m); }
+.m-lamp-d { fill: var(--iso-lamp-d); stroke: var(--iso-lamp-d); }
+.m-path-t { fill: var(--iso-path-t); stroke: var(--iso-path-t); }
+
+.sea-mid { fill: var(--iso-sea-mid); stroke: none; }
+.sea-shallow { fill: var(--iso-sea-shallow); stroke: none; }
+.wave { fill: none; stroke: var(--iso-wave); }
+.shadow { fill: var(--iso-shadow); stroke: none; }
+.glow { fill: var(--iso-glow); stroke: none; opacity: var(--iso-glow-opacity); }
+.glow-dot { fill: var(--iso-glow); stroke: none; opacity: var(--iso-glow-dot-opacity); }
+.glint { fill: none; stroke: var(--iso-glow); opacity: var(--iso-glint-opacity); }
+.bulb { fill: var(--iso-bulb); stroke: none; }
+.beam-far { fill: var(--iso-beam); stroke: none; opacity: var(--iso-beam-far-opacity); }
+.beam-near { fill: var(--iso-beam); stroke: none; opacity: var(--iso-beam-near-opacity); }
+.s-white { fill: none; stroke: var(--iso-white-m); }
+.s-red { fill: none; stroke: var(--iso-red-t); }
+.s-rock { fill: none; stroke: var(--iso-rock-d); }
