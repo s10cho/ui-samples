@@ -1,0 +1,3 @@
+{
+  "build": ["node tools/strip-comments.mjs"]
+}

@@ -1,0 +1,756 @@
+/*
+ * 파일 관리자 — 샘플 고유 스타일. 클래스는 fm- 로 시작한다.
+ * 값은 --ds-* 토큰만 쓴다. kit 에 없는 값은 아래 :root 의 --file-manager-* 에 두고 설계서 4절에 이유를 적었다.
+ * kit 에 없는 모양: 격자 카드(fm-card), 올리기 카드(fm-uploads), 끌어 놓기 표시(fm-drop), 제자리 이름 편집(fm-rename),
+ * 좁은 목록(머리 행·열을 줄이고 이름 아래 한 줄). 폭 경계는 kit 과 같은 rem(48rem·30rem)이다.
+ */
+
+:root {
+  /* 격자 한 칸 최소 폭 — 고르기 칸 + 큰 아이콘 줄, 이름 두 줄이 들어간다. 320 에서도 2열 */
+  --file-manager-card-min: 8.5rem;
+  /* 표 열 폭 — "어제 16:40"·"2025년 12월 30일"(가장 긴 날짜) · 이름 3글자 · "128MB" 와 정렬 아이콘 */
+  --file-manager-col-date: 9.5rem;
+  --file-manager-col-by: 7rem;
+  --file-manager-col-size: 6rem;
+  /* 이름 편집 칸이 버튼 옆에 남는 최소 폭 — 이보다 좁으면 버튼이 아랫줄로 간다 */
+  --file-manager-rename-min: 8rem;
+  /* 폴더 이름 밑줄 간격 — 한글 받침과 겹치지 않게 */
+  --file-manager-underline-offset: 0.2em;
+}
+
+/* 이 샘플만 쓰는 아이콘 묶음 — 화면에 그리지 않는다 */
+.fm-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* 머리줄 밝기 고르기 — 아주 좁은 폭에서는 아이콘만 */
+@media (max-width: 29.9375rem) {
+  .fm-theme-text {
+    display: none;
+  }
+}
+
+.fm-noscript {
+  color: var(--ds-color-fg-muted);
+}
+
+/* ───────── 옆 메뉴 — 저장 공간 ───────── */
+
+.fm-storage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  margin-block-start: auto;
+  padding: var(--ds-space-3) var(--ds-space-2) 0;
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.fm-storage__left {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+}
+
+.fm-storage[data-tight] .fm-storage__left {
+  color: var(--ds-color-fg-warning);
+  font-weight: var(--ds-text-caption-strong-weight);
+}
+
+/* ───────── 페이지 머리 — 빵부스러기 · 폴더 이름 ───────── */
+
+.fm-head {
+  align-items: flex-end;
+}
+
+.fm-title {
+  overflow-wrap: anywhere;
+}
+
+.fm-crumbs ol {
+  align-items: center;
+  column-gap: var(--ds-space-0-5);
+}
+
+.fm-crumbs li {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+/* 링크 누르는 영역 — 마우스 24, 터치 44(--ds-target-min). 글자 둘레만 넓히고 줄 높이는 그대로 둔다 */
+.fm-crumbs a,
+.fm-crumbs [aria-current] {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ds-target-min);
+  overflow-wrap: anywhere;
+}
+
+.fm-crumbs a {
+  justify-content: center;
+  min-width: var(--ds-target-min);
+  padding-inline: var(--ds-space-1);
+  border-radius: var(--ds-radius-sm);
+}
+
+.fm-crumbs li:first-child a {
+  margin-inline-start: calc(-1 * var(--ds-space-1));
+}
+
+/* ───────── 올리기 카드 ───────── */
+
+.fm-uploads {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.fm-uploads__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-3);
+}
+
+.fm-uploads__title {
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+}
+
+.fm-uploads__sum {
+  color: var(--ds-color-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.fm-uploads__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fm-up {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-4);
+  padding-block: var(--ds-space-3);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.fm-up:first-child {
+  padding-block-start: 0;
+  border-block-start: 0;
+}
+
+.fm-up:last-child {
+  padding-block-end: 0;
+}
+
+.fm-up__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  min-width: 0;
+}
+
+.fm-up__name {
+  overflow-wrap: anywhere;
+}
+
+.fm-up__note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.fm-up__note .ds-icon {
+  flex: none;
+  width: var(--ds-icon-size-md);
+  height: var(--ds-icon-size-md);
+  margin-block-start: calc((var(--ds-text-body-sm-leading) * 1em - var(--ds-icon-size-md)) / 2);
+}
+
+.fm-up__note--error {
+  color: var(--ds-color-fg-danger);
+}
+
+.fm-up__note--done .ds-icon {
+  color: var(--ds-color-fg-success);
+}
+
+.fm-up__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--ds-space-2);
+}
+
+/* 실패한 줄은 막대를 지우고 글로만 알린다 — 막대 자리에는 아무것도 남기지 않는다 */
+.fm-up[data-status="failed"] .ds-progress__track {
+  display: none;
+}
+
+@media (max-width: 47.9375rem) {
+  .fm-up {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fm-up__actions {
+    justify-content: flex-start;
+  }
+}
+
+/* ───────── 결과 영역 ───────── */
+
+.fm-results {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.fm-results__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-width: 0;
+}
+
+/* 불러오기 시작 뒤 스켈레톤이 뜨기 전(0.3초) — 자리는 잡고 그리지 않는다 */
+.fm-results__body.fm-pending {
+  visibility: hidden;
+}
+
+.fm-toolbar {
+  align-items: center;
+  row-gap: var(--ds-space-2);
+}
+
+.fm-count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--ds-space-2);
+  min-width: 0;
+}
+
+.fm-count__title {
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+}
+
+.fm-count__meta {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.fm-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-4);
+}
+
+.fm-pick__all {
+  align-items: center;
+  padding-block: 0;
+}
+
+.fm-pick__all > input {
+  margin: 0;
+}
+
+.fm-sortpick {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+.fm-sortpick__label {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-weight);
+  white-space: nowrap;
+}
+
+.fm-sortpick .ds-select {
+  min-width: 0;
+}
+
+/* 좁은 목록·넓은 목록은 결과 영역 폭(컨테이너 쿼리, 40rem)으로 가른다 — 화면 폭 미디어 쿼리는 뿌리 글자 크기를
+   따르지 않아, 글자를 키운 넓은 화면에서 4열 표가 잘린다. container-type 은 이 감싸개(결과 영역)에만 준다 */
+.fm-results__body {
+  container: fm-results / inline-size;
+}
+
+/* 넓은 목록은 표 머리 행이 모두 고르기·정렬을 맡는다. 같은 일을 하는 도구 줄 묶음은 숨긴다 */
+@container fm-results (min-width: 40rem) {
+  .fm-results[data-view="list"] .fm-pick {
+    display: none;
+  }
+}
+
+/* 좁은 결과 영역 — 1줄 개수 + 보기, 2줄 모두 고르기 + 정렬, 3줄 작업 줄. 작업 줄은 늘 제자리에 보이고,
+   고른 것이 있으면 kit 이 화면 아래에 붙인다(붙인 줄이 화면 높이의 20% 를 넘으면 붙이지 않고 제자리에 둔다) */
+@container fm-results (max-width: 39.9375rem) {
+  .fm-viewpick {
+    margin-inline-start: auto;
+  }
+
+  .fm-pick,
+  .fm-actionbar:not([data-docked]) {
+    flex: 1 1 100%;
+  }
+
+  .fm-pick {
+    justify-content: space-between;
+  }
+}
+
+/* 고른 것이 없으면 건수·고르기 풀기 묶음은 비어 있다 — 빈 묶음이 간격만 차지하지 않게 */
+.fm-actionbar .ds-actionbar__status:not(:has(> :not([hidden]))) {
+  display: none;
+}
+
+/* ───────── 목록(표) ───────── */
+
+.fm-table {
+  table-layout: auto;
+}
+
+/* 머리 정렬 버튼은 글줄 위에 맞춘다 — 숫자 열 버튼(아이콘이 앞에 오는 row-reverse)은 기준선이 아이콘 아래로 잡혀 글이 2px 떠 보였다 */
+.fm-table thead .ds-sort {
+  vertical-align: top;
+}
+
+.fm-table tbody th {
+  font-weight: var(--ds-text-body-weight);
+}
+
+/* 보기 권한 폴더 — 고를 수 있는 항목이 없어 고르기 열을 두지 않는다. 클래스로 단다(스켈레톤 복제본에도 걸리게) */
+.fm-table--readonly .ds-table__select {
+  display: none;
+}
+
+/* 이름 편집 줄 — 고친 항목 바로 아래, 행 전체 폭. 위 행과 한 덩어리로 보이게 사이 선을 지우고 이름 글자 줄에 맞춘다 */
+.fm-table .fm-row--editing > * {
+  border-block-end-color: transparent;
+}
+
+.fm-table .fm-editrow > td {
+  height: auto;
+  padding-block: 0 var(--ds-space-3);
+  padding-inline-start: calc(var(--ds-size-table-select) + var(--ds-space-3) + var(--ds-icon-size-lg) + var(--ds-space-2));
+}
+
+.fm-table .fm-row--editing:has(> .ds-table__select input:checked) + .fm-editrow > td {
+  background: var(--ds-color-fill-accent-subtle);
+}
+
+.fm-editrow .fm-rename {
+  max-inline-size: var(--ds-size-reading-max);
+}
+
+.fm-col-date {
+  width: var(--file-manager-col-date);
+}
+
+.fm-col-by {
+  width: var(--file-manager-col-by);
+}
+
+.fm-col-size {
+  width: var(--file-manager-col-size);
+}
+
+.fm-table td.fm-col-date,
+.fm-table td.fm-col-by {
+  color: var(--ds-color-fg-muted);
+  white-space: nowrap;
+}
+
+.fm-table td.fm-col-date {
+  font-variant-numeric: tabular-nums;
+}
+
+.fm-name {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+.fm-name > .ds-icon {
+  flex: none;
+  width: var(--ds-icon-size-lg);
+  height: var(--ds-icon-size-lg);
+  margin-block-start: calc((var(--ds-text-body-leading) * 1em - var(--ds-icon-size-lg)) / 2);
+  color: var(--ds-color-fg-muted);
+}
+
+.fm-name__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--ds-space-2);
+  min-width: 0;
+}
+
+.fm-name__text,
+.fm-name__link {
+  overflow-wrap: anywhere;
+}
+
+.fm-name__text {
+  color: var(--ds-color-fg-default);
+}
+
+/* 폴더 이름 링크 — 누르는 영역은 이름 칸(격자는 카드) 전체로 넓힌다. 줄 높이는 그대로 두고,
+   칸 높이가 행 높이(마우스 40·터치 56)라 24·44 를 넘는다. 고르기 칸은 다른 칸(카드에서는 위에 둔다)이라 겹치지 않는다 */
+.fm-table tbody th,
+.fm-card {
+  position: relative;
+}
+
+.fm-name__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.fm-card__check {
+  position: relative;
+  z-index: var(--ds-z-raise);
+}
+
+.fm-name__link {
+  color: var(--ds-color-fg-default);
+  font-weight: var(--ds-text-label-strong-weight);
+  text-decoration: underline;
+  text-decoration-color: var(--ds-color-line-control);
+  text-underline-offset: var(--file-manager-underline-offset);
+}
+
+.fm-name__link:hover {
+  color: var(--ds-color-fg-accent);
+  text-decoration-color: currentColor;
+}
+
+/* 스켈레톤에서는 밑줄도 지운다(kit 의 .ds-skeletonize * 규칙보다 이 샘플 규칙이 뒤에 와서 다시 지운다) */
+.ds-skeletonize .fm-name__link {
+  text-decoration-color: transparent;
+}
+
+/* 좁은 목록에서만 보이는 "크기 · 날짜" 한 줄 — 넓은 폭은 열이 맡는다 */
+.fm-name__meta {
+  display: none;
+  flex: 1 1 100%;
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 좁은 목록 — 머리 행·날짜·사람·크기 열을 숨기고 이름 아래 한 줄로. 넘치면 표 틀 안에서만 가로로 민다
+   (머리 행이 없어 붙는 머리가 필요 없다) */
+@container fm-results (max-width: 39.9375rem) {
+  .fm-table thead,
+  .fm-table .fm-col-date,
+  .fm-table .fm-col-by,
+  .fm-table .fm-col-size {
+    display: none;
+  }
+
+  .fm-name__meta {
+    display: block;
+  }
+
+  .fm-table tbody th,
+  .fm-table tbody td {
+    padding-block: var(--ds-space-2);
+  }
+
+  /* 고르기 칸에 이미 좌우 여백이 있어 이름 칸 앞 여백은 줄인다(체크박스와 아이콘 사이가 벌어지지 않게) */
+  .fm-table tbody th {
+    padding-inline-start: var(--ds-space-1);
+  }
+
+  .fm-table .fm-editrow > td {
+    padding-block: 0 var(--ds-space-3);
+    padding-inline: var(--ds-space-3);
+  }
+
+  .fm-wrap {
+    overflow-x: auto;
+  }
+}
+
+/* 결과 영역이 아주 좁을 때(글자를 크게 키운 320·375 등) — 이름 칸 자리를 넓히려고 종류 아이콘을 뺀다. 종류는 "폴더"·크기 글로 남는다 */
+@container fm-results (max-width: 16rem) {
+  .fm-name > .ds-icon {
+    display: none;
+  }
+}
+
+.fm-name__meta {
+  overflow-wrap: anywhere;
+}
+
+/* ───────── 격자 ───────── */
+
+.fm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--file-manager-card-min)), 1fr));
+  gap: var(--ds-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fm-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "check icon"
+    "name name"
+    "meta meta";
+  align-content: start;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-width: 0;
+  padding: var(--ds-space-3);
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-surface-default);
+}
+
+.fm-card:hover {
+  background: var(--ds-color-surface-subtle);
+}
+
+/* 고른 카드 — 체크 표시가 주 신호, 바탕은 보조 신호(CLR-05) */
+.fm-card:has(.fm-card__check input:checked) {
+  background: var(--ds-color-fill-accent-subtle);
+}
+
+.fm-card__check {
+  grid-area: check;
+  justify-self: start;
+}
+
+.fm-card__check input {
+  width: var(--ds-size-check);
+  height: var(--ds-size-check);
+  margin: 0;
+  accent-color: var(--ds-color-fill-accent);
+  cursor: pointer;
+}
+
+/* 고를 수 없는 항목의 자물쇠 — 체크박스와 같은 16 상자 자리에 둔다 */
+.fm-lock {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ds-size-check);
+  height: var(--ds-size-check);
+  color: var(--ds-color-fg-muted);
+  vertical-align: middle;
+}
+
+.fm-lock .ds-icon {
+  width: var(--ds-icon-size-md);
+  height: var(--ds-icon-size-md);
+}
+
+.fm-card__check.fm-lock {
+  align-self: center;
+}
+
+.fm-card__icon {
+  grid-area: icon;
+  justify-self: start;
+  width: var(--ds-size-empty-icon);
+  height: var(--ds-size-empty-icon);
+  color: var(--ds-color-fg-muted);
+  stroke-width: 1.5;
+}
+
+.fm-card__name {
+  grid-area: name;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  min-width: 0;
+}
+
+/* 격자 카드는 크기와 날짜를 두 줄로 — 좁은 카드에서 "2025년 / 12월 30일"처럼 날짜가 쪼개지지 않는다 */
+.fm-card__meta {
+  display: flex;
+  flex-direction: column;
+  grid-area: meta;
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ───────── 제자리 이름 편집 ───────── */
+
+.fm-rename {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+  inline-size: 100%;
+  min-width: 0;
+}
+
+.fm-rename__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+.fm-rename__row > .ds-input {
+  flex: 1 1 var(--file-manager-rename-min);
+  min-width: 0;
+}
+
+/* ───────── 빈 폴더 · 불러오기 오류 ───────── */
+
+.fm-state {
+  padding: var(--ds-space-10) var(--ds-space-4);
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-surface-default);
+}
+
+/* ───────── 끌어 놓기 표시 — 놓일 자리를 2px 선으로(DESIGN.md 「옮기기」) ───────── */
+
+.fm-drop {
+  position: absolute;
+  inset: 0;
+  z-index: var(--ds-z-raise);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--ds-space-8) var(--ds-space-4);
+  border-radius: var(--ds-container-radius);
+  outline: var(--ds-size-border-strong) dashed var(--ds-color-line-focus);
+  outline-offset: calc(-1 * var(--ds-size-border-strong));
+  background: var(--ds-color-fill-accent-subtle);
+  color: var(--ds-color-fg-accent);
+  pointer-events: none;
+}
+
+.fm-drop[data-blocked] {
+  outline-color: var(--ds-color-line-control);
+  background: var(--ds-color-surface-subtle);
+  color: var(--ds-color-fg-default);
+}
+
+.fm-drop__text {
+  position: sticky;
+  top: calc(var(--ds-app-top, var(--ds-size-topbar)) + var(--ds-space-8));
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+  text-align: center;
+}
+
+/* ───────── 옮기기 대화상자 — 폴더 고르기 ───────── */
+
+.fm-tree > legend {
+  margin-block-end: var(--ds-space-2);
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.fm-tree__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fm-tree__item {
+  padding-inline-start: calc(var(--file-manager-depth, 0) * var(--ds-space-5));
+}
+
+.fm-tree__item .ds-check {
+  align-items: center;
+  width: 100%;
+}
+
+.fm-tree__item .ds-check > input {
+  margin-block-start: 0;
+}
+
+.fm-tree__name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--ds-space-1-5);
+  min-width: 0;
+}
+
+.fm-tree__name .ds-icon {
+  flex: none;
+  color: var(--ds-color-fg-muted);
+}
+
+.fm-tree__why {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.fm-move__error {
+  margin-block-start: var(--ds-space-3);
+}
+
+/* ───────── 바닥줄 ───────── */
+
+.fm-foot {
+  padding-block-start: var(--ds-space-4);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+/* ───────── 고대비(강제 색) — 고른 카드·놓일 자리·비활성 이유가 남게 ───────── */
+
+@media (forced-colors: active) {
+  .fm-card:has(.fm-card__check input:checked) {
+    outline: var(--ds-size-border-strong) solid Highlight;
+    outline-offset: calc(-1 * var(--ds-size-border-strong));
+  }
+
+  .fm-drop {
+    outline-color: Highlight;
+  }
+
+  .fm-name__link {
+    text-decoration-color: LinkText;
+  }
+
+  .fm-up__note--error {
+    color: CanvasText;
+  }
+}

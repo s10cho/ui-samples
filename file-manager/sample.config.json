@@ -1,0 +1,6 @@
+{
+  "kit": "app",
+  "build": [],
+  "states": ["", "?state=loading", "?state=empty", "?view=grid", "?state=upload-error", "?state=rename-dup"],
+  "budgetKB": 150
+}

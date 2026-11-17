@@ -10,7 +10,8 @@
  *   1. shared/common/ 를 복사한다(모든 샘플 — 다이나믹 서브셋 글꼴 등)
  *   2. kit 이 있으면 shared/<kit>/ 를 그 위에 복사한다
  *   3. 샘플 폴더를 그 위에 복사한다 — 같은 경로면 샘플 파일이 이긴다
- *   4. build 에 적힌 명령을 _site/<slug>/ 안에서 차례로 실행한다
+ *   4. kit 의 build(shared/<kit>/kit.config.json) → 샘플의 build 순서로 명령을 _site/<slug>/ 안에서 차례로 실행한다
+ *      kit build 는 그 kit 을 쓰는 샘플 모두에 늘 돈다(예: app kit 은 배포본 kit 파일의 주석을 지운다)
  * samples.json 에서 "draft": true 인 샘플(검수 전 초안)은 --only 로 이름을 줄 때만 조립한다.
  * kit·build 는 <slug>/sample.config.json 이 있으면 그 값이 samples.json 보다 이긴다.
  * 그래서 샘플을 공용 뼈대로 옮기는 작업은 samples.json 을 건드리지 않아도 된다.
@@ -34,7 +35,7 @@ const only = onlyArg > 0 ? new Set(process.argv[onlyArg + 1].split(',')) : null;
 
 const skip = (src) => {
   const rel = src.slice(root.length + 1).split(sep);
-  if (rel.some((p) => p === '.DS_Store' || p === 'node_modules' || p === '__pycache__' || p.includes('.slotfix.') || p === 'sample.config.json')) return false;
+  if (rel.some((p) => p === '.DS_Store' || p === 'node_modules' || p === '__pycache__' || p.includes('.slotfix.') || p === 'sample.config.json' || p === 'kit.config.json')) return false;
   const i = rel.indexOf('review');
   if (i > 1 && rel[i - 1] === 'ui' && rel[i - 2] === 'docs') return false; // <slug>/docs/ui/review/**
   return true;
@@ -57,13 +58,16 @@ for (const base of data.samples) {
   rmSync(dest, { recursive: true, force: true });
   mkdirSync(dest, { recursive: true });
   copy(join(root, 'shared', 'common'), dest);
+  let kitBuild = [];
   if (s.kit) {
     const kit = join(root, 'shared', s.kit);
     if (!existsSync(kit) || !statSync(kit).isDirectory()) throw new Error(`${s.slug}: shared/${s.kit}/ 가 없다`);
     copy(kit, dest);
+    const kitCfg = join(kit, 'kit.config.json');
+    if (existsSync(kitCfg)) kitBuild = JSON.parse(readFileSync(kitCfg, 'utf8')).build ?? [];
   }
   copy(join(root, s.slug), dest);
-  for (const cmd of s.build ?? []) {
+  for (const cmd of [...kitBuild, ...(s.build ?? [])]) {
     console.log(`[${s.slug}] ${cmd}`);
     execSync(cmd, { cwd: dest, stdio: 'inherit' });
   }

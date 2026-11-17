@@ -1,0 +1,538 @@
+/*
+ * 권한 관리 샘플 고유 꾸밈 — kit(tokens·base·components) 다음에 부른다.
+ * 값은 --ds-* 토큰만 쓴다. 이 샘플만의 크기는 --role-permissions-* 로 두고 설계서 4절에 이유를 적었다.
+ * 클래스는 rp- 로 시작한다. 폭 경계는 kit 과 같은 rem(30rem = 480, 48rem = 768)을 쓴다.
+ */
+
+:root {
+  --role-permissions-list-w: 15rem;     /* 역할 목록 폭 — 옆 메뉴(240)와 같다 */
+  --role-permissions-feature-w: 9rem;   /* 권한 표 첫 열 — 기능 이름 + "위험" 배지가 한 줄 */
+  --role-permissions-cell-w: 4.5rem;    /* 권한 칸 — 가장 긴 열 머리 "내보내기 위험"이 한 줄 */
+}
+
+/* 아주 좁은 폭 — 화면 밝기 고르기는 아이콘만(이름은 툴팁과 aria-label 로) */
+@media (max-width: 29.9375rem) {
+  .rp-theme-text {
+    display: none;
+  }
+}
+
+.rp-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rp-panel {
+  min-width: 0;
+}
+
+.rp-subhead {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+/* ---------- 역할 보기 — 역할 목록 + 고른 역할 ---------- */
+
+/* 본문 폭으로 배치를 정한다(옆 메뉴·글자 크기에 따라 본문 폭이 달라서). container-type 은 블록 감싸개에만 준다 */
+.rp-roles {
+  container-type: inline-size;
+}
+
+.rp-roles__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-gap-section);
+  align-items: start;
+}
+
+.rp-rolelist__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr));
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@container (min-width: 50rem) {
+  .rp-roles__grid {
+    grid-template-columns: var(--role-permissions-list-w) minmax(0, 1fr);
+  }
+
+  .rp-rolelist__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* 역할 하나 — 고른 역할은 kit 묶음 버튼처럼 바탕·테두리·그림자·굵기를 함께 바꾼다(색만으로 구분하지 않는다, CMP-SEL-04).
+   체크 아이콘은 쓰지 않는다 — 권한 표의 체크(켜짐)와 뜻이 겹치지 않게 */
+.rp-role-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  width: 100%;
+  min-height: var(--ds-control-height-lg);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-control-radius);
+  background: var(--ds-color-surface-default);
+  color: var(--ds-color-fg-default);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.rp-role-btn:hover {
+  background: var(--ds-color-surface-subtle);
+}
+
+.rp-role-btn[aria-current="true"] {
+  border-color: var(--ds-color-fill-accent);
+  background: var(--ds-color-fill-accent-subtle);
+  box-shadow: inset 0 0 0 var(--ds-size-hairline) var(--ds-color-fill-accent), var(--ds-shadow-raised);
+}
+
+.rp-role-btn__main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rp-role-btn__name {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-weight);
+}
+
+.rp-role-btn[aria-current="true"] .rp-role-btn__name {
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.rp-role-btn__meta {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+.rp-role {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  min-width: 0;
+}
+
+.rp-role__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-2) var(--ds-space-4);
+}
+
+.rp-role__titles {
+  display: flex;
+  flex: 1 1 var(--ds-size-card-min);
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  min-width: 0;
+}
+
+.rp-role__name-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+}
+
+.rp-role__desc {
+  max-width: var(--ds-size-reading-max);
+  color: var(--ds-color-fg-muted);
+}
+
+/* 글 링크 — 누르는 영역은 24(터치 44)까지 위아래로 넓힌다 */
+.rp-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ds-target-min);
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 기본 역할 — 저장 줄 자리에 고칠 수 없는 이유 */
+.rp-locked {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  padding: var(--ds-space-1) var(--ds-space-1) var(--ds-space-1) var(--ds-space-3);
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-surface-subtle);
+  color: var(--ds-color-fg-muted);
+}
+
+.rp-locked > .ds-icon {
+  flex: none;
+  width: var(--ds-icon-size-md);
+  height: var(--ds-icon-size-md);
+}
+
+/* 저장 줄 — 넓은 폭(그리고 바뀐 곳이 없을 때)은 표 위 띠. 좁은 폭에서 바뀐 곳이 있으면 kit 이 화면 아래에 붙인다 */
+.rp-savebar:not([data-docked]) {
+  justify-content: space-between;
+  padding: var(--ds-space-1) var(--ds-space-1) var(--ds-space-1) var(--ds-space-3);
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-surface-subtle);
+}
+
+/* 좁은 폭에서는 바뀐 곳이 있을 때만 저장 줄을 보인다. 보통은 화면 아래에 붙고, 붙인 줄이 화면 높이의 20% 를 넘으면
+   (글자를 키운 화면·낮은 화면) kit 이 붙이지 않고 표 위 제자리에 둔다 — 그때도 보인다.
+   줄이 나타나거나 사라지며 표가 밀린 만큼은 js/page.js 가 스크롤을 되돌린다(손가락 밑 칸이 그대로) */
+@media (max-width: 47.9375rem) {
+  .rp-savebar:not([data-dirty]) {
+    display: none;
+  }
+}
+
+.rp-savebar__count {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+}
+
+.rp-savebar__count[data-tone="dirty"] {
+  color: var(--ds-color-fg-warning);
+}
+
+.rp-savebar__count[data-tone="saved"] {
+  color: var(--ds-color-fg-success);
+}
+
+.rp-savebar__count .ds-icon {
+  width: var(--ds-icon-size-sm);
+  height: var(--ds-icon-size-sm);
+}
+
+/* 짧은 저장 줄 — 좁은 폭에서 전체 저장 줄을 붙일 수 없을 때만(js/page.js). 한 줄: 바뀐 곳 수 + 저장.
+   줄 높이(--role-permissions-mini-h, js 가 잰다)만큼 문서 아래 여백·스크롤 여백을 둬 포커스와 마지막 내용을 가리지 않는다 */
+.rp-savemini {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: var(--ds-z-panel);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  padding: var(--ds-space-2) var(--ds-gap-page-x) calc(var(--ds-space-2) + env(safe-area-inset-bottom, 0rem));
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  background: var(--ds-color-surface-raised);
+  box-shadow: var(--ds-shadow-overlay);
+}
+
+html:has(.rp-savemini:not([hidden])) {
+  scroll-padding-block-end: calc(var(--role-permissions-mini-h, var(--ds-control-height-lg)) + var(--ds-space-2));
+}
+
+body:has(.rp-savemini:not([hidden])) {
+  padding-block-end: var(--role-permissions-mini-h, var(--ds-control-height-lg));
+}
+
+.rp-savemini .ds-btn {
+  flex: none;
+}
+
+/* ---------- 권한 표 ---------- */
+
+.rp-matrix-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  margin-block-end: calc(-1 * var(--ds-space-2));
+}
+
+.rp-legend {
+  max-width: var(--ds-size-reading-max);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.rp-matrix .rp-matrix__col,
+.rp-matrix .rp-cell {
+  min-width: var(--role-permissions-cell-w);
+  text-align: center;
+}
+
+.rp-colname {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+/* 첫 열(기능) — 좁은 폭·큰 글자에서도 화면의 40% 를 넘지 않아 권한 칸이 보인다 */
+.rp-matrix .rp-feature,
+.rp-matrix .rp-matrix__feature-head {
+  min-width: min(var(--role-permissions-feature-w), 40vw);
+  max-width: max(var(--role-permissions-feature-w), 40vw);
+}
+
+.rp-matrix .rp-feature {
+  font-weight: var(--ds-text-label-strong-weight);
+  overflow-wrap: anywhere;
+}
+
+.rp-feature__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-0-5) var(--ds-space-2);
+}
+
+.rp-matrix .rp-feature .ds-table__sub {
+  font-weight: var(--ds-font-weight-regular);
+}
+
+/* 저장하지 않은 칸 — 옅은 노랑 바탕 + 위 끝 점(+ 화면낭독기 "저장 안 한 변경이에요") */
+.rp-matrix tbody td[data-changed] {
+  position: relative;
+  background: var(--ds-color-fill-warning-subtle);
+}
+
+.rp-matrix tbody td[data-changed]::after {
+  content: "";
+  position: absolute;
+  inset-block-start: var(--ds-space-1);
+  inset-inline-end: var(--ds-space-1);
+  width: var(--ds-space-2);
+  height: var(--ds-space-2);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-color-fg-warning);
+}
+
+/* 읽기 전용 칸 — 켜짐은 체크 아이콘, 꺼짐은 비움, 해당 없음은 대시. 이름은 화면낭독기 글 */
+.rp-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ds-icon-size-lg);
+  height: var(--ds-icon-size-lg);
+  color: var(--ds-color-fg-default);
+  vertical-align: middle;
+}
+
+.rp-mark .ds-icon {
+  width: var(--ds-icon-size-md);
+  height: var(--ds-icon-size-md);
+}
+
+.rp-na {
+  color: var(--ds-color-fg-muted);
+}
+
+/* ---------- 변경 내역 ---------- */
+
+.rp-history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding-block-start: var(--ds-space-2);
+}
+
+.rp-history__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-container-radius);
+}
+
+.rp-history__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-0-5) var(--ds-space-4);
+  min-height: var(--ds-row-height);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-block-end: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.rp-history__item:last-child {
+  border-block-end: 0;
+}
+
+.rp-history__what {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+}
+
+.rp-history__meta {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 구성원 보기 ---------- */
+
+.rp-members {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.rp-members__tools {
+  align-items: flex-end;
+  gap: var(--ds-space-2) var(--ds-space-3);
+}
+
+.rp-members__search {
+  flex: 1 1 var(--ds-size-card-min);
+  max-width: var(--ds-size-field-max);
+}
+
+.rp-members__filter {
+  flex: 0 1 var(--role-permissions-list-w);
+}
+
+.rp-result {
+  display: flex;
+  align-items: center;
+  min-height: var(--ds-control-height-md);
+  margin-inline-start: auto;
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+.rp-person {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-width: 0;
+}
+
+.rp-person__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rp-person__name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+}
+
+/* 이메일은 칸이 모자랄 때만 끊는다 */
+.rp-person .ds-table__sub {
+  color: var(--ds-color-fg-muted);
+  font-weight: var(--ds-font-weight-regular);
+  overflow-wrap: break-word;
+}
+
+.rp-role-select {
+  min-width: calc(var(--ds-space-16) + var(--ds-space-12));
+}
+
+.rp-seen {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 넓은 표 — 구성원 첫 열은 이메일이 한 줄에 들어갈 만큼 */
+@media (min-width: 48rem) {
+  .rp-members-table .rp-person {
+    min-width: var(--ds-size-card-min);
+  }
+}
+
+/* ---------- 불러오기 오류 ---------- */
+
+.rp-load-error {
+  padding-block: var(--ds-space-6);
+}
+
+/* ---------- 미리 보기 대화상자 ---------- */
+
+.rp-changes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.rp-changes__title {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.rp-changes__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  margin: 0;
+  padding-inline-start: var(--ds-space-5);
+}
+
+.rp-changes__list .ds-badge {
+  margin-inline-start: var(--ds-space-2);
+}
+
+.rp-changes__note {
+  color: var(--ds-color-fg-muted);
+}
+
+/* ---------- 바닥줄 — 가상 데이터 안내(kit .ds-sample-note) ---------- */
+
+.rp-footnote {
+  padding-block-start: var(--ds-space-4);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+/* ---------- 스켈레톤(kit 복제) — 고른 역할 표시·바뀐 칸 표시는 내용이 온 뒤에 ---------- */
+
+.ds-skeletonize:not(#ds-sk) .rp-role-btn {
+  border-color: var(--ds-color-line-default);
+  background: var(--ds-color-surface-default);
+  box-shadow: none;
+}
+
+/* ---------- 고대비(강제 색) — 고른 역할·바뀐 칸 표시가 바탕색에만 기대지 않게 ---------- */
+
+@media (forced-colors: active) {
+  .rp-role-btn[aria-current="true"] {
+    outline: var(--ds-size-border-strong) solid Highlight;
+    outline-offset: calc(-1 * var(--ds-size-border-strong));
+  }
+
+  .rp-matrix tbody td[data-changed]::after {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .rp-matrix tbody td[data-changed] {
+    outline: var(--ds-size-hairline) dashed CanvasText;
+    outline-offset: calc(-1 * var(--ds-space-0-5));
+  }
+
+  .rp-locked,
+  .rp-savebar:not([data-docked]) {
+    border: var(--ds-size-hairline) solid CanvasText;
+  }
+
+  .rp-savemini {
+    border-block-start-color: CanvasText;
+  }
+}

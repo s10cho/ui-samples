@@ -9,7 +9,7 @@
 <!-- samples:start -->
 | 폴더 | 바로 보기 | 내용 | 검수 |
 |---|---|---|---|
-| `design-system/` | https://s10cho.github.io/ui-samples/design-system/ | 부품 모음 — 디자인 시스템. 업무 화면 샘플이 함께 쓰는 버튼·입력·표·탭·대화상자 같은 부품을 한 화면에 모았습니다. | 88.25 |
+| `design-system/` | https://s10cho.github.io/ui-samples/design-system/ | 부품 모음 — 디자인 시스템. 업무 화면 샘플이 함께 쓰는 버튼·입력·표·탭·대화상자 같은 부품을 한 화면에 모았습니다. | 83.25 |
 | `support-inbox/` | https://s10cho.github.io/ui-samples/support-inbox/ | 상담 인박스. 고객 대화 목록과 대화창, 고객 정보를 한 화면에서 다룹니다. | 93.75 |
 | `order-table/` | https://s10cho.github.io/ui-samples/order-table/ | 주문 목록. 주문을 정렬·필터·검색하고, 여러 건을 골라 한꺼번에 처리합니다. | 94.5 |
 | `customer-edit/` | https://s10cho.github.io/ui-samples/customer-edit/ | 고객 상세와 편집. 고객 정보를 보고 편집 모드에서 고칩니다. | 85.75 |
@@ -25,6 +25,12 @@
 | `island-park-iso/` | https://s10cho.github.io/ui-samples/island-park-iso/ | 바다 위 놀이공원 — 2D 그림판. 같은 섬과 명소 5곳을 2D 그림으로 다시 그렸습니다. | 90.75 |
 | `city-night-iso/` | https://s10cho.github.io/ui-samples/city-night-iso/ | 강을 낀 작은 도시 — 2D 그림판. 3D 판과 같은 건물 배치를 2D 그림으로 다시 그렸습니다. | 93.25 |
 | `ski-mountain-iso/` | https://s10cho.github.io/ui-samples/ski-mountain-iso/ | 겨울 산 스키장 — 2D 그림판. 3D 판과 같은 산과 명소를 2D 그림으로 다시 그렸습니다. | 93.25 |
+| `kanban-board/` | https://s10cho.github.io/ui-samples/kanban-board/ | 칸반 보드. 업무 카드를 단계별 열로 나눠 보고, 카드를 다른 단계로 옮깁니다. | 82 |
+| `file-manager/` | https://s10cho.github.io/ui-samples/file-manager/ | 파일 관리자. 폴더와 파일을 목록·격자로 보고 올리기·이름 바꾸기·옮기기·지우기를 합니다. | 90.75 |
+| `notification-center/` | https://s10cho.github.io/ui-samples/notification-center/ | 알림 센터. 읽지 않은 알림을 묶어 보여 주고 읽음 처리와 알림 끄기를 합니다. | 88.25 |
+| `search-results/` | https://s10cho.github.io/ui-samples/search-results/ | 검색 결과. 검색어와 필터로 문서·사람·업무를 찾고 결과를 정렬합니다. | 85.75 |
+| `role-permissions/` | https://s10cho.github.io/ui-samples/role-permissions/ | 권한 관리. 역할마다 할 수 있는 일을 표로 정하고 구성원에게 역할을 줍니다. | 85.75 |
+| `onboarding-setup/` | https://s10cho.github.io/ui-samples/onboarding-setup/ | 첫 사용 안내. 처음 가입한 팀이 작업 공간을 단계별로 꾸립니다. | 88.25 |
 <!-- samples:end -->
 
 샘플마다 폴더 하나에 코드·화면 설계서·검수 보고서가 함께 있다. 자세한 내용은 각 폴더의 `README.md` 를 본다.

@@ -35,7 +35,18 @@
     prev: '이전',
     next: '다음',
     removeTeam: ' 빼기',
-    stale: '작업 6개 · 마지막으로 불러온 내용이에요'
+    stale: '작업 6개 · 마지막으로 불러온 내용이에요',
+    unselected: '고르기를 모두 풀었어요',
+    teamsUnpicked: '고른 팀이 없어요',
+    colShown: ' 열을 보여요',
+    colHidden: ' 열을 숨겼어요',
+    quickPicked: '빠른 답변을 골랐어요: ',
+    drawerApplied: '필터를 적용했어요',
+    drawerCleared: '필터를 모두 지웠어요',
+    contactSaved: '담당자를 저장했어요',
+    contactTitle: function (n) { return '저장하려면 칸 ' + n + '개를 고쳐 주세요'; },
+    skLoading: '팀 요약을 불러오는 중이에요',
+    skLoaded: '팀 요약을 새로 불러왔어요'
   };
 
   // 예시 작업 시간 — 1초를 넘는 일이라 0.3초 뒤에 회전 표시가 보인다(CMP-FB-07·08)
@@ -197,6 +208,8 @@
     var selAll = $('#sel-all');
     var exportBtn = $('#btn-export');
     var selCount = $('#sel-count');
+    var bar = $('#task-bar');
+    var unselect = $('#btn-unselect');
     var summary = $('#task-summary');
     var chips = $$('.ds-chip[data-status]');
     var emptyRow = null;
@@ -213,6 +226,9 @@
       selAll.disabled = shown.length === 0;
       selCount.hidden = picked === 0;
       selCount.textContent = picked + '개 고름';
+      unselect.hidden = picked === 0;
+      // 좁은 폭에서 고른 작업이 있으면 작업 줄이 화면 아래에 붙는다
+      DS.actionbar.set(bar, picked > 0);
       if (picked) {
         exportBtn.removeAttribute('aria-disabled');
         exportBtn.removeAttribute('data-ds-tip');
@@ -282,6 +298,16 @@
       updateSelection();
     });
 
+    unselect.addEventListener('click', function () {
+      rows().forEach(function (r) {
+        box(r).checked = false;
+        r.classList.remove('is-selected');
+      });
+      updateSelection();
+      DS.announce(COPY.unselected);
+      selAll.focus();
+    });
+
     body.addEventListener('click', function (e) {
       if (!e.target.closest('#btn-clear-filter')) return;
       chips.forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
@@ -330,6 +356,123 @@
       });
       DS.announce(COPY.loadingTasks);
     }
+  }
+
+  /* ---------- 첫 열 고정 표 · 체크 메뉴(보일 열) ---------- */
+
+  function initMonthTable() {
+    var table = $('#month-table');
+    var all = $('#month-all');
+    var boxes = function () { return $$('tbody input[type="checkbox"]', table); };
+    all.addEventListener('change', function () {
+      boxes().forEach(function (b) { b.checked = all.checked; });
+    });
+    table.addEventListener('change', function (e) {
+      if (e.target === all) return;
+      var on = boxes().filter(function (b) { return b.checked; }).length;
+      all.checked = on === boxes().length;
+      all.indeterminate = on > 0 && on < boxes().length;
+    });
+    // 체크 메뉴 — 켜고 끌 때마다 그 열을 보이고 숨긴다. 메뉴는 열려 있다
+    doc.addEventListener('ds:menucheck', function (e) {
+      var col = e.detail.value;
+      var th = $('th[data-col="' + col + '"]', table);
+      if (!th) return;
+      var index = th.cellIndex;
+      $$('tr', table).forEach(function (tr) { if (tr.cells[index]) tr.cells[index].hidden = !e.detail.checked; });
+      DS.table.syncSticky(table);
+      DS.announce(th.textContent + (e.detail.checked ? COPY.colShown : COPY.colHidden));
+    });
+  }
+
+  /* ---------- 위로 여는 메뉴(빠른 답변) ---------- */
+
+  function initQuickMenu() {
+    $('#menu-quick').addEventListener('click', function (e) {
+      var item = e.target.closest('[role="menuitem"]');
+      if (!item) return;
+      var label = $('.ds-menu__label', item).textContent;
+      $('#quick-status').textContent = COPY.quickPicked + label;
+    });
+  }
+
+  /* ---------- 오른쪽 서랍 ---------- */
+
+  function initDrawer() {
+    var dlg = $('#drawer-filter');
+    var status = $('#drawer-status');
+    var initial = status.innerHTML;
+    $('#drawer-clear').addEventListener('click', function () {
+      $$('input[type="checkbox"]', dlg).forEach(function (b) { b.checked = false; });
+      $('#df-team').selectedIndex = 0;
+      DS.announce(COPY.drawerCleared);
+    });
+    dlg.addEventListener('ds:drawer-close', function () {
+      if (dlg.returnValue !== 'apply') { status.innerHTML = initial; return; }
+      var on = $$('input[type="checkbox"]:checked', dlg).map(function (b) { return b.parentNode.textContent.trim(); });
+      status.textContent = COPY.drawerApplied + ' — ' + (on.join(' · ') || '상태 전체') + ' · ' + $('#df-team').value;
+      DS.announce(COPY.drawerApplied);
+    });
+  }
+
+  /* ---------- 오류 요약 ---------- */
+
+  function initContactForm() {
+    var form = $('#contact-form');
+    var fields = [
+      { id: 'ct-name', label: '담당자 이름', text: '담당자 이름을 입력해 주세요' },
+      { id: 'ct-team', label: '담당 팀', text: '담당 팀을 골라 주세요' }
+    ];
+    function check(f) {
+      var input = $('#' + f.id);
+      var bad = !input.value.trim();
+      input.setAttribute('aria-invalid', bad ? 'true' : 'false');
+      if (bad) input.setAttribute('aria-describedby', f.id + '-error');
+      else input.removeAttribute('aria-describedby');
+      $('#' + f.id + '-error').hidden = !bad;
+      return bad;
+    }
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var bad = fields.filter(check);
+      DS.form.summary('#contact-errors', bad, { title: COPY.contactTitle, focus: true });
+      $('#contact-status').textContent = bad.length ? '' : COPY.contactSaved;
+      if (!bad.length) DS.announce(COPY.contactSaved);
+    });
+    // 고친 칸은 바로 요약에서 뺀다(요약이 보일 때만)
+    form.addEventListener('input', function (e) {
+      var f = fields.filter(function (x) { return x.id === e.target.id; })[0];
+      if (!f || $('#contact-errors').hidden) return;
+      check(f);
+      DS.form.summary('#contact-errors', fields.filter(function (x) { return $('#' + x.id).getAttribute('aria-invalid') === 'true'; }), { title: COPY.contactTitle });
+    });
+  }
+
+  /* ---------- 복제 스켈레톤 ---------- */
+
+  function initSkeletonDemo() {
+    var target = $('#sk-target');
+    var btn = $('#btn-sk-reload');
+    if (state === 'loading') {
+      target.setAttribute('aria-busy', 'true');
+      DS.skeleton.show(target);
+      btn.setAttribute('aria-disabled', 'true');
+      return;
+    }
+    btn.addEventListener('click', function () {
+      DS.busy(btn, true);
+      DS.announce(COPY.skLoading);
+      target.setAttribute('aria-busy', 'true');
+      // 0.3초 안에 끝나면 아무것도 보이지 않고, 보이면 0.4초는 남는다(DS.loadingTimer)
+      var timer = DS.loadingTimer(function () { DS.skeleton.show(target); }, function () {
+        DS.skeleton.hide(target);
+        target.removeAttribute('aria-busy');
+      });
+      setTimeout(function () {
+        timer.stop();
+        DS.busy(btn, false).then(function () { DS.announce(COPY.skLoaded); });
+      }, WORK_MS);
+    });
   }
 
   /* ---------- 배너 띄워 보기 ---------- */
@@ -470,6 +613,11 @@
     initTeamForm();
     initChipRemove();
     initTable();
+    initMonthTable();
+    initQuickMenu();
+    initDrawer();
+    initContactForm();
+    initSkeletonDemo();
     initBannerDemo();
     initDialog();
     initPagination();

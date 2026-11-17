@@ -1,0 +1,456 @@
+/*
+ * 알림 센터 — 샘플 고유 스타일. kit(tokens → base → components) 다음에 부른다.
+ * 값은 --ds-* 토큰만 쓴다. kit 에 없는 값만 아래 :root 에 --notification-center-* 로 둔다(설계서 4절).
+ * 클래스는 nc- 로 시작한다. 상태는 ARIA·data 속성과 is- 클래스로 표시한다.
+ */
+:root {
+  --notification-center-feed-max: 52rem;          /* 알림 줄이 너무 길어지지 않게 본문 폭을 줄인다(832) */
+  --notification-center-dot: var(--ds-space-2);   /* 읽지 않음 점(8) */
+  /* 줄 안 동작 칸 — 아이콘 버튼 2개 자리. 읽은 줄도 같은 폭이라 글 오른쪽 끝이 줄마다 같다 */
+  --notification-center-actions-w: calc(2 * var(--ds-control-height-md) + var(--ds-space-1));
+}
+
+/* 처음 불러오는 0.3초 — 자리는 그대로 두고 내용만 숨긴다(복제 스켈레톤에는 data-* 가 없어 보인다) */
+[data-nc-pending] {
+  visibility: hidden;
+}
+
+/* 스켈레톤 — 읽지 않음 점과 연 줄의 고른 색은 내용이 온 뒤에 보인다(DESIGN.md 「스켈레톤」) */
+.ds-skeletonize .nc-item.is-unread .nc-item__dot {
+  visibility: hidden;
+}
+
+.ds-skeletonize .nc-item.is-open {
+  background: transparent;
+}
+
+/* ───────── 머리줄 ───────── */
+
+.nc-topbar {
+  column-gap: var(--ds-space-2);
+  row-gap: 0;
+}
+
+.nc-topbar__sep,
+.nc-topbar__name {
+  color: var(--ds-color-fg-muted);
+}
+
+.nc-topbar__name {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-weight);
+}
+
+/* 가상 데이터 안내 — 좁은 폭에서는 머리줄 둘째 줄로 */
+@media (max-width: 47.9375rem) {
+  .nc-topbar__note {
+    order: 10;
+    flex-basis: 100%;
+    padding-block-end: var(--ds-space-1);
+  }
+}
+
+/* 아주 좁은 폭 — 첫 줄은 메뉴 + 샘플 이름, 둘째 줄은 데이터 안내 + 화면 밝기. "UI 샘플"은 옆 메뉴의 "샘플 목록"으로 간다 */
+@media (max-width: 29.9375rem) {
+  .nc-topbar .ds-topbar__spacer {
+    order: 9;
+    flex-basis: 100%;
+  }
+
+  .nc-topbar__note {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .nc-topbar .ds-segmented {
+    order: 11;
+  }
+
+  .nc-topbar__brand,
+  .nc-topbar__sep,
+  .nc-theme-text {
+    display: none;
+  }
+}
+
+/* ───────── 본문 ───────── */
+
+.nc-page {
+  max-width: var(--notification-center-feed-max);
+}
+
+.nc-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  min-width: 0;
+  container-type: inline-size;
+  container-name: nc-feed;
+}
+
+.nc-feed:focus {
+  outline: none;
+}
+
+.nc-feed:focus-visible {
+  outline: var(--ds-size-focus-ring) solid var(--ds-color-line-focus);
+  outline-offset: var(--ds-size-focus-offset);
+}
+
+/* 도구 줄 — 보기 · 종류 칩 · 거르기 지우기 */
+.nc-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-3) var(--ds-space-4);
+}
+
+.nc-view {
+  flex: none;
+}
+
+.nc-kinds {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+.nc-n {
+  margin-inline-start: var(--ds-space-0-5);
+}
+
+.ds-chip[aria-pressed="true"] .nc-n {
+  background: var(--ds-color-surface-default);
+  color: var(--ds-color-fg-accent);
+}
+
+.nc-chip__off {
+  color: var(--ds-color-fg-muted);
+  font-weight: var(--ds-text-body-weight);
+}
+
+/* 새 알림 — 목록 위 흐름 안에 둔다(붙이지 않는다 — 포커스를 가리지 않게) */
+.nc-arrivals {
+  display: flex;
+  justify-content: center;
+}
+
+/* ───────── 알림 목록 ───────── */
+
+.nc-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-gap-section);
+  min-width: 0;
+}
+
+.nc-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.nc-group__title {
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+}
+
+.nc-group__n {
+  margin-inline-start: var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  font-weight: var(--ds-text-body-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.nc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-surface-default);
+}
+
+/* 알림 줄 — 점 · 아바타 · 문장(+ 인용) · 종류와 시각 · 동작 2개 */
+.nc-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--notification-center-dot) var(--ds-size-avatar) minmax(0, 1fr) var(--notification-center-actions-w);
+  grid-template-areas:
+    "dot av body act"
+    "dot av meta act";
+  grid-template-rows: auto 1fr;
+  column-gap: var(--ds-space-3);
+  row-gap: var(--ds-space-1);
+  padding: var(--ds-space-3) var(--ds-space-2) var(--ds-space-3) var(--ds-space-3);
+  border-block-end: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.nc-item:first-child {
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+}
+
+.nc-item:last-child {
+  border-block-end: 0;
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
+}
+
+.nc-item:hover {
+  background: var(--ds-color-surface-subtle);
+}
+
+/* 옆 패널에 연 알림 — 고른 색 + aria-current(고대비에서는 테두리) */
+.nc-item.is-open {
+  background: var(--ds-color-fill-accent-subtle);
+}
+
+.nc-item__dot {
+  grid-area: dot;
+  align-self: start;
+  width: 0;
+  height: 0;
+  margin-block-start: calc((var(--ds-text-body-size) * var(--ds-text-body-leading) - var(--notification-center-dot)) / 2);
+  border: calc(var(--notification-center-dot) / 2) solid var(--ds-color-fill-accent);
+  border-radius: var(--ds-radius-pill);
+  visibility: hidden;
+}
+
+.nc-item.is-unread .nc-item__dot {
+  visibility: visible;
+}
+
+.nc-item__avatar {
+  grid-area: av;
+  align-self: start;
+}
+
+.nc-item__avatar--system {
+  background: var(--ds-color-surface-subtle);
+  color: var(--ds-color-fg-muted);
+}
+
+.nc-item__avatar--system .ds-icon {
+  width: var(--ds-icon-size-md);
+  height: var(--ds-icon-size-md);
+}
+
+.nc-item__body {
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-0-5);
+  min-width: 0;
+}
+
+.nc-item__title {
+  color: var(--ds-color-fg-default);
+}
+
+.nc-name {
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.nc-item.is-unread .nc-item__title {
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+/* 문장 링크 — ::after 로 줄 전체를 누르는 영역으로 넓힌다. 포커스 링도 줄 전체에 그린다 */
+.nc-item__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nc-item__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.nc-item__link:focus-visible {
+  outline: none;
+}
+
+.nc-item__link:focus-visible::after {
+  outline: var(--ds-size-focus-ring) solid var(--ds-color-line-focus);
+  outline-offset: calc(-1 * var(--ds-size-focus-ring));
+}
+
+/* 인용은 자르지 않는다(글자 200% 에서도 다 읽힌다). 한 문장 길이로 짧게 쓴다 */
+.nc-item__quote {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.nc-item__meta {
+  grid-area: meta;
+  align-self: start;
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+.nc-item__sep {
+  margin-inline: var(--ds-space-1);
+}
+
+/* 줄 안 동작은 줄 전체 링크 위에 올린다 */
+.nc-item__actions {
+  grid-area: act;
+  position: relative;
+  z-index: var(--ds-z-raise);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: var(--ds-space-1);
+  margin-block-start: calc(-1 * var(--ds-space-1));
+}
+
+/* 메뉴가 열린 줄은 아래 줄의 동작 버튼보다 위에 둔다 */
+.nc-item:has(.ds-menu:not([hidden])) .nc-item__actions {
+  z-index: var(--ds-z-sticky);
+}
+
+.nc-item .ds-menu {
+  min-width: min(var(--ds-size-menu-min), calc(100vw - 2 * var(--ds-space-4)));
+}
+
+/* 끌 수 없는 종류의 "끄기" 항목 — 이름은 흐리게, 이유(둘째 줄)는 읽히게 둔다(kit 메뉴에 비활성 모양이 없어 샘플에서 메운다) */
+.nc-item .ds-menu__item[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.nc-item .ds-menu__item[aria-disabled="true"] .ds-menu__label {
+  color: var(--ds-color-fg-disabled);
+}
+
+/* 좁은 목록 — 문장이 전체 폭을 쓰고, 동작 버튼은 종류·시각 줄 오른쪽으로 내린다 */
+@container nc-feed (max-width: 35.9375rem) {
+  .nc-item {
+    grid-template-columns: var(--notification-center-dot) var(--ds-size-avatar) minmax(0, 1fr) auto;
+    grid-template-areas:
+      "dot av body body"
+      "dot av meta act";
+    grid-template-rows: auto auto;
+  }
+
+  .nc-item__meta {
+    align-self: center;
+  }
+
+  /* 버튼 누르는 영역(터치 44)은 줄 안쪽 여백까지 써서 줄 높이를 늘리지 않는다 */
+  .nc-item__actions {
+    margin-block: calc(-1 * var(--ds-space-2));
+  }
+}
+
+/* 아주 좁은 목록(320 + 글자 200% 등) — 꾸밈인 아바타를 빼고, 문장 · 종류와 시각 · 동작을 한 줄씩 쌓는다 */
+@container nc-feed (max-width: 17.9375rem) {
+  .nc-item {
+    grid-template-columns: var(--notification-center-dot) minmax(0, 1fr);
+    grid-template-areas:
+      "dot body"
+      "dot meta"
+      "dot act";
+    grid-template-rows: auto auto auto;
+  }
+
+  .nc-item__avatar {
+    display: none;
+  }
+
+  .nc-item__meta {
+    align-self: start;
+  }
+
+  .nc-item__actions {
+    margin-block: 0 calc(-1 * var(--ds-space-2));
+  }
+}
+
+/* 빈 상태 · 불러오기 오류 — 목록과 같은 틀 */
+.nc-empty {
+  max-width: none;
+  padding: var(--ds-space-6);
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-surface-default);
+}
+
+.nc-empty .ds-empty__title:focus {
+  outline: none;
+}
+
+.nc-empty .ds-empty__title:focus-visible {
+  outline: var(--ds-size-focus-ring) solid var(--ds-color-line-focus);
+  outline-offset: var(--ds-size-focus-offset);
+}
+
+/* ───────── 옆 패널 — 알림 대상 ───────── */
+
+.nc-target {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.nc-target__title {
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+}
+
+.nc-target__quote {
+  padding: var(--ds-space-3);
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-surface-subtle);
+  font-size: var(--ds-text-body-reading-size);
+  line-height: var(--ds-text-body-reading-leading);
+}
+
+.nc-target__actions {
+  margin-block-start: var(--ds-space-1);
+}
+
+.nc-panel .ds-panel__title:focus {
+  outline: none;
+}
+
+.nc-panel .ds-panel__title:focus-visible {
+  outline: var(--ds-size-focus-ring) solid var(--ds-color-line-focus);
+  outline-offset: var(--ds-size-focus-offset);
+}
+
+/* ───────── 고대비(강제 색) — 읽지 않음 점 · 연 줄 · 포커스 링이 남는다(CMP-SEL-04) ───────── */
+@media (forced-colors: active) {
+  .nc-item__dot {
+    border-color: CanvasText;
+  }
+
+  .nc-item.is-open {
+    outline: var(--ds-size-border-strong) solid Highlight;
+    outline-offset: calc(-1 * var(--ds-size-border-strong));
+  }
+
+  .nc-item__link:focus-visible::after {
+    outline-color: Highlight;
+  }
+
+  .nc-item__avatar {
+    border: var(--ds-size-hairline) solid CanvasText;
+  }
+
+  .nc-item .ds-menu__item[aria-disabled="true"] .ds-menu__label {
+    color: GrayText;
+  }
+}

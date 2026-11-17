@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>팀 정보 (1/4) — 첫 사용 안내</title>
+  <meta name="description" content="처음 가입한 팀이 작업 공간을 4단계로 꾸리는 첫 사용 안내 샘플이에요.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="data:,">
+  <script>
+    (function () {
+      var root = document.documentElement;
+      // 저장된 화면 밝기를 그리기 전에 적용한다. 저장값이 없으면 밝게 시작한다.
+      try {
+        var mode = new URLSearchParams(location.search).get('theme') || localStorage.getItem('ds-theme') || 'light';
+        if (mode === 'system') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
+      } catch (e) { /* 저장소를 못 읽으면 밝게 */ }
+      // 파일로 열면(file://) 브라우저가 웹 글꼴을 막는다. 그때는 시스템 한글 글꼴로 그린다.
+      if (location.protocol !== 'file:') {
+        [['preload', 'vendor/pretendard/PretendardVariable.page.woff2'], ['stylesheet', 'vendor/pretendard/pretendard-page-subset.css']].forEach(function (item) {
+          var link = document.createElement('link');
+          link.rel = item[0];
+          link.href = item[1];
+          if (item[0] === 'preload') { link.as = 'font'; link.type = 'font/woff2'; link.crossOrigin = 'anonymous'; }
+          document.head.appendChild(link);
+        });
+      }
+    })();
+  </script>
+  <noscript>
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  </noscript>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/page.css">
+  <script src="js/ds.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/page.js" defer></script>
+</head>
+<body>
+  <a class="ds-skip-link" href="#main">본문으로 건너뛰기</a>
+  <div id="ds-live" class="ds-live" role="status"></div>
+  <div id="ds-live-alert" class="ds-live" role="alert"></div>
+
+  <div class="ds-app ds-app--bare" id="app">
+    <header class="ds-app__top ds-topbar">
+      <a class="ds-topbar__brand" href="../index.html">UI 샘플</a>
+      <span class="ds-topbar__spacer"></span>
+      <div class="ds-segmented" role="radiogroup" aria-label="화면 밝기" data-ds-theme-control>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="light" aria-label="밝게" data-ds-tip="밝게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-sun"></use></svg><span class="onb-theme-text">밝게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="dark" aria-label="어둡게" data-ds-tip="어둡게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-moon"></use></svg><span class="onb-theme-text">어둡게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="system" aria-label="시스템 설정 따르기" data-ds-tip="시스템 설정 따르기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-monitor"></use></svg><span class="onb-theme-text">시스템</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="ds-app__main" id="main" tabindex="-1">
+      <div class="ds-page onb-page">
+
+        <!-- 설정 흐름(1~4단계) -->
+        <div class="onb-view" id="flow">
+          <header class="ds-page__head">
+            <div class="ds-page__titles">
+              <h1 class="ds-page__title">작업 공간 꾸리기</h1>
+              <p class="ds-page__desc">4단계로 팀의 작업 공간을 꾸려요. 입력한 내용은 이 창을 닫기 전까지 남아요.</p>
+            </div>
+            <div class="ds-page__actions">
+              <button class="ds-btn" type="button" id="later">나중에 하기</button>
+            </div>
+          </header>
+
+          <ol class="ds-steps ds-steps--compact" id="steps" aria-label="설정 단계">
+            <li class="ds-steps__item" data-step="1"><span class="ds-steps__mark">1</span><span class="ds-steps__label">팀 정보</span><span class="ds-sr-only onb-steps__state"></span></li>
+            <li class="ds-steps__item" data-step="2"><span class="ds-steps__mark">2</span><span class="ds-steps__label">구성원 초대</span><span class="ds-sr-only onb-steps__state"></span></li>
+            <li class="ds-steps__item" data-step="3"><span class="ds-steps__mark">3</span><span class="ds-steps__label">채널 연결</span><span class="ds-sr-only onb-steps__state"></span></li>
+            <li class="ds-steps__item" data-step="4"><span class="ds-steps__mark">4</span><span class="ds-steps__label">마치기</span><span class="ds-sr-only onb-steps__state"></span></li>
+          </ol>
+
+          <div class="ds-banner-slot" id="banner-slot"></div>
+
+          <!-- 1단계 — 팀 정보 -->
+          <section class="onb-step" id="step-1" aria-labelledby="h-step-1">
+            <div class="onb-step__head">
+              <h2 class="onb-step__title" id="h-step-1" tabindex="-1">팀 정보</h2>
+              <p class="onb-step__desc">작업 공간에 보일 이름과 주소를 정해요. 건너뛰면 가입할 때 적은 이름을 그대로 써요.</p>
+            </div>
+            <form class="onb-form" id="form-1" novalidate>
+              <div class="ds-error-summary" id="errors-1" hidden></div>
+              <div class="ds-field">
+                <label class="ds-field__label" for="f-team">팀 이름<span class="ds-field__req" aria-hidden="true">필수</span></label>
+                <input class="ds-input" id="f-team" name="team" autocomplete="organization" maxlength="30" aria-required="true" aria-describedby="f-team-error">
+                <p class="ds-field__error" id="f-team-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+              </div>
+              <div class="ds-field">
+                <label class="ds-field__label" for="f-address">작업 공간 주소<span class="ds-field__req" aria-hidden="true">필수</span></label>
+                <div class="onb-addr">
+                  <input class="ds-input onb-addr__input" id="f-address" name="address" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="20" aria-required="true" aria-describedby="f-address-suffix f-address-hint f-address-error">
+                  <span class="onb-addr__suffix" id="f-address-suffix">.team.example</span>
+                </div>
+                <p class="ds-field__hint" id="f-address-hint">영문 소문자·숫자·하이픈(-)으로 3~20자를 써요. 구성원이 이 주소로 들어와요.</p>
+                <p class="ds-field__error" id="f-address-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+              </div>
+              <fieldset class="ds-fieldset" aria-describedby="size-hint">
+                <legend class="onb-legend">팀 규모<span class="ds-field__req">선택</span></legend>
+                <p class="ds-field__hint" id="size-hint">규모에 맞춰 알림 기본값을 정해요.</p>
+                <div class="ds-options" id="size-list"></div>
+              </fieldset>
+              <div class="ds-form-actions onb-actions">
+                <button class="ds-btn" type="button" data-skip>건너뛰기</button>
+                <button class="ds-btn ds-btn--primary" type="submit" id="next-1">구성원 초대하기</button>
+              </div>
+            </form>
+          </section>
+
+          <!-- 2단계 — 구성원 초대 -->
+          <section class="onb-step" id="step-2" aria-labelledby="h-step-2" hidden>
+            <div class="onb-step__head">
+              <h2 class="onb-step__title" id="h-step-2" tabindex="-1">구성원 초대</h2>
+              <p class="onb-step__desc">함께 일할 사람에게 초대 메일을 보내요. 초대는 첫 화면에서 언제든 보낼 수 있어요.</p>
+            </div>
+            <form class="onb-form" id="form-2" novalidate>
+              <div class="ds-error-summary" id="errors-2" hidden></div>
+              <section class="onb-sent" id="sent" aria-labelledby="sent-title" hidden>
+                <h3 class="onb-sub" id="sent-title"></h3>
+                <ul class="onb-rows" id="sent-list"></ul>
+              </section>
+              <fieldset class="ds-fieldset onb-invite" id="grp-invite" aria-describedby="invite-hint">
+                <legend class="onb-legend">초대할 사람의 이메일</legend>
+                <p class="ds-field__hint" id="invite-hint">칸마다 이메일을 1개씩 적어요. 초대 메일은 7일 동안 열 수 있어요.</p>
+                <ol class="onb-invite__rows" id="invite-rows"></ol>
+                <div class="onb-invite__more">
+                  <button class="ds-btn ds-btn--sm" type="button" id="add-row"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-plus"></use></svg>이메일 칸 추가</button>
+                  <p class="ds-field__hint" id="add-row-hint" hidden>칸은 10개까지 둘 수 있어요.</p>
+                </div>
+              </fieldset>
+              <fieldset class="ds-fieldset" id="grp-role">
+                <legend class="onb-legend">역할</legend>
+                <div class="ds-options" id="role-list"></div>
+              </fieldset>
+              <div class="ds-form-actions onb-actions">
+                <button class="ds-btn" type="button" data-back>이전 단계</button>
+                <button class="ds-btn" type="button" data-skip>건너뛰기</button>
+                <button class="ds-btn ds-btn--primary" type="submit" id="send" data-busy-label="보내는 중…">초대 보내기</button>
+              </div>
+              <span class="ds-sr-only" id="sending-note"></span>
+            </form>
+          </section>
+
+          <!-- 3단계 — 채널 연결 -->
+          <section class="onb-step" id="step-3" aria-labelledby="h-step-3" hidden>
+            <div class="onb-step__head">
+              <h2 class="onb-step__title" id="h-step-3" tabindex="-1">채널 연결</h2>
+              <p class="onb-step__desc">고객 문의가 들어올 곳을 연결해요. 연결하지 않은 채널은 첫 화면에서 이어서 연결할 수 있어요.</p>
+            </div>
+            <form class="onb-form" id="form-3" novalidate>
+              <div class="onb-channels">
+                <ul class="onb-rows" id="channel-list"></ul>
+                <p class="ds-field__error" id="channel-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+              </div>
+              <div class="ds-form-actions onb-actions">
+                <button class="ds-btn" type="button" data-back>이전 단계</button>
+                <button class="ds-btn" type="button" data-skip>건너뛰기</button>
+                <button class="ds-btn ds-btn--primary" type="submit" id="next-3">설정 내용 확인하기</button>
+              </div>
+            </form>
+          </section>
+
+          <!-- 4단계 — 마치기 -->
+          <section class="onb-step" id="step-4" aria-labelledby="h-step-4" hidden>
+            <div class="onb-step__head">
+              <h2 class="onb-step__title" id="h-step-4" tabindex="-1">마치기</h2>
+              <p class="onb-step__desc">꾸린 내용을 확인하고 작업 공간을 열어요.</p>
+            </div>
+            <ul class="onb-rows" id="review-list"></ul>
+            <p class="onb-note" id="review-note" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-info"></use></svg><span>건너뛴 일은 작업 공간 첫 화면의 체크리스트에 남아요.</span></p>
+            <div class="ds-form-actions onb-actions">
+              <button class="ds-btn" type="button" data-back>이전 단계</button>
+              <button class="ds-btn ds-btn--primary" type="button" id="open">작업 공간 열기</button>
+            </div>
+          </section>
+        </div>
+
+        <!-- 작업 공간 첫 화면 — 남은 일 체크리스트 -->
+        <div class="onb-view" id="home" hidden>
+          <header class="ds-page__head">
+            <div class="ds-page__titles">
+              <h1 class="ds-page__title" id="home-title" tabindex="-1"></h1>
+              <p class="ds-page__desc" id="home-address"></p>
+            </div>
+          </header>
+          <section class="ds-card ds-card--flush onb-start" aria-labelledby="start-title">
+            <div class="onb-start__head">
+              <h2 class="ds-card__title" id="start-title">시작하기</h2>
+              <div class="ds-progress">
+                <div class="ds-progress__label"><span id="start-label">끝낸 일</span><span class="ds-progress__value" id="start-value"></span></div>
+                <div class="ds-progress__track" id="start-track" role="progressbar" aria-labelledby="start-label" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><div class="ds-progress__bar" id="start-bar"></div></div>
+              </div>
+              <p class="onb-start__done" id="start-done" hidden>남은 일이 없어요. 작업 공간을 바로 쓸 수 있어요.</p>
+            </div>
+            <ol class="onb-rows onb-rows--flush" id="check-list"></ol>
+          </section>
+        </div>
+
+        <footer class="onb-foot">
+          <p class="ds-sample-note"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-info"></use></svg>이 화면의 팀·구성원·채널은 가상의 샘플 데이터예요.</p>
+          <button class="ds-btn ds-btn--sm" type="button" id="restart" hidden>처음부터 다시 보기</button>
+        </footer>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>운영자 — 권한 관리</title>
+  <meta name="description" content="역할마다 할 수 있는 일을 표로 정하고 구성원에게 역할을 주는 업무 화면 샘플이에요.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="data:,">
+  <script>
+    (function () {
+      var root = document.documentElement;
+      // 저장된 화면 밝기를 그리기 전에 적용한다. 저장값이 없으면 밝게 시작한다.
+      try {
+        var mode = new URLSearchParams(location.search).get('theme') || localStorage.getItem('ds-theme') || 'light';
+        if (mode === 'system') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
+      } catch (e) { /* 저장소를 못 읽으면 밝게 */ }
+      // 파일로 열면(file://) 브라우저가 웹 글꼴을 막는다. 그때는 시스템 한글 글꼴로 그린다.
+      if (location.protocol !== 'file:') {
+        [['preload', 'vendor/pretendard/PretendardVariable.page.woff2'], ['stylesheet', 'vendor/pretendard/pretendard-page-subset.css']].forEach(function (item) {
+          var link = document.createElement('link');
+          link.rel = item[0];
+          link.href = item[1];
+          if (item[0] === 'preload') { link.as = 'font'; link.type = 'font/woff2'; link.crossOrigin = 'anonymous'; }
+          document.head.appendChild(link);
+        });
+      }
+    })();
+  </script>
+  <noscript>
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  </noscript>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/page.css">
+  <script src="js/ds.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/page.js" defer></script>
+</head>
+<body>
+  <a class="ds-skip-link" href="#main">본문으로 건너뛰기</a>
+  <div id="ds-live" class="ds-live" role="status"></div>
+  <div id="ds-live-alert" class="ds-live" role="alert"></div>
+
+  <div class="ds-app" id="app">
+    <header class="ds-app__top ds-topbar">
+      <button class="ds-btn ds-btn--ghost ds-btn--icon ds-topbar__menu" type="button" data-ds-nav-toggle aria-controls="nav" aria-expanded="false" aria-label="메뉴 열기">
+        <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-menu"></use></svg>
+      </button>
+      <a class="ds-topbar__brand" href="../index.html">UI 샘플</a>
+      <span class="ds-topbar__spacer"></span>
+      <div class="ds-segmented" role="radiogroup" aria-label="화면 밝기" data-ds-theme-control>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="light" aria-label="밝게" data-ds-tip="밝게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-sun"></use></svg><span class="rp-theme-text">밝게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="dark" aria-label="어둡게" data-ds-tip="어둡게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-moon"></use></svg><span class="rp-theme-text">어둡게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="system" aria-label="시스템 설정 따르기" data-ds-tip="시스템 설정 따르기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-monitor"></use></svg><span class="rp-theme-text">시스템</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="ds-app__nav ds-sidenav" id="nav" aria-label="업무 화면">
+      <div class="ds-sidenav__close">
+        <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" data-ds-nav-close aria-label="메뉴 닫기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg>
+        </button>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-work">업무</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-work">
+          <li><a class="ds-nav__link" href="../support-inbox/index.html">상담 인박스</a></li>
+          <li><a class="ds-nav__link" href="../order-table/index.html">주문 목록</a></li>
+          <li><a class="ds-nav__link" href="../customer-edit/index.html">고객 상세와 편집</a></li>
+          <li><a class="ds-nav__link" href="../ops-dashboard/index.html">운영 대시보드</a></li>
+          <li><a class="ds-nav__link" href="../booking-flow/index.html">예약 흐름</a></li>
+          <li><a class="ds-nav__link" href="../settings/index.html">설정</a></li>
+          <li><a class="ds-nav__link" href="index.html" aria-current="page">권한 관리</a></li>
+        </ul>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-repo">이 저장소</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-repo">
+          <li><a class="ds-nav__link" href="../index.html">샘플 목록</a></li>
+          <li><a class="ds-nav__link" href="../design-system/index.html">부품 모음</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="ds-app__main" id="main" tabindex="-1">
+      <div class="ds-page">
+        <header class="ds-page__head">
+          <div class="ds-page__titles">
+            <h1 class="ds-page__title">권한 관리</h1>
+            <p class="ds-page__desc">역할마다 할 수 있는 일을 정하고 구성원에게 역할을 줘요.</p>
+          </div>
+        </header>
+
+        <div class="ds-banner-slot" id="banner-slot"></div>
+
+        <!-- 권한 없음 — 보기만 할 수 있는 사람에게만 보인다(닫지 않는다) -->
+        <div class="ds-banner rp-notice" id="perm-notice" hidden>
+          <svg class="ds-icon ds-banner__icon" aria-hidden="true"><use href="#ds-i-lock"></use></svg>
+          <div class="ds-banner__body">
+            <p class="ds-banner__title">권한은 보기만 할 수 있어요</p>
+            <p class="ds-banner__text" id="perm-notice-text"></p>
+          </div>
+        </div>
+
+        <div class="rp-body" id="rp-body">
+          <div class="ds-tabs" role="tablist" aria-label="보기" id="view-tabs" data-url-key="view">
+            <button class="ds-tab" type="button" role="tab" id="tab-roles" aria-controls="tp-roles" aria-selected="true" data-value="roles">역할</button>
+            <button class="ds-tab" type="button" role="tab" id="tab-members" aria-controls="tp-members" aria-selected="false" data-value="members">구성원</button>
+          </div>
+
+          <!-- 역할 보기 -->
+          <div class="ds-tabpanel rp-tabpanel" role="tabpanel" id="tp-roles" aria-labelledby="tab-roles">
+            <div class="rp-panel rp-roles" id="roles-body">
+              <div class="rp-roles__grid">
+                <section class="rp-rolelist" aria-labelledby="h-rolelist">
+                  <h2 class="ds-sr-only" id="h-rolelist">역할 목록</h2>
+                  <ul class="rp-rolelist__list" id="role-list"></ul>
+                </section>
+
+                <section class="rp-role" id="role-section" aria-labelledby="role-title">
+                  <div class="rp-role__head">
+                    <div class="rp-role__titles">
+                      <div class="rp-role__name-row">
+                        <h2 class="ds-section__title rp-role__title" id="role-title" tabindex="-1"></h2>
+                        <span class="ds-badge" id="role-builtin" hidden>기본 역할</span>
+                      </div>
+                      <p class="rp-role__desc" id="role-desc"></p>
+                    </div>
+                    <a class="rp-link" id="role-members-link" href="?view=members"></a>
+                  </div>
+
+                  <!-- 기본 역할 — 저장 줄 자리에 고칠 수 없는 이유 -->
+                  <div class="rp-locked" id="role-locked" hidden>
+                    <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-lock"></use></svg>
+                    <span>기본 역할은 고칠 수 없어요</span>
+                    <button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm" type="button" id="btn-locked-why" aria-label="고칠 수 없는 이유" data-ds-tip="서비스가 정한 역할이라 모든 팀에서 권한이 같아요. 다른 권한이 필요하면 구성원에게 다른 역할을 주세요.">
+                      <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-help"></use></svg>
+                    </button>
+                  </div>
+
+                  <!-- 저장 줄 — 바뀐 곳이 있으면 좁은 폭에서 화면 아래에 붙는다(kit ds-actionbar) -->
+                  <div class="ds-actionbar rp-savebar" id="save-bar" role="group" aria-label="권한 저장">
+                    <div class="ds-actionbar__status">
+                      <span class="ds-actionbar__count rp-savebar__count" id="save-count"></span>
+                      <button class="ds-btn ds-btn--ghost ds-btn--sm" type="button" id="btn-preview" aria-haspopup="dialog">바뀐 곳 보기</button>
+                    </div>
+                    <div class="ds-actionbar__actions">
+                      <button class="ds-btn" type="button" id="btn-revert">변경 되돌리기</button>
+                      <button class="ds-btn ds-btn--primary" type="button" id="btn-save" data-busy-label="저장 중…">변경 내용 저장</button>
+                    </div>
+                  </div>
+
+                  <div class="rp-matrix-head" data-ds-skeleton-keep>
+                    <h3 class="rp-subhead" id="h-matrix" tabindex="-1">권한</h3>
+                    <p class="rp-legend" id="legend-edit">보기를 끄면 그 줄의 다른 권한도 꺼져요. ‘위험’이 붙은 권한은 켤 때 한 번 더 확인해요.</p>
+                    <p class="rp-legend" id="legend-read" hidden>‘위험’이 붙은 권한은 되돌리기 어려운 일을 할 수 있어요.</p>
+                    <p class="rp-legend" id="matrix-more" hidden>옆으로 밀면 <span id="matrix-more-cols">지우기·내보내기</span> 열도 보여요.</p>
+                  </div>
+                  <div class="ds-table-wrap ds-table-wrap--scroll rp-matrix-wrap" id="matrix-wrap" role="region" aria-label="권한 표" data-rp-scroll>
+                    <table class="ds-table ds-table--sticky-first rp-matrix" id="matrix">
+                      <caption class="ds-sr-only" id="matrix-caption">권한 표</caption>
+                      <thead data-ds-skeleton-keep>
+                        <tr>
+                          <th scope="col" class="rp-matrix__feature-head">기능</th>
+                          <th scope="col" class="rp-matrix__col"><span id="col-view">보기</span></th>
+                          <th scope="col" class="rp-matrix__col"><span id="col-create">만들기</span></th>
+                          <th scope="col" class="rp-matrix__col"><span id="col-edit">고치기</span></th>
+                          <th scope="col" class="rp-matrix__col"><span class="rp-colname"><span id="col-delete">지우기</span><span class="ds-sr-only">, </span><span class="ds-badge ds-badge--warning">위험</span></span></th>
+                          <th scope="col" class="rp-matrix__col"><span class="rp-colname"><span id="col-export">내보내기</span><span class="ds-sr-only">, </span><span class="ds-badge ds-badge--warning">위험</span></span></th>
+                        </tr>
+                      </thead>
+                      <tbody id="matrix-body"></tbody>
+                    </table>
+                  </div>
+                  <!-- 화면낭독기용 설명 — 체크박스의 aria-describedby 가 가리킨다 -->
+                  <p id="note-danger" hidden>위험한 권한이에요. 켤 때 한 번 더 확인해요.</p>
+                  <p id="note-changed" hidden>저장 안 한 변경이에요.</p>
+
+                  <!-- 짧은 저장 줄 — 좁은 폭에서 저장 줄을 화면 아래에 붙일 수 없을 때(붙이면 화면 높이의 20% 를 넘을 때) 대신 붙는다.
+                       바뀐 곳 수 + 저장만 한 줄로. 전체 저장 줄(바뀐 곳 보기·되돌리기 포함)은 표 위 제자리에 그대로 있다 -->
+                  <div class="rp-savemini" id="save-mini" role="group" aria-label="바뀐 곳 저장" hidden>
+                    <span class="rp-savebar__count" id="save-mini-count" data-tone="dirty"></span>
+                    <button class="ds-btn ds-btn--primary" type="button" id="btn-save-mini" data-busy-label="저장 중…">저장</button>
+                  </div>
+
+                  <section class="rp-history" aria-labelledby="h-history">
+                    <h3 class="rp-subhead" id="h-history" tabindex="-1" data-ds-skeleton-keep>변경 내역</h3>
+                    <ul class="rp-history__list" id="history-list"></ul>
+                    <div class="ds-empty ds-empty--inline rp-history__empty" id="history-empty" hidden>
+                      <p class="ds-empty__title">바뀐 적이 없어요</p>
+                      <p class="ds-empty__text">기본 역할은 서비스가 정한 권한을 그대로 써요.</p>
+                    </div>
+                  </section>
+                </section>
+              </div>
+            </div>
+          </div>
+
+          <!-- 구성원 보기 -->
+          <div class="ds-tabpanel rp-tabpanel" role="tabpanel" id="tp-members" aria-labelledby="tab-members" hidden>
+            <div class="rp-panel rp-members" id="members-body">
+              <h2 class="ds-sr-only" id="h-members">구성원 목록</h2>
+              <div class="ds-toolbar rp-members__tools">
+                <div class="ds-field rp-members__search">
+                  <label class="ds-field__label" for="member-q" data-ds-skeleton-keep>찾기</label>
+                  <span class="ds-search"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-search"></use></svg><input class="ds-input" id="member-q" type="search" autocomplete="off" spellcheck="false" placeholder="이름이나 이메일…" aria-describedby="member-result"></span>
+                </div>
+                <div class="ds-field rp-members__filter">
+                  <label class="ds-field__label" for="member-filter" data-ds-skeleton-keep>역할로 거르기</label>
+                  <span class="ds-select"><select id="member-filter" aria-describedby="member-result"></select></span>
+                </div>
+                <p class="rp-result" id="member-result"></p>
+              </div>
+              <div class="ds-table-wrap" id="member-wrap" role="region" aria-labelledby="h-members" data-rp-scroll>
+                <table class="ds-table ds-table--stack rp-members-table" id="member-table" data-ds-sort-client data-url-key="sort">
+                  <caption class="ds-sr-only">구성원과 역할</caption>
+                  <thead data-ds-skeleton-keep>
+                    <tr>
+                      <th scope="col"><button class="ds-sort" type="button" data-key="name">구성원</button></th>
+                      <th scope="col"><button class="ds-sort" type="button" data-key="role">역할</button></th>
+                      <th scope="col"><button class="ds-sort" type="button" data-key="seen">마지막 접속</button></th>
+                    </tr>
+                  </thead>
+                  <tbody id="member-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 불러오기 오류 — 결과 자리에 남긴다 -->
+          <div class="ds-empty ds-empty--error rp-load-error" id="load-error" hidden>
+            <svg class="ds-icon ds-empty__icon" aria-hidden="true"><use href="#ds-i-error"></use></svg>
+            <h2 class="ds-empty__title">권한 정보를 불러오지 못했어요</h2>
+            <p class="ds-empty__text">연결이 잠시 끊겼어요. 다시 불러오면 이어서 볼 수 있어요.</p>
+            <div class="ds-empty__actions"><button class="ds-btn ds-btn--primary" type="button" id="btn-reload" data-busy-label="불러오는 중…">다시 불러오기</button></div>
+          </div>
+        </div>
+
+        <footer class="rp-footnote"><p class="ds-sample-note"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-info"></use></svg>이 화면의 이름·이메일·변경 내역은 모두 가상의 샘플 데이터예요.</p></footer>
+      </div>
+    </main>
+  </div>
+
+  <!-- 위험한 권한 켜기 확인 -->
+  <dialog class="ds-dialog ds-dialog--sm" id="dlg-danger" aria-labelledby="dlg-danger-title" aria-describedby="dlg-danger-desc">
+    <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-danger-title"></h2></div>
+    <div class="ds-dialog__body"><p id="dlg-danger-desc"></p></div>
+    <div class="ds-dialog__foot">
+      <button class="ds-btn" type="button" data-ds-close data-ds-initial-focus>닫기</button>
+      <button class="ds-btn ds-btn--primary" type="button" data-ds-close="confirm" id="dlg-danger-go"></button>
+    </div>
+  </dialog>
+
+  <!-- 바뀐 곳 미리 보기 -->
+  <dialog class="ds-dialog" id="dlg-preview" aria-labelledby="dlg-preview-title">
+    <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-preview-title"></h2></div>
+    <div class="ds-dialog__body" id="dlg-preview-body"></div>
+    <div class="ds-dialog__foot">
+      <button class="ds-btn" type="button" data-ds-close>닫기</button>
+      <button class="ds-btn ds-btn--primary" type="button" id="dlg-preview-save" data-busy-label="저장 중…">변경 내용 저장</button>
+    </div>
+  </dialog>
+
+  <!-- 저장 안 한 변경 -->
+  <dialog class="ds-dialog ds-dialog--sm" id="dlg-leave" aria-labelledby="dlg-leave-title" aria-describedby="dlg-leave-desc">
+    <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-leave-title">저장하지 않은 변경이 있어요</h2></div>
+    <div class="ds-dialog__body"><p id="dlg-leave-desc"></p></div>
+    <div class="ds-dialog__foot">
+      <button class="ds-btn" type="button" data-ds-close data-ds-initial-focus>닫기</button>
+      <button class="ds-btn" type="button" data-ds-close="discard" id="leave-discard">변경 버리고 이동</button>
+      <button class="ds-btn ds-btn--primary" type="button" data-ds-close="save" id="leave-save">저장하고 이동</button>
+    </div>
+  </dialog>
+
+  <!-- 관리자 역할 주기 확인 -->
+  <dialog class="ds-dialog ds-dialog--sm" id="dlg-admin" aria-labelledby="dlg-admin-title" aria-describedby="dlg-admin-desc">
+    <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-admin-title"></h2></div>
+    <div class="ds-dialog__body"><p id="dlg-admin-desc">관리자는 지우기·결제·내보내기를 포함한 모든 권한을 가져요. 바로 적용돼요.</p></div>
+    <div class="ds-dialog__foot">
+      <button class="ds-btn" type="button" data-ds-close data-ds-initial-focus>닫기</button>
+      <button class="ds-btn ds-btn--primary" type="button" data-ds-close="confirm">관리자 역할 주기</button>
+    </div>
+  </dialog>
+</body>
+</html>

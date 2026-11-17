@@ -198,6 +198,8 @@
   --ds-size-dl-key: 7rem;            /* 112 — 설명 목록 이름 칸 */
   --ds-size-step-mark: 1.5rem;       /* 24 — 진행 단계 번호 원 */
   --ds-size-empty-icon: 2rem;        /* 32 — 빈 상태 그림 */
+  --ds-topbar-sticky-max: 0.2;       /* 머리줄 높이가 화면 높이의 이 비율(20%)을 넘으면 붙이지 않는다 — js/ds.js 가 읽는다 */
+  --ds-actionbar-sticky-max: 0.2;    /* 아래 고정 작업 줄 높이가 화면 높이의 이 비율(20%)을 넘으면 붙이지 않는다 — js/ds.js 가 읽는다 */
 
   /* 투명도 */
   --ds-opacity-disabled: 0.45;
@@ -221,6 +223,7 @@
   --ds-z-base: 0;
   --ds-z-raise: 1;
   --ds-z-sticky: 2;     /* 머리줄·표 머리 */
+  --ds-z-sticky-corner: 3; /* 첫 열 고정 표의 머리 칸 — 머리 행과 고정 열이 겹치는 자리 */
   --ds-z-scrim: 4;      /* 덮는 옆 패널 뒤 가림막 */
   --ds-z-panel: 5;      /* 좁은 폭에서 위에 덮는 옆 패널 */
   --ds-z-drawer: 6;     /* 좁은 폭 옆 메뉴 */
@@ -271,6 +274,7 @@
   --ds-overlay-radius: var(--ds-radius-lg);
   --ds-row-height: 2.5rem;          /* 40 — 표·목록 행 */
   --ds-target-min: 1.5rem;          /* 24 — 마우스 기준 누르는 영역 최소(WCAG 2.5.8) */
+  --ds-size-table-select: calc(var(--ds-target-min) + 2 * var(--ds-space-2)); /* 표 고르기 열 폭 — 누르는 영역 + 좌우 여백 */
   --ds-icon-size-sm: 0.875rem;      /* 14 */
   --ds-icon-size-md: 1rem;          /* 16 */
   --ds-icon-size-lg: 1.25rem;       /* 20 */

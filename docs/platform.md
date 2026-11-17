@@ -25,7 +25,7 @@
 1. `shared/common/`
 2. `shared/<kit>/` — 샘플 설정의 `kit` 이 있을 때
 3. `<slug>/`
-4. 샘플 설정의 `build` 명령을 `_site/<slug>/` 안에서 차례로 실행
+4. kit 설정(`shared/<kit>/kit.config.json`)의 `build` → 샘플 설정의 `build` 순서로 명령을 `_site/<slug>/` 안에서 차례로 실행. kit build 는 그 kit 을 쓰는 샘플 모두에 늘 돈다
 
 - `<slug>/docs/ui/review/` 는 배포하지 않는다.
 - 샘플 설정은 `<slug>/sample.config.json` 에 둔다. `samples.json` 의 같은 이름 값보다 이긴다.
@@ -175,7 +175,7 @@ node tools/check-pages.mjs --axe report               # axe 는 세기만
 |---|---|---|---|---|
 | `scene3d` | 3D 장면 6개 | CSS: `tokens.css` → `shell.css` → `shell-landmarks.css`(명소형만) → `style.css`. JS: `js/shell/core.js`·`js/shell/app.js` 의 `startSceneApp(설정)` | 설정 객체, `js/scene/`, `js/tokens.js`, 샘플 CSS·토큰, 포스터, `vendor/three`, page subset 글꼴 | `node tools/build-app.mjs`(file:// 묶음), `node tools/strip-kit.mjs`(배포본 kit 주석 제거) |
 | `iso2d` | 2D 그림판 3개 | JS: `js/iso2d.js` → `js/iso-geom.js` → `js/scene.js`(`Iso2d.start(설정)`). 일반 스크립트라 파일로 열어도 된다 | 그림 데이터(`index.html` 안), `tools/build-scene.mjs`, `css/scene.css`, 토큰, 설정 | `node tools/strip-css-comments.mjs` |
-| `app` | 업무 화면 | CSS: `tokens.css` → `base.css` → `components.css` → `page.css`. JS: `js/ds.js`(defer, 전역 `DS`) | 화면 코드, `js/data.js`(가상 데이터), `css/page.css`, page subset 글꼴 | 없음 |
+| `app` | 업무 화면 | CSS: `tokens.css` → `base.css` → `components.css` → `page.css`. JS: `js/ds.js`(defer, 전역 `DS`) | 화면 코드, `js/data.js`(가상 데이터), `css/page.css`, page subset 글꼴 | 샘플은 없음. kit build `node tools/strip-comments.mjs`(배포본 kit 파일 4개의 주석 제거, `shared/app/kit.config.json`) |
 
 - kit 파일을 샘플에서 같은 이름으로 덮는 것은 최소로 한다. 덮으면 kit 을 고쳐도 그 샘플에는 반영되지 않는다.
 - `scene3d`·`iso2d` 의 몇 샘플은 옮기기 전 화면을 그대로 지키려고 "옛 모양 유지" 설정을 켜 두었다. 끄면 화면이 바뀌므로 다시 검수한다.

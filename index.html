@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>UI 샘플</title>
-  <meta name="description" content="정적 웹 페이지로 만든 화면 샘플 모음입니다. 업무 화면 7개, 3D 장면 6개, 2D 그림판 3개가 있습니다.">
+  <meta name="description" content="정적 웹 페이지로 만든 화면 샘플 모음입니다. 업무 화면 13개, 3D 장면 6개, 2D 그림판 3개가 있습니다.">
   <link rel="icon" href="data:,">
   <style>
     :root {
@@ -183,7 +183,7 @@
             <p class="sample__desc"><span>업무 화면 샘플이 함께 쓰는 버튼·입력·표·탭·대화상자 같은 부품을 한 화면에 모았습니다.</span><span>부품마다 기본·포커스·비활성·오류·로딩 상태와 어두운 화면을 볼 수 있습니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>밝게 ↔ 어둡게</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/design-system/docs/ui/review/design-system/20261117-report.md">독립 검수 88.25점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/design-system/docs/ui/review/design-system/20261117-report.md">독립 검수 83.25점 · 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="design-system/">샘플 열기</a>
@@ -303,6 +303,120 @@
               <a class="btn" href="booking-flow/">샘플 열기</a>
               <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/booking-flow">코드 보기</a>
               <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/booking-flow/docs/ui/booking-flow.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="kanban-board/" tabindex="-1" aria-hidden="true">
+            <img src="assets/kanban-board-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/kanban-board-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">칸반 보드</h3>
+            <p class="sample__desc"><span>업무 카드를 단계별 열로 나눠 보고, 카드를 다른 단계로 옮깁니다.</span><span>끌어 놓기와 키보드 &quot;옮기기&quot; 메뉴, 열마다 개수 제한, 필터를 다룹니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>보드 ↔ 목록</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/kanban-board/docs/ui/review/kanban-board/20261118-report.md">독립 검수 82점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="kanban-board/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/kanban-board">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/kanban-board/docs/ui/kanban-board.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="file-manager/" tabindex="-1" aria-hidden="true">
+            <img src="assets/file-manager-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/file-manager-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">파일 관리자</h3>
+            <p class="sample__desc"><span>폴더와 파일을 목록·격자로 보고 올리기·이름 바꾸기·옮기기·지우기를 합니다.</span><span>여러 개 고르기, 올리는 중 진행률, 실패 다시 시도, 되돌리기를 다룹니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>목록 ↔ 격자</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/file-manager/docs/ui/review/file-manager/20261118-report.md">독립 검수 90.75점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="file-manager/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/file-manager">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/file-manager/docs/ui/file-manager.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="notification-center/" tabindex="-1" aria-hidden="true">
+            <img src="assets/notification-center-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/notification-center-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">알림 센터</h3>
+            <p class="sample__desc"><span>읽지 않은 알림을 묶어 보여 주고 읽음 처리와 알림 끄기를 합니다.</span><span>종류별 거르기, 모두 읽음, 새 알림 도착, 알림 설정으로 가기를 다룹니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>읽지 않음 ↔ 전체</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/notification-center/docs/ui/review/notification-center/20261118-report.md">독립 검수 88.25점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="notification-center/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/notification-center">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/notification-center/docs/ui/notification-center.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="search-results/" tabindex="-1" aria-hidden="true">
+            <img src="assets/search-results-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/search-results-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">검색 결과</h3>
+            <p class="sample__desc"><span>검색어와 필터로 문서·사람·업무를 찾고 결과를 정렬합니다.</span><span>검색어 강조, 결과가 없을 때 제안, 필터 서랍, 더 보기를 다룹니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>전체 ↔ 종류별</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/search-results/docs/ui/review/search-results/20261118-report.md">독립 검수 85.75점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="search-results/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/search-results">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/search-results/docs/ui/search-results.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="role-permissions/" tabindex="-1" aria-hidden="true">
+            <img src="assets/role-permissions-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/role-permissions-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">권한 관리</h3>
+            <p class="sample__desc"><span>역할마다 할 수 있는 일을 표로 정하고 구성원에게 역할을 줍니다.</span><span>권한 표 고치기, 위험한 권한 확인, 변경 내역, 저장 전 미리 보기를 다룹니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>역할 ↔ 구성원</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/role-permissions/docs/ui/review/role-permissions/20261118-report.md">독립 검수 85.75점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="role-permissions/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/role-permissions">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/role-permissions/docs/ui/role-permissions.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="onboarding-setup/" tabindex="-1" aria-hidden="true">
+            <img src="assets/onboarding-setup-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/onboarding-setup-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">첫 사용 안내</h3>
+            <p class="sample__desc"><span>처음 가입한 팀이 작업 공간을 단계별로 꾸립니다.</span><span>단계 표시, 건너뛰기와 나중에 하기, 진행 저장, 다 마친 뒤 첫 화면을 다룹니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>1단계 ↔ 4단계</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/onboarding-setup/docs/ui/review/onboarding-setup/20261118-report.md">독립 검수 88.25점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="onboarding-setup/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/onboarding-setup">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/onboarding-setup/docs/ui/onboarding-setup.md">화면 설계서</a>
             </div>
           </div>
         </li>

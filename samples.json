@@ -38,7 +38,7 @@
         "부품마다 기본·포커스·비활성·오류·로딩 상태와 어두운 화면을 볼 수 있습니다."
       ],
       "switch": "밝게 ↔ 어둡게",
-      "score": "88.25",
+      "score": "83.25",
       "spec": "docs/ui/design-system.md",
       "report": "docs/ui/review/design-system/20261117-report.md"
     },
@@ -269,6 +269,96 @@
       "pair": "ski-mountain",
       "spec": "docs/ui/ski-mountain-iso.md",
       "report": "docs/ui/review/ski-mountain-iso/20261117-report.md"
+    },
+    {
+      "slug": "kanban-board",
+      "group": "app",
+      "kit": "app",
+      "build": [],
+      "name": "칸반 보드",
+      "desc": [
+        "업무 카드를 단계별 열로 나눠 보고, 카드를 다른 단계로 옮깁니다.",
+        "끌어 놓기와 키보드 \"옮기기\" 메뉴, 열마다 개수 제한, 필터를 다룹니다."
+      ],
+      "switch": "보드 ↔ 목록",
+      "score": "82",
+      "spec": "docs/ui/kanban-board.md",
+      "report": "docs/ui/review/kanban-board/20261118-report.md"
+    },
+    {
+      "slug": "file-manager",
+      "group": "app",
+      "kit": "app",
+      "build": [],
+      "name": "파일 관리자",
+      "desc": [
+        "폴더와 파일을 목록·격자로 보고 올리기·이름 바꾸기·옮기기·지우기를 합니다.",
+        "여러 개 고르기, 올리는 중 진행률, 실패 다시 시도, 되돌리기를 다룹니다."
+      ],
+      "switch": "목록 ↔ 격자",
+      "score": "90.75",
+      "spec": "docs/ui/file-manager.md",
+      "report": "docs/ui/review/file-manager/20261118-report.md"
+    },
+    {
+      "slug": "notification-center",
+      "group": "app",
+      "kit": "app",
+      "build": [],
+      "name": "알림 센터",
+      "desc": [
+        "읽지 않은 알림을 묶어 보여 주고 읽음 처리와 알림 끄기를 합니다.",
+        "종류별 거르기, 모두 읽음, 새 알림 도착, 알림 설정으로 가기를 다룹니다."
+      ],
+      "switch": "읽지 않음 ↔ 전체",
+      "score": "88.25",
+      "spec": "docs/ui/notification-center.md",
+      "report": "docs/ui/review/notification-center/20261118-report.md"
+    },
+    {
+      "slug": "search-results",
+      "group": "app",
+      "kit": "app",
+      "build": [],
+      "name": "검색 결과",
+      "desc": [
+        "검색어와 필터로 문서·사람·업무를 찾고 결과를 정렬합니다.",
+        "검색어 강조, 결과가 없을 때 제안, 필터 서랍, 더 보기를 다룹니다."
+      ],
+      "switch": "전체 ↔ 종류별",
+      "score": "85.75",
+      "spec": "docs/ui/search-results.md",
+      "report": "docs/ui/review/search-results/20261118-report.md"
+    },
+    {
+      "slug": "role-permissions",
+      "group": "app",
+      "kit": "app",
+      "build": [],
+      "name": "권한 관리",
+      "desc": [
+        "역할마다 할 수 있는 일을 표로 정하고 구성원에게 역할을 줍니다.",
+        "권한 표 고치기, 위험한 권한 확인, 변경 내역, 저장 전 미리 보기를 다룹니다."
+      ],
+      "switch": "역할 ↔ 구성원",
+      "score": "85.75",
+      "spec": "docs/ui/role-permissions.md",
+      "report": "docs/ui/review/role-permissions/20261118-report.md"
+    },
+    {
+      "slug": "onboarding-setup",
+      "group": "app",
+      "kit": "app",
+      "build": [],
+      "name": "첫 사용 안내",
+      "desc": [
+        "처음 가입한 팀이 작업 공간을 단계별로 꾸립니다.",
+        "단계 표시, 건너뛰기와 나중에 하기, 진행 저장, 다 마친 뒤 첫 화면을 다룹니다."
+      ],
+      "switch": "1단계 ↔ 4단계",
+      "score": "88.25",
+      "spec": "docs/ui/onboarding-setup.md",
+      "report": "docs/ui/review/onboarding-setup/20261118-report.md"
     }
   ]
 }

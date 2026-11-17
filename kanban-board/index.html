@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>칸반 보드 — 업무 화면 샘플</title>
+  <meta name="description" content="업무 카드를 단계 열로 나눠 보고, 끌어 놓기나 ‘옮기기’ 메뉴로 다른 단계로 옮기는 업무 화면 샘플이에요.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="data:,">
+  <script>
+    (function () {
+      var root = document.documentElement;
+      // 저장된 화면 밝기를 그리기 전에 적용한다. 저장값이 없으면 밝게 시작한다.
+      try {
+        var mode = new URLSearchParams(location.search).get('theme') || localStorage.getItem('ds-theme') || 'light';
+        if (mode === 'system') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
+      } catch (e) { /* 저장소를 못 읽으면 밝게 */ }
+      // 파일로 열면(file://) 브라우저가 웹 글꼴을 막는다. 그때는 시스템 한글 글꼴로 그린다.
+      if (location.protocol !== 'file:') {
+        [['preload', 'vendor/pretendard/PretendardVariable.page.woff2'], ['stylesheet', 'vendor/pretendard/pretendard-page-subset.css']].forEach(function (item) {
+          var link = document.createElement('link');
+          link.rel = item[0];
+          link.href = item[1];
+          if (item[0] === 'preload') { link.as = 'font'; link.type = 'font/woff2'; link.crossOrigin = 'anonymous'; }
+          document.head.appendChild(link);
+        });
+      }
+    })();
+  </script>
+  <noscript>
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  </noscript>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/page.css">
+  <script src="js/ds.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/page.js" defer></script>
+</head>
+<body>
+  <a class="ds-skip-link" href="#main">본문으로 건너뛰기</a>
+  <div id="ds-live" class="ds-live" role="status"></div>
+  <div id="ds-live-alert" class="ds-live" role="alert"></div>
+
+  <div class="ds-app" id="app">
+    <header class="ds-app__top ds-topbar">
+      <button class="ds-btn ds-btn--ghost ds-btn--icon ds-topbar__menu" type="button" data-ds-nav-toggle aria-controls="nav" aria-expanded="false" aria-label="메뉴 열기">
+        <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-menu"></use></svg>
+      </button>
+      <a class="ds-topbar__brand" href="../index.html">UI 샘플</a>
+      <span class="ds-topbar__spacer"></span>
+      <div class="ds-segmented" role="radiogroup" aria-label="화면 밝기" data-ds-theme-control>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="light" aria-label="밝게" data-ds-tip="밝게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-sun"></use></svg><span class="kb-theme-text">밝게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="dark" aria-label="어둡게" data-ds-tip="어둡게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-moon"></use></svg><span class="kb-theme-text">어둡게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="system" aria-label="시스템 설정 따르기" data-ds-tip="시스템 설정 따르기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-monitor"></use></svg><span class="kb-theme-text">시스템</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="ds-app__nav ds-sidenav" id="nav" aria-label="메뉴">
+      <div class="ds-sidenav__close">
+        <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" data-ds-nav-close aria-label="메뉴 닫기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg>
+        </button>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-work">운영</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-work">
+          <li><a class="ds-nav__link" href="index.html" aria-current="page"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-columns"></use></svg>업무 보드</a></li>
+        </ul>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-repo">이 저장소</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-repo">
+          <li><a class="ds-nav__link" href="../index.html"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-home"></use></svg>샘플 목록</a></li>
+          <li><a class="ds-nav__link" href="../design-system/index.html"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-grid"></use></svg>부품 모음</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="ds-app__main" id="main" tabindex="-1">
+      <div class="ds-page">
+        <header class="ds-page__head">
+          <div class="ds-page__titles">
+            <h1 class="ds-page__title">운영팀 업무 보드</h1>
+            <p class="ds-page__desc">카드를 끌어 놓거나 ‘옮기기’ 메뉴로 단계를 바꿔요. 터치 화면에서는 카드를 길게 누른 뒤 끌어요.</p>
+          </div>
+          <div class="ds-page__actions">
+            <button class="ds-btn" type="button" id="btn-add" aria-expanded="false" aria-controls="add-form">
+              <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-plus"></use></svg>카드 추가
+            </button>
+          </div>
+        </header>
+
+        <div class="ds-banner-slot" id="banner-slot"></div>
+
+        <noscript><p class="kb-noscript">이 화면은 자바스크립트가 켜져 있어야 카드를 보여 줘요.</p></noscript>
+
+        <section class="kb-results" id="results" aria-labelledby="results-title">
+          <div class="ds-toolbar kb-head">
+            <h2 class="kb-head__title" id="results-title" tabindex="-1">카드 <span class="kb-head__count" id="count"></span></h2>
+            <div class="kb-filters" role="group" aria-label="필터">
+              <div class="ds-menu-anchor">
+                <button class="ds-btn kb-filter" type="button" id="btn-who" aria-haspopup="menu" aria-controls="menu-who" aria-expanded="false">
+                  담당자<span class="ds-count ds-count--accent" aria-hidden="true" hidden></span><span class="ds-sr-only"></span>
+                  <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-chevron-down"></use></svg>
+                </button>
+                <div class="ds-menu ds-menu--check ds-menu--start" id="menu-who" role="menu" aria-label="담당자로 거르기" hidden></div>
+              </div>
+              <div class="ds-menu-anchor">
+                <button class="ds-btn kb-filter" type="button" id="btn-label" aria-haspopup="menu" aria-controls="menu-label" aria-expanded="false">
+                  라벨<span class="ds-count ds-count--accent" aria-hidden="true" hidden></span><span class="ds-sr-only"></span>
+                  <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-chevron-down"></use></svg>
+                </button>
+                <div class="ds-menu ds-menu--check ds-menu--start" id="menu-label" role="menu" aria-label="라벨로 거르기" hidden></div>
+              </div>
+            </div>
+            <span class="ds-toolbar__spacer"></span>
+            <div class="ds-segmented kb-view" id="view-switch" role="radiogroup" aria-label="보기" data-url-key="view">
+              <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="board">보드</button>
+              <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="list">목록</button>
+            </div>
+          </div>
+
+          <div class="kb-active" id="active" hidden>
+            <span class="kb-active__label" id="active-label">걸린 필터</span>
+            <div class="ds-chips" role="group" aria-labelledby="active-label" id="active-list"></div>
+            <button class="ds-btn ds-btn--ghost ds-btn--sm" type="button" id="btn-clear">모두 지우기</button>
+          </div>
+
+          <form class="kb-add" id="add-form" aria-label="카드 추가" novalidate hidden>
+            <div class="ds-field kb-add__field">
+              <label class="ds-field__label" for="add-title">새 카드 제목</label>
+              <input class="ds-input" id="add-title" name="title" type="text" maxlength="60" autocomplete="off" enterkeyhint="done" aria-describedby="add-error">
+              <p class="ds-field__error" id="add-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg>카드 제목을 써 주세요.</p>
+            </div>
+            <div class="kb-add__actions">
+              <button class="ds-btn ds-btn--primary" type="submit">할 일에 추가</button>
+              <button class="ds-btn" type="button" id="add-close">닫기</button>
+            </div>
+          </form>
+
+          <div class="kb-area" id="area"></div>
+        </section>
+
+        <footer class="kb-foot">
+          <p class="ds-sample-note"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-info"></use></svg>가상의 샘플 데이터예요. 새로고침하면 옮긴 카드가 처음 자리로 돌아가요.</p>
+        </footer>
+      </div>
+    </main>
+
+    <aside class="ds-app__panel ds-panel kb-panel" id="panel" aria-labelledby="panel-title" hidden>
+      <div class="ds-panel__head">
+        <h2 class="ds-panel__title" id="panel-title" tabindex="-1">카드 상세</h2>
+        <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" data-ds-panel-close aria-label="카드 상세 닫기" data-ds-tip="카드 상세 닫기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg>
+        </button>
+      </div>
+      <div class="ds-panel__body" id="panel-body"></div>
+      <div class="ds-panel__foot" id="panel-foot">
+        <div class="ds-menu-anchor kb-move">
+          <button class="ds-btn kb-move__btn" type="button" id="panel-move" aria-haspopup="menu" aria-controls="panel-menu" aria-expanded="false">
+            옮기기<svg class="ds-icon" aria-hidden="true"><use href="#ds-i-chevron-down"></use></svg>
+          </button>
+          <div class="ds-menu ds-menu--up ds-menu--start" id="panel-menu" role="menu" hidden></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>

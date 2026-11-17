@@ -1,0 +1,6 @@
+{
+  "kit": "app",
+  "build": [],
+  "states": ["", "?state=loading", "?state=empty", "?state=error", "?view=list&card=c07", "?state=readonly&who=jung&label=pay"],
+  "budgetKB": 150
+}

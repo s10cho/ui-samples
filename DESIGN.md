@@ -137,7 +137,7 @@ components:
 | 테마 | 밝은 UI 기본 · 어두운 UI 선택(밝게·어둡게·시스템). 장면 때문에 어두운 화면만 예외(Colors 절 끝) |
 | 문구 어조 | 해요체 — `WRT-TONE-01` |
 | ui-design-wiki 기준 | tokens 2026-11-09 판, 규칙 2026-11-17 확인 |
-| 문서 상태 | 2026-11-17 첫 판. 열린 질문은 모두 기본안을 골랐다(맨 끝 절) |
+| 문서 상태 | 2026-11-17 첫 판. 열린 질문은 모두 기본안을 골랐다(맨 끝 절). 2026-11-18 kit 3회차 — 복제 스켈레톤·서랍·체크 메뉴·첫 열 고정·작업 줄·오류 요약, 옮기기·표기 규칙 |
 
 ### 파일
 
@@ -148,6 +148,7 @@ components:
 | `shared/app/css/components.css` | 부품(클래스는 모두 `ds-` 로 시작) |
 | `shared/app/js/ds.js` | 부품 동작(일반 스크립트, 전역 `window.DS`) |
 | `shared/app/tools/subset-font.py` | 샘플마다 화면 글자만 담은 글꼴(page subset)을 만든다 |
+| `shared/app/tools/strip-comments.mjs` · `shared/app/kit.config.json` | 조립할 때 배포본 kit 파일 4개의 주석을 지운다(kit build — 이 kit 을 쓰는 샘플 모두에 늘 돈다). 저장소 원본의 주석은 그대로 둔다 |
 | `design-system/` | 모든 부품과 상태를 한 화면에 모은 부품 모음 샘플 |
 
 조립하면(`docs/platform.md`) kit 파일이 `_site/<slug>/css/…`·`js/…`·`tools/…` 에 놓인다. 샘플 HTML 은 상대 경로로 부른다.
@@ -274,6 +275,7 @@ components:
 | 본문 최대 너비 | `--ds-size-content-max` 1280 · 읽는 글 `--ds-size-reading-max` 640 · 입력 칸 `--ds-size-field-max` 480 |
 | 웹 폭 경계 | 480 · 768 · 1024 · 1280 — CSS 에서는 rem(30 · 48 · 64 · 80)으로 쓴다. 브라우저 글자 크기를 키우면 경계도 넓어져 옆 메뉴는 서랍, 옆 패널은 덮는 패널이 된다 |
 | 머리줄 높이 | `js/ds.js` 가 실제 머리줄 높이를 `--ds-app-top` 에 적는다(두 줄이 되어도 맞다). 붙는 옆 메뉴·옆 패널·`--page` 표 머리·문서 스크롤 여백이 이 값을 쓴다. 없으면 `--ds-size-topbar` |
+| 머리줄 붙이기 | 머리줄 높이가 화면 높이의 20%(`--ds-topbar-sticky-max`)를 넘으면 붙이지 않는다 — `.ds-app[data-top-static]`, `--ds-app-top` 은 0. 좁은 폭 + 글자 200%(375×812 에서 219px, 27%)처럼 여러 줄이 된 머리줄이 화면을 늘 덮지 않게. 밝기 고르기를 서랍으로 옮기는 방법보다 머리줄 구성을 그대로 두는 쪽을 골랐다 |
 | 컨트롤·행 높이 | compact: 28 · 32 · 40, 표·목록 행 40(스켈레톤 행도 40). comfortable: 36 · 48 · 56, 행 56. 터치 화면(compact): 컨트롤 28·32·40 → 모두 44, 표 행 56 |
 | 누르는 영역 넓히기 | 작은 체크박스(표 고르기 칸)는 `label.ds-hit` 로 감싼다. 보이는 상자 16, 누르는 영역 24(터치 44). 행 높이는 늘지 않는다 |
 | 누르는 영역 | 마우스 24 이상, 터치 44 이상(`SPC-07`·`CMP-BTN-04`) |
@@ -285,9 +287,10 @@ components:
 | 머리줄 | `.ds-app__top` + `.ds-topbar` | 위에 붙음 | 위에 붙음 | 위에 붙음, 메뉴 버튼이 보인다 |
 | 옆 메뉴 | `.ds-app__nav` + `.ds-sidenav` | 왼쪽 240 | 왼쪽 240 | 서랍(메뉴 버튼으로 연다, 나머지는 `inert`) |
 | 본문 | `.ds-app__main` + `.ds-page` | 가운데 | 가운데 | 전체 폭 |
-| 옆 패널 | `.ds-app__panel` + `.ds-panel` (열리면 `.ds-app--panel`) | 오른쪽 360 에 붙음(비모달) | 오른쪽 360 으로 덮음(뒤는 `inert` + 가림막) | 768–1023 은 360, 767 이하는 전체 폭으로 덮음 |
+| 옆 패널 | `.ds-app__panel` + `.ds-panel` (열리면 `.ds-app--panel`) | 오른쪽 360 에 붙음(비모달). 붙였을 때 본문이 40rem 보다 좁으면 덮음 | 오른쪽 360 으로 덮음(뒤는 `inert` + 가림막) | 768–1023 은 360, 767 이하는 전체 폭으로 덮음 |
 
 - 문서 전체가 스크롤된다. 머리줄·옆 메뉴만 붙어 있다. 그래서 페이지 머리 아래 배너 자리(`.ds-banner-slot`)는 스크롤 영역 안이 아니다.
+- 옆 패널을 붙일지는 미디어 쿼리(80rem)와 실제 본문 폭을 함께 본다. 미디어 쿼리로는 붙는 폭이어도 붙였을 때 본문이 40rem 보다 좁아지면(html 글자 크기를 키운 화면 등) `js/ds.js` 가 `data-panel-overlay` 를 달아 덮는다. 창 크기가 바뀌면 다시 잰다.
 - 관련 위키: `wiki/foundations/spacing-layout.md`(`SPC`·`LAY`)
 
 ## Elevation & Depth
@@ -325,20 +328,22 @@ components:
 |---|---|---|---|---|
 | 앱 틀 | `ds-app` `ds-topbar` `ds-sidenav` `ds-nav__link` `ds-panel` `ds-sample-note` | `--panel` · `--bare`(옆 메뉴 없음) | 서랍 `[data-ds-nav-toggle]`, 옆 패널 `[data-ds-panel="id"]` · `DS.panel` | `LAY-07` `CMP-NAV` `CMP-TABLE-05` |
 | 페이지 머리 | `ds-page` `ds-page__head` `ds-breadcrumb` `ds-section` `ds-toolbar` | — | — | `CMP-NAV-13` |
-| 버튼 | `ds-btn` | `--primary` `--danger` `--ghost` · `--sm` `--lg` `--icon` `--block` | `DS.busy(btn, true)` | `CMP-BTN` |
-| 분할 버튼·메뉴 | `ds-split` `ds-menu-anchor` `ds-menu` `ds-menu__item` | `--danger` | `[aria-haspopup="menu"]` 화살표·Esc | `CMP-BTN-02` |
+| 버튼 | `ds-btn` | `--primary` `--danger` `--danger-outline`(위험색 테두리) `--ghost` · `--sm` `--lg` `--icon` `--block` | `DS.busy(btn, true)` | `CMP-BTN` |
+| 분할 버튼·메뉴 | `ds-split` `ds-menu-anchor` `ds-menu` `ds-menu__item` `ds-menu__check` | 항목 `--danger` `--detail`(이름 `ds-menu__label` + 설명 `ds-menu__desc` 두 줄 — 이 항목이 든 메뉴는 최소 폭 20rem) · 메뉴 `--start` `--up`(위로 연다) `--check`(닫히지 않는 체크 메뉴, `menuitemcheckbox`) | `[aria-haspopup="menu"]` 화살표·Esc · 체크 메뉴는 켜고 끄면 `ds:menucheck` | `CMP-BTN-02` |
 | 입력 | `ds-field` `ds-input` `ds-select` `ds-textarea` `ds-search` | `--wide` | — | `CMP-INPUT` |
 | 선택 | `ds-check` `ds-switch` `ds-segmented` `ds-fieldset` `ds-options` | `--row` | 묶음 버튼 화살표 이동 | `CMP-SEL` |
-| 표 | `ds-table-wrap` `ds-table` `ds-sort` `ds-table__select` `ds-hit` `ds-num` | 틀 `--scroll`(긴 표: 높이 제한 + 안에서 스크롤, 머리가 틀 위에 붙고 포커스가 머리 아래로 숨지 않게 `scroll-padding`) · `--page`(페이지 스크롤: 머리가 머리줄 아래에 붙음, 가로로 넘치지 않는 표만) · 표 `--stack`(767 이하에서 행을 카드로 쌓는다. `data-label` 칸은 이름 + 값, 없는 칸은 카드 너비를 다 쓴다. 고르기 칸이 있을 때만 왼쪽 자리를 둔다. 정렬·고르기가 없으면 머리 띠를 숨긴다. 고른 카드는 카드 전체를 칠한다. `tbody th` 도 칸처럼 쌓인다) | 정렬 머리 `DS.sort`, 화면에서 정렬 `data-ds-sort-client`, 주소 `data-url-key` | `CMP-TABLE` `A11Y-WCAG-06` |
+| 표 | `ds-table-wrap` `ds-table` `ds-sort` `ds-table__select` `ds-hit` `ds-num` | 표 `--sticky-first`(가로로 밀어도 고르기 열 + 첫 데이터 열이 왼쪽에 남는다. 틀의 `scroll-padding-inline-start` 는 `js/ds.js` 가 고정 열 폭 + 포커스 링으로 맞춘다. 카드로 쌓이면 풀린다) · 틀 `--scroll`(긴 표: 높이 제한 + 안에서 스크롤, 머리가 틀 위에 붙고 포커스가 머리 아래로 숨지 않게 `scroll-padding`) · `--page`(페이지 스크롤: 머리가 머리줄 아래에 붙음, 가로로 넘치지 않는 표만) · 표 `--stack`(767 이하에서 행을 카드로 쌓는다. `data-label` 칸은 이름 + 값(이름이 두 줄로 꺾이면 칸도 함께 높아진다), 없는 칸은 카드 너비를 다 쓴다. 고르기 칸이 있을 때만 왼쪽 자리를 둔다. 정렬·고르기가 없으면 머리 띠를 숨긴다. 고른 카드는 카드 전체를 칠한다. `tbody th` 도 칸처럼 쌓인다) | 정렬 머리 `DS.sort`, 화면에서 정렬 `data-ds-sort-client`, 주소 `data-url-key` | `CMP-TABLE` `A11Y-WCAG-06` |
 | 탭 | `ds-tabs` `ds-tab` `ds-tabpanel` `ds-tab__dot` | 저장 안 한 변경 점 `.ds-tab__dot`(+ `.ds-sr-only` 글) | 화살표·Home·End, 주소 `data-url-key`, 바꾸기 전 취소 `ds:tabbeforechange`, 고른 탭을 탭 줄 안으로 스크롤 | `CMP-NAV-12` |
 | 배지·개수·칩 | `ds-badge` `ds-count` `ds-chip` | 배지 `--accent`(상태가 아닌 표시만) `--info` `--success` `--warning` `--danger` · 칩 `--input` | `.ds-chip[aria-pressed]` 를 누르면 켜고 끄고 `ds:toggle` 을 보낸다 | `CMP-SEL-08` `CMP-SEL-09` |
+| 작업 줄 | `ds-actionbar` `ds-actionbar__status` `ds-actionbar__count` `ds-actionbar__actions` | 넓은 폭은 도구 줄 안, 좁은 폭(767 이하)에서 고른 것이 있으면 화면 아래에 붙음(`data-docked`) | `DS.actionbar.set(bar, 고른 것이 있는지)` | `CMP-TABLE` `A11Y-WCAG-06` |
 | 알림 배너 | `ds-banner-slot` `ds-banner` | `--success` `--warning` `--danger` | `DS.banner.show({ …, dismissible:false, scroll:false })` · `dismiss` | `CMP-FB` `STA-09` |
+| 오류 요약 | `ds-error-summary` | — | `DS.form.summary(상자, [{ id, label, text }], { title, focus })` | `PAT-FORM` `CMP-INPUT-04` |
 | 빈 상태 | `ds-empty` | `--center` · `--error`(불러오기 오류: 문장 + 다시 불러오기) · `--inline`(묶음·카드 안 작은 빈 상태) | — | `STA` |
-| 로딩 | `ds-skeleton` `ds-spinner` `ds-progress` `ds-loading` | 스켈레톤 `--short` `--medium` `--title` `--value` `--circle` · 멈춘 견본 `.is-static` | `DS.busy` · `DS.loadingTimer`(둘 다 0.3초 지연·0.4초 유지) | `CMP-FB-07`~`10` `MOT-07` `MOT-14` |
-| 대화상자 | `<dialog class="ds-dialog">` | `--sm` | `DS.dialog.open` · `[data-ds-dialog]` · `[data-ds-close]` | `CMP-OVL` |
+| 로딩 | `ds-skeletonize`(복제 스켈레톤) `ds-skeleton` `ds-spinner` `ds-progress` `ds-loading` | 스켈레톤 `--short` `--medium` `--title` `--value` `--circle` · 멈춘 견본 `.is-static` | `DS.skeleton.show(영역)` · `DS.busy` · `DS.loadingTimer`(둘 다 0.3초 지연·0.4초 유지) | `CMP-FB-07`~`10` `MOT-07` `MOT-14` `STA-03` |
+| 대화상자·서랍 | `<dialog class="ds-dialog">` · `<dialog class="ds-dialog ds-drawer">` | `--sm` · 서랍 `ds-drawer`(오른쪽 360, 767 이하 전체 폭) | `DS.dialog.open` · `[data-ds-dialog]` · `[data-ds-close]` · 서랍 `DS.drawer.open` · `[data-ds-drawer]` | `CMP-OVL` |
 | 페이지 나누기 | `ds-pagination` | 480 이하 "3 / 13쪽" | — | `CMP-TABLE-09` |
 | 툴팁 | `[data-ds-tip="…"]` | — | 마우스 올림·포커스·Esc. 스크롤하면 마우스 툴팁은 닫고 포커스 툴팁은 따라간다 | WCAG 1.4.13 |
-| 카드·지표·목록 | `ds-card` `ds-grid` `ds-stat` `ds-list` `ds-dl` `ds-avatar` `ds-steps` | `ds-card--flush` · `ds-card--danger`(위험 구역) · 끝난 단계 `data-state="done"`(`.is-done` 도 됨) | — | `SHP-06` `CMP-LIST` |
+| 카드·지표·목록 | `ds-card` `ds-grid` `ds-stat` `ds-list` `ds-dl` `ds-cq` `ds-avatar` `ds-steps` `ds-steps__label` | `ds-card--flush` · `ds-card--danger`(위험 구역) · `ds-steps--compact`(48rem 아래에서 번호만 + 지금 단계 이름) · 끝난 단계 `data-state="done"`(`.is-done` 도 됨) · 설명 목록을 카드 폭으로 쌓으려면 카드 안쪽 `ds-cq` 로 감싼다(16rem 아래에서 위아래로) | — | `SHP-06` `CMP-LIST` |
 
 ### 스크립트(`js/ds.js`)
 
@@ -346,19 +351,24 @@ components:
 
 | 하는 일 | 속성으로 연결 | 함수·이벤트 |
 |---|---|---|
-| live 영역 알림 | `#ds-live`(status) · `#ds-live-alert`(alert)를 처음부터 둔다. 없으면 시작할 때 만든다 | `DS.announce(text, { assertive, clearAfter })` — 새 알림을 보내면 다른 영역의 낡은 문장을 비우고, 보낸 문장도 `clearAfter`(기본 7초) 뒤에 비운다 |
+| live 영역 알림 | `#ds-live`(status) · `#ds-live-alert`(alert)를 처음부터 둔다. 없으면 시작할 때 만든다 | `DS.announce(text, { assertive, clearAfter, merge })` — 새 알림을 보내면 다른 영역의 낡은 문장을 비우고, 보낸 문장도 `clearAfter`(기본 7초) 뒤에 비운다. 0.1초 안에 연달아 온 알림은 한 문장으로 합친다(앞 문장이 덮이지 않게, 하나라도 `assertive` 면 alert 영역). `merge:false` 면 합치지 않고 앞 알림을 바꾼다 |
 | 알림 배너 | `.ds-banner-slot`, 닫기 `[data-ds-dismiss]`, 다음 포커스 `data-focus-next`, 겹치는 안내 `data-replaces` | `DS.banner.show({ id, tone, title, text, actions, focusNext, replaces })` · `DS.banner.dismiss(el)` · `ds:banner-dismiss` |
 | 주소 상태 | 탭·묶음 버튼·표의 `data-url-key` | `DS.url.get(key)` · `DS.url.set({ key: 값 })`(값이 비면 지움, 기록은 늘리지 않음) · `DS.url.onChange(fn)` |
 | 대화상자(열 때 `returnValue` 를 비운다) | 여는 버튼 `[data-ds-dialog="id"]`, 닫는 버튼 `[data-ds-close="값"]`, 첫 포커스 `[data-ds-initial-focus]`, 가림막 눌러 닫기 `data-ds-light-dismiss` | `DS.dialog.open(dlg, opener)` · `DS.dialog.close(dlg, 값)` — Tab 가두기, Esc, 연 요소로 포커스 |
 | 탭·묶음 버튼 | `role="tablist"` + `role="tab"`(`aria-controls`), `role="radiogroup"` + `role="radio"`(`data-value`) | 화살표·Home·End, `ds:tabchange` · `ds:change`. 탭은 바꾸기 전에 `ds:tabbeforechange`(취소 가능, detail `{ tab, from, value }`)를 보내고, `DS.tabs.select(tab)` 은 취소되면 `false` 를 돌려준다. 고른 탭은 탭 줄 안으로 스크롤한다 |
 | 정렬 머리 | `<th><button class="ds-sort" data-key="이름">` | `DS.sort.apply(table, key, dir)` · `ds:sort` — 화면낭독기에 "건수 오름차순으로 정렬했어요" |
 | 툴팁 | `data-ds-tip="글"` | 마우스 올림 0.4초 뒤·키보드 포커스에 뜨고, 툴팁 위로 옮겨도 남고, Esc 로 닫힌다. 스크롤·창 크기 바뀜에 마우스로 띄운 툴팁은 닫히고, 키보드 포커스로 띄운 툴팁은 남아 자리만 다시 잡는다 |
-| 메뉴 | `aria-haspopup="menu"` + `aria-controls`, 항목 `role="menuitem"` | ↓↑ Home End Esc, 바깥 누르면 닫힘 |
+| 메뉴 | `aria-haspopup="menu"` + `aria-controls`, 항목 `role="menuitem"` · 체크 메뉴 `.ds-menu--check` + `role="menuitemcheckbox"` `aria-checked` `data-value` | ↓↑ Home End Esc, 바깥 누르면 닫힘. 체크 메뉴 항목은 Space·Enter·누르기로 켜고 끄며 메뉴를 닫지 않는다(`ds:menucheck` detail `{ checked, value }`) |
 | 옆 메뉴 서랍 | 머리줄 `[data-ds-nav-toggle]`, 서랍 안 `[data-ds-nav-close]` | `DS.nav.open()` · `DS.nav.close()` — 열리면 나머지는 `inert`, Esc 로 닫힘 |
-| 옆 패널 | 여는 버튼 `[data-ds-panel="패널 id"]`(+ `aria-controls` · `aria-expanded`), 닫는 버튼 `[data-ds-panel-close]`, 패널 `.ds-app__panel[data-url-key][data-url-value]` | `DS.panel.open(panel, { opener })` · `DS.panel.close(panel)` · `DS.panel.toggle(panel)` · `ds:panel-open` · `ds:panel-close` — 열림을 주소에 남기고(`?panel=값`) 다시 열면 되살린다. 1279 이하에서 덮을 때는 뒤를 `inert` 로 하고 가림막을 깔며 포커스를 패널로 옮긴다. Esc·가림막으로 닫고, 닫으면 연 버튼으로 돌아간다 |
+| 옆 패널 | 여는 버튼 `[data-ds-panel="패널 id"]`(+ `aria-controls` · `aria-expanded`), 닫는 버튼 `[data-ds-panel-close]`, 패널 `.ds-app__panel[data-url-key][data-url-value]`, 돌아갈 곳 `data-ds-panel-return="선택자"` | `DS.panel.open(panel, { opener })` · `DS.panel.close(panel)` · `DS.panel.toggle(panel)` · `ds:panel-open` · `ds:panel-close` — 열림을 주소에 남기고(`?panel=값`) 다시 열면 되살린다. 1279 이하(또는 붙이면 본문이 40rem 보다 좁을 때) 덮을 때는 뒤를 `inert` 로 하고 가림막을 깔며 포커스를 패널로 옮긴다. Esc·가림막으로 닫고, 닫으면 연 버튼으로 돌아간다. 연 버튼이 숨었으면(주소로 연 패널) `data-ds-panel-return` → 본문의 첫 제목(h1·h2) → 문서 h1 → 본문 순서로 보낸다 |
+| 오른쪽 서랍 | `<dialog class="ds-dialog ds-drawer" data-url-key data-url-value>`, 여는 버튼 `[data-ds-drawer="id"]`(+ `aria-controls` · `aria-expanded`), 닫기 `[data-ds-close]` | `DS.drawer.open(dlg, { opener })` · `DS.drawer.close(dlg, 값)` · `ds:drawer-open` · `ds:drawer-close` — `showModal` 이라 뒤는 `inert`, 가림막·Esc·Tab 가두기. 가림막을 누르면 닫힌다. 열림을 주소에 남기고 다시 열면 되살린다. 닫으면 연 버튼으로(숨었으면 본문 제목으로) |
+| 작업 줄 | `.ds-actionbar`(넓은 폭 자리에 둔다), 붙을 곳 `data-ds-actionbar-end="선택자"`(없으면 가장 가까운 section) | `DS.actionbar.set(bar, active)` — 좁은 폭에서 `active` 면 화면 아래에 붙이고(`data-docked`) 문서 순서도 결과 영역 끝으로 옮긴다. 줄 높이를 `--ds-actionbar-h` 에 적어 문서 아래 여백·스크롤 여백으로 쓴다. 옮기기 전 포커스 위치를 재 두고 도구 줄이 줄어 밀린 만큼 스크롤을 되돌린다. 그래도 붙은 머리줄 밑·작업 줄 밑이면 보이는 곳으로 옮긴다. 붙인 줄이 화면 높이의 20%(`--ds-actionbar-sticky-max`)를 넘으면(좁은 폭 + 큰 글자) 붙이지 않고 제자리에 둔다 |
+| 첫 열 고정 표 | `table.ds-table--sticky-first` | 틀의 `scroll-padding-inline-start` 를 고정 열 폭 + 포커스 링으로 맞춘다(크기가 바뀌면 다시 잰다). 열을 숨기고 보인 뒤에는 `DS.table.syncSticky(table)` |
+| 오류 요약 | 상자 `.ds-error-summary`(처음에는 `hidden`) | `DS.form.summary(box, errors, { title, focus })` — 상자에 역할이 없으면 `role="group"` 을 달아 제목(`aria-labelledby`)이 읽히게 한다. `errors` 는 `[{ id, label, text }]`. 비면 숨긴다. 링크를 누르면 칸 이름까지 보이게 스크롤한 뒤 칸에 포커스. 보낼 때 `focus:true` 로 요약에 포커스를 옮긴다 |
+| 스켈레톤 | 고정 안내 글 `[data-ds-skeleton-keep]` | `DS.skeleton.show(영역)` · `DS.skeleton.hide(영역)` · `DS.skeleton.from(영역, { prefix, keep })` — 「스켈레톤」 절 |
 | 테마 | `[data-ds-theme-control]`(묶음 버튼이나 select) | `DS.theme.set('light' 또는 'dark' 또는 'system')` · `ds:themechange` |
 | 글꼴 | — | `DS.fonts.ensureText(text)` — page subset 에 없는 글자가 있으면 다이나믹 서브셋을 붙인다(입력 글자도 본다) |
-| 로딩 | 버튼 `data-busy-label="저장 중…"` | `DS.busy(btn, true)` 는 바로 다시 누르지 못하게 막고(`data-ds-pending`), 0.3초가 지나도 안 끝났을 때만 회전 표시와 글자를 보인다. `DS.busy(btn, false)` 는 보였던 경우 0.4초를 채운 뒤 되돌리고 Promise 를 돌려준다(`.then(결과 보이기)`). `DS.busy(btn, true, { delay: 0 })` 로 바로 보일 수 있다. 끝나면 처리 전 `aria-disabled` 값으로 되돌린다. 처리 중인 제출 버튼이 있는 폼은 Enter 로도 다시 제출되지 않는다(submit 단계에서 막는다). 영역 로딩은 `DS.loadingTimer(onShow, onHide)`(같은 지연·유지). 로딩 버튼은 변형 색을 유지한다 |
+| 로딩 | 버튼 `data-busy-label="저장 중…"` | `DS.busy(btn, true)` 는 바로 다시 누르지 못하게 막고(`data-ds-pending`), 0.3초가 지나도 안 끝났을 때만 회전 표시와 글자를 보인다. 보이는 동안 처리 전 폭·높이를 최소로 잡아 버튼이 줄어들지 않는다. 처리 중 글이 더 길면 버튼이 그만큼 넓어진다(글을 자르지 않는다) — 배치가 바뀌면 안 되는 곳은 `data-busy-label` 을 원래 글보다 짧게 쓴다. `DS.busy(btn, false)` 는 보였던 경우 0.4초를 채운 뒤 되돌리고 Promise 를 돌려준다(`.then(결과 보이기)`). `DS.busy(btn, true, { delay: 0 })` 로 바로 보일 수 있다. 끝나면 처리 전 `aria-disabled` 값으로 되돌린다. 처리 중인 제출 버튼이 있는 폼은 Enter 로도 다시 제출되지 않는다(submit 단계에서 막는다). 영역 로딩은 `DS.loadingTimer(onShow, onHide)`(같은 지연·유지). 로딩 버튼은 변형 색을 유지한다 |
 | 아이콘 | `<svg class="ds-icon"><use href="#ds-i-이름"></use></svg>` | `DS.icon('이름')`(문자열) · `DS.iconEl('이름')`(요소) · `DS.icons`(이름 목록, 40종 — `minus` 포함) |
 | 여러 줄 입력 | `form` 안 `textarea` | ⌘/Ctrl+Enter 로 `form.requestSubmit()`(`CMP-INPUT-13`). 샘플이 먼저 처리해 `preventDefault()` 했으면 건너뛴다. `data-ds-no-submit-shortcut` 을 칸이나 폼에 달면 끈다 |
 | 그 밖 | `aria-disabled="true"` 요소는 눌러도 동작하지 않는다(포커스·툴팁은 받는다). `[hidden]` 은 샘플 CSS 의 `display` 보다 늘 이긴다(base.css, 특이도 2·1·0) — 샘플은 `[hidden]` 을 다시 선언하지 않는다 | `DS.focusNext(el)` · `DS.ready(fn)` |
@@ -378,7 +388,7 @@ components:
 | 체크박스·라디오 | ○ | ○ | ○ | ○ | ○ | — | — | ○ | ○ |
 | 스위치 | ○ | ○ | ○ | ○ | — | — | — | ○ | ○ |
 | 묶음 버튼 | ○ | ○ | ○ | ○ | — | — | — | ○ `aria-checked` | ○ |
-| 표 | ○ | ○ 행 | ○ | — | — | ○ 스켈레톤 행(높이 같음) | ○ 빈 행 | ○ 고른 행(고르기 칸이 체크되면 저절로, `.is-selected` 도 됨) | ○ |
+| 표 | ○ | ○ 행 | ○ | — | — | ○ 스켈레톤 행(높이 같음) · 복제 스켈레톤 | ○ 빈 행 | ○ 고른 행(고르기 칸이 체크되면 저절로, `.is-selected` 도 됨) | ○ |
 | 정렬 머리 | ○ | ○ | ○ | — | — | — | — | ○ `aria-sort` | ○ |
 | 탭 | ○ | ○ | ○ | — | — | — | — | ○ `aria-selected` · 저장 안 한 변경 점 | ○ |
 | 칩 | ○ | ○ | ○ | ○ | — | — | — | ○ `aria-pressed` | ○ |
@@ -387,6 +397,10 @@ components:
 | 옆 메뉴 | ○ | ○ | ○ | — | — | — | — | ○ `aria-current` | ○ |
 | 옆 패널 | ○ | — | ○ 연 버튼으로 되돌림 | — | — | — | — | ○ `aria-expanded` · 주소 | ○ |
 | 대화상자 | ○ | — | ○ 가두기 | — | — | — | — | — | ○ |
+| 오른쪽 서랍 | ○ | — | ○ 가두기 · 연 버튼으로 되돌림 | — | — | — | — | ○ `aria-expanded` · 주소 | ○ |
+| 작업 줄 | ○ | — | ○ 붙을 때 가리면 끌어올림 | — | — | ○ 버튼 `DS.busy` | — | ○ 고른 건수 | ○ |
+| 오류 요약 | ○ | ○ 링크 | ○ 보낼 때 요약으로 | — | ○ | — | — | — | ○ |
+| 체크 메뉴 | ○ | ○ | ○ | ○ | — | — | — | ○ `aria-checked` | ○ |
 | 툴팁 | ○ | ○ | ○ | — | — | — | — | — | ○ |
 
 ### 반복 지적에서 온 부품 규칙
@@ -402,6 +416,48 @@ components:
 | 고대비(강제 색) 모드에서 선택 표시 유지(`CMP-SEL-04`) | 고른 메뉴·묶음 버튼·칩·쪽 번호·목록 행은 `Highlight` 테두리, 고른 탭은 `Highlight` 막대, 고른 행은 `Highlight` 위아래 선, 스위치는 시스템 색 | 고른 상태를 바탕색만으로 만들지 않는다. 새 부품도 `@media (forced-colors: active)` 를 둔다 |
 | 수량은 아라비아 숫자(`WRT-FMT-01`) | 부품 문구가 숫자로 쓴다("3 / 13쪽", "248개 중 1–20") | "다섯 곳" 대신 "5곳". 제스처 이름("두 손가락")은 예외 |
 | 영문·숫자 뒤 조사는 붙여 쓴다 | — | "PDF로 받기", "3D로 보기"(띄어 쓰지 않는다) |
+| 스켈레톤은 실제 배치와 같게(2026-11-18, 샘플 4개 반복) | `DS.skeleton.show(영역)` 이 실제 내용을 복제해 색만 바꾼다. 비활성·ghost 버튼, 비활성 스위치도 같은 회색 | 손으로 막대를 그리지 않고 복제 스켈레톤을 쓴다. 고정 안내 글은 `data-ds-skeleton-keep` |
+| 붙는 머리줄이 화면을 덮지 않게(3개 샘플 반복) | 머리줄이 화면 높이의 20% 를 넘으면 붙이지 않는다 | 머리줄 높이를 따로 재거나 고치지 않는다 |
+| 연달아 보낸 알림이 덮이지 않게(2개 샘플 반복) | `DS.announce` 가 0.1초 안의 알림을 한 문장으로 합친다 | 알림을 여러 번 나눠 보내도 된다. 순서대로 읽히길 바라면 한 번에 한 문장으로 보낸다 |
+| 고정 요소를 새로 넣으면 그 순간 포커스 위치를 다시 잰다(order-table r0·r1) | 작업 줄이 붙는 순간 포커스가 줄 밑이면 끌어올린다. 표 틀·첫 열 고정 표의 스크롤 여백에 포커스 링(4px)까지 넣는다 | 새 고정 요소를 만들면 같은 규칙을 지킨다 |
+
+## 스켈레톤
+
+불러오는 동안 보이는 회색 모양이다. 기본 방식은 **실제 내용을 복제해 색과 보이기만 바꾸는 것**이다(settings 2회차에서 탭 4개 × 폭 3개 위치 차 0.00px 를 낸 방식을 kit 으로 옮겼다).
+
+```js
+target.setAttribute('aria-busy', 'true');
+DS.announce('목록을 불러오는 중이에요');
+var timer = DS.loadingTimer(function () { DS.skeleton.show(target); },    // 0.3초 뒤에도 안 끝났으면
+                            function () { DS.skeleton.hide(target); target.removeAttribute('aria-busy'); });
+fetchData().then(function (data) { render(data); timer.stop(); });
+```
+
+| 규칙 | 이유 |
+|---|---|
+| 스켈레톤은 `DS.skeleton.show(영역)` 으로 만든다. 영역 안 내용을 복제해(`inert` · `aria-hidden`, id·for·name 에 `sk-` 접두어, 연결·스크립트 고리 속성과 `data-*` 를 지움 — `data-label`·`data-state` 와 SVG `<use href>` 는 남김) `.ds-skeletonize` 를 단다 | 크기·여백·줄바꿈이 내용과 같아 불러온 뒤 아무것도 밀리지 않는다(`STA-03`·`CMP-FB-09`). 손으로 그린 막대는 쌓인 카드·붙는 패널·주 버튼 자리를 빠뜨리기 쉽다(샘플 4개 반복 지적) |
+| 글자는 글자 폭만큼 회색 막대, 버튼(강조·위험·ghost·비활성 모두)·입력·고르기 상자·배지·칩·스위치(비활성 포함)·체크박스는 같은 크기의 회색 면, 아이콘·그림은 자리만 | 상태 색(고른 표시·위험색·강조색)은 내용이 온 뒤에 보인다 |
+| **고정 안내 글은 스켈레톤으로 그리지 않는다.** 화면 제목·묶음 제목·칸 이름·도움말처럼 불러오기 전에도 아는 글은 복제 범위 밖에 두거나 `data-ds-skeleton-keep` 을 달아 그대로 보인다 | 무엇을 불러오는지 알 수 있다. 막대가 줄어 화면이 덜 깜빡인다(booking-flow r0·r1 반복 지적) |
+| 복제할 내용이 없을 때(처음 불러오기)는 가상 데이터나 지난 내용으로 한 번 그린 뒤 복제한다. 그럴 수 없으면 `.ds-skeleton` 막대를 최종 배치의 모든 칸에 그린다 | 같은 배치를 지키는 다른 길이 없다 |
+| `DS.loadingTimer` 로 0.3초 뒤에 보이고 0.4초는 남긴다. 흉내 로딩은 1초를 넘게 둔다. 영역에 `aria-busy="true"`, 시작을 `DS.announce` 로 알린다 | `MOT-07` · `STA-01` · 화면낭독기는 스켈레톤을 읽지 않는다 |
+| 옅어짐은 4번(4.8초)만, 움직임 줄이기에서는 멈춘다. 고대비에서는 막대·면이 시스템 회색(GrayText)으로 남는다 | `MOT-14` · `CMP-SEL-04` |
+| 복제본은 실제 요소 바로 앞에 붙는다. id·`data-*` 는 바꾸거나 지우므로 그 고리로는 복제본이 걸리지 않는다. 클래스로 고리를 찾는 샘플 코드는 `:not(.ds-skeletonize *)` 를 붙인다 | 샘플 코드가 복제본을 실제 요소로 알고 고치지 않게 |
+
+## 옮기기 · 파일 크기 · 날짜 표기
+
+칸반 보드·파일 관리자처럼 항목을 다른 자리로 옮기는 화면의 규칙이다.
+
+| 규칙 | 이유 |
+|---|---|
+| 끌어 놓기로 옮길 수 있는 항목은 키보드·한 번 누르기로도 옮길 수 있어야 한다. 항목마다 "옮기기" 메뉴 버튼(`aria-haspopup="menu"`, 이름 "‘항목 이름’ 옮기기")을 두고, 메뉴에 갈 곳(열·폴더)을 `menuitem` 으로 나열한다. 지금 자리는 `aria-disabled="true"` 로 두고 "(지금 자리)"를 붙인다 | WCAG 2.5.7 끌기 대체, 2.1.1 키보드 |
+| 같은 열 안 순서는 메뉴의 "위로"·"아래로"·"맨 위로" 항목으로 바꾼다. 맨 위·맨 아래면 해당 항목을 `aria-disabled` 로 | 순서 바꾸기도 끌기 없이 된다 |
+| 옮긴 뒤 포커스는 새 자리의 그 항목(카드·행)에 둔다. `DS.announce` 로 "‘3월 정산 보고서’를 ‘진행 중’으로 옮겼어요. 3개 중 2번째예요"처럼 알린다 | 포커스를 잃지 않고 결과를 안다 |
+| 끌어 놓는 동안 놓일 자리를 선(2px, `line-focus`)으로 보이고, 놓을 수 없는 곳은 놓지 못하게 한다. 열마다 개수 제한이 있으면 넘는 이동을 막고 이유를 알린다 | 결과를 미리 본다 |
+| 옮기기는 되돌릴 수 있게 둔다 — 배너에 "되돌리기"(`DS.banner.show({ actions })`) | 실수로 옮긴 것을 바로 되돌린다 |
+| 파일 크기는 1,024 단위로 `바이트`·`KB`·`MB`·`GB` 를 숫자에 붙여 쓴다: 1KB 미만 "512바이트", KB 는 정수 "12KB", MB·GB 는 소수 첫째 자리 "2.4MB"(100 이상은 정수 "128MB"). 천 단위 쉼표 "1,284KB" | `WRT-FMT-01`(아라비아 숫자) · 단위와 숫자 사이를 띄지 않는다 |
+| 표·목록의 크기·건수 칸은 고정폭 숫자(`.ds-num`)로 오른쪽 맞춤, 정렬 값은 바이트 수(`data-value`) | 세로로 비교한다(`TYP-KO-05`) |
+| 날짜: 올해는 "11월 17일", 다른 해는 "2025년 3월 2일". 시각은 24시간제 "15:20". 오늘은 시각만 "15:20", 어제는 "어제 15:20". 1시간 안의 알림·활동은 "방금"(1분 안)·"5분 전" | 짧고 같은 꼴로 읽힌다 |
+| 날짜·시각은 늘 `<time datetime="2026-11-17T15:20">` 으로 감싼다. 상대 표기("5분 전")는 `data-ds-tip` 이나 `title` 대신 옆 패널·상세에 정확한 시각을 함께 둔다 | 기계가 읽고, 사람은 정확한 시각을 찾을 수 있다 |
 
 ## Do's and Don'ts
 
@@ -414,6 +470,8 @@ components:
 | 실패는 닫을 때까지 남는 배너로 알린다(`STA-09`) | 토스트를 기본 알림으로 쓴다(`CMP-FB-01`) |
 | 필터·탭·정렬·쪽 번호를 주소에 남긴다(`CMP-TABLE-09`) | 새로고침하면 필터가 사라진다 |
 | 로딩 표시는 300ms 뒤에 보이고 400ms 는 남긴다(`CMP-FB-08`) | 1초 안에 끝나는 일에 회전 표시를 깜빡인다 |
+| 처리 중 글(`data-busy-label`)은 원래 버튼 글보다 짧게 쓴다 — 회전 표시(16 + 간격 8)가 함께 들어간다. 버튼은 처리 전 폭보다 줄지 않지만, 처리 중 글이 길면 넓어진다 | 처리 중 글이 길어 버튼이 넓어지고 둘레 줄바꿈이 바뀐다(order-table r1) |
+| 빨간 채움 버튼(`--danger`)은 영역마다 하나. 위험 구역에 되돌리기 어려운 동작이 여럿이면 나머지는 `--danger-outline` | 빨간 채움 여러 개는 주 행동을 가린다(`CLR-07`) |
 | 빈 화면에 채우는 행동 하나를 둔다 | 빈 표에 머리줄만 남긴다 |
 | 이유를 보여야 하는 비활성 버튼은 `aria-disabled="true"` + 툴팁 | `disabled` 버튼에 툴팁(마우스 올림이 오지 않는다) |
 | 카드는 테두리로 나눈다 | 카드 안 카드, 카드 한쪽 두꺼운 색 테두리, 얇은 테두리 + 넓게 퍼진 그림자(`SHP-06`·`SHP-07`) |
@@ -422,7 +480,7 @@ components:
 | 움직임은 `transform`·`opacity` 만 쓴다. 색·너비는 바로 바꾼다(`MOT-05`) | 마우스 올림 색 전환, 진행 막대 너비 애니메이션 |
 | 5초 넘게 보이는 회전 표시·스켈레톤 견본은 `.is-static` 으로 멈춘다. 스켈레톤은 4번(4.8초)만 옅어진다(`MOT-14`) | 멈춤 수단 없이 계속 도는 표시 |
 | 불러오기 오류는 결과 자리에 남긴다: `ds-empty--error`(문장 + "다시 불러오기")를 그 자리에 두거나, 다시 불러오기가 든 배너를 `dismissible:false` 로 띄운다 | 닫을 수 있는 배너 하나에만 "다시 불러오기"를 둔다(닫으면 막다른 화면) |
-| 스켈레톤은 최종 배치의 모든 칸을 그린다 — 붙는 옆 패널, 쌓인 카드(고르기 자리·칸 이름 자리), 머리의 주 버튼 자리, 표 머리 행까지(`STA-03`·`CMP-FB-09`) | 본문 목록만 스켈레톤으로 그리고 나머지 칸을 비운다 |
+| 스켈레톤은 최종 배치의 모든 칸을 그린다 — 붙는 옆 패널, 쌓인 카드(고르기 자리·칸 이름 자리), 머리의 주 버튼 자리, 표 머리 행까지(`STA-03`·`CMP-FB-09`). 기본은 복제 스켈레톤(`DS.skeleton.show`) | 본문 목록만 스켈레톤으로 그리고 나머지 칸을 비운다. 고정 안내 글을 막대로 그린다 |
 | 다시 불러오기에도 `DS.loadingTimer` 를 쓴다(0.3초 안에 끝나면 아무것도 보이지 않는다) | 다시 불러오기를 누르자마자 스켈레톤을 그린다 |
 | 「필터 초기화」처럼 테두리 없는 글자 버튼(`ds-btn--ghost`)은 도구 줄·표 머리 같은 묶음 안에서만 쓴다 | 본문 한가운데 홀로 둔 ghost 버튼(버튼인지 알아보기 어렵다, `CMP-BTN-12`) |
 | 움직임 줄이기 설정에서 위치·크기 움직임을 뺀다(`CMP-OVL-12`) | 보라·남보라 그라데이션, 그라데이션 글자, 튀는 움직임, 반짝이는 스켈레톤(`SLOP-01`·`SLOP-11`·`CMP-FB-10`) |
@@ -435,6 +493,7 @@ components:
 | `@media` 조건 줄의 px(480·768·1024·1280) | 미디어 쿼리 조건에는 CSS 변수를 쓸 수 없다(static-checks W3 예외) |
 | 옆 메뉴 서랍의 `visibility` 전환(0초, 닫힐 때 `transform` 이 끝난 뒤 숨김) | 애니메이션이 아니라 닫힌 서랍을 포커스 순서에서 빼는 시점 맞춤이다. 움직이는 속성은 `transform` 하나다(`MOT-05`) |
 | `js/ds.js` 의 `style.transform` 위치 계산(툴팁) | 화면 좌표라 토큰으로 둘 수 없다 |
+| `js/ds.js` 가 잰 크기를 rem 으로 적는 곳(처리 중 버튼 폭·높이, 작업 줄 높이 `--ds-actionbar-h`, 첫 열 고정 틀의 `scroll-padding-inline-start`, 머리줄 높이 `--ds-app-top`) | 화면에서 잰 값이라 토큰으로 둘 수 없다 |
 | 스켈레톤 너비 비율(40%·45%·50%·65%) | 길이가 아니라 줄 모양 비율이다 |
 | SVG `stroke-width` 1.5·1.75·2.5·3 | 아이콘 선 굵기(단위 없음)다 |
 | 글꼴 Pretendard 의 라틴 글자(Inter 기반) | 글꼴 목록 앞이 한글 글꼴이다(static-checks S10 보정) |
@@ -443,16 +502,18 @@ components:
 
 | 폭 | 옆 메뉴 | 본문 | 표·목록 | 옆 패널 |
 |---|---|---|---|---|
-| 320–479 | 서랍 | 1열, 좌우 16 | 가로 스크롤 또는 `ds-table--stack` 쌓기(머리는 정렬 띠, `--scroll` 높이 제한 풀림). 쪽 번호는 "3 / 13쪽" | 전체 폭으로 덮음(뒤 `inert`) |
+| 320–479 | 서랍 | 1열, 좌우 16 | 가로 스크롤 또는 `ds-table--stack` 쌓기(머리는 정렬 띠, `--scroll` 높이 제한 풀림). 쪽 번호는 "3 / 13쪽". 고른 것이 있으면 작업 줄이 아래에 붙음 | 전체 폭으로 덮음(뒤 `inert`) |
 | 480–767 | 서랍 | 1열, 좌우 16 | 가로 스크롤 또는 쌓기 | 전체 폭으로 덮음(뒤 `inert`) |
 | 768–1023 | 서랍 | 1열, 좌우 24 | 표 | 360 으로 덮음(뒤 `inert`) |
 | 1024–1279 | 왼쪽 240 | 본문 | 표 | 360 으로 덮음(뒤 `inert`) |
-| 1280 이상 | 왼쪽 240 | 본문(최대 1280) | 표 | 오른쪽 360 에 붙음(비모달) |
+| 1280 이상 | 왼쪽 240 | 본문(최대 1280) | 표 | 오른쪽 360 에 붙음(비모달). 붙이면 본문이 40rem 보다 좁아질 때는 덮음 |
 
 - 표 머리 고정(`CMP-TABLE-02`): 표 틀(`ds-table-wrap`)은 가로로 넘치면 스크롤하는 영역이라, 머리는 틀 안에서만 붙는다. 행이 많은 표는 `ds-table-wrap--scroll` 로 높이를 제한해 틀 안에서 스크롤하게 한다. 페이지와 함께 스크롤하는 표는 `ds-table-wrap--page` 를 쓴다 — 머리가 머리줄 아래(`--ds-size-topbar`)에 붙지만 넘친 칸은 잘리므로 열이 적은 표에만 쓰고 좁은 폭은 `--stack` 과 함께 쓴다.
 
 - 글자 200%(브라우저 글자 크기 32px)에서 가로로 넘치지 않아야 한다. 크기·간격이 rem 이라 함께 커진다. 표는 표 틀 안에서만 가로로 스크롤한다(`TYP-04`).
 - 메뉴 항목은 폭이 바뀌어도 같다. 보이는 모양만 바뀐다(`CMP-NAV-11`).
+- 메뉴 최소·최대 폭은 화면 폭 − 32 를 넘지 않는다(320 + 글자 200% 에서도 넘치지 않는다).
+- 진행 단계는 `ds-steps--compact` 를 쓰면 48rem 아래에서 번호만 두고 지금 단계 이름만 보인다. 설명 목록은 카드 안쪽 `ds-cq` 로 감싸면 화면 폭이 아니라 카드 폭(16rem)으로 쌓기를 정한다 — `container-type` 은 카드나 격자 칸이 아니라 이 감싸개에만 준다(내용 폭이 0 으로 잡히는 함정).
 
 ## Agent Prompt Guide
 
@@ -482,7 +543,8 @@ components:
 | `MOT-14` 5초 넘는 움직임 멈춤 | 적용 | 스켈레톤 4번, 견본은 `.is-static`, 움직임 줄이기에서 회전 표시 멈춤 |
 | `WRT-TONE-01` 해요체 | 적용 | 이 문서·설계서는 한다체(사람이 읽는 개발 문서) |
 | `WRT-FMT-01` 아라비아 숫자 | 적용 | 제스처 이름 예외 |
-| `A11Y-WCAG-06` 포커스가 가려지지 않게 | 적용 | `ds-table-wrap--scroll` 에 머리 행 높이만큼 `scroll-padding`, `--page` 표가 있으면 문서 스크롤 여백에 머리 행 높이를 더한다. 첫 열 고정 변형은 아직 없다 |
+| `A11Y-WCAG-06` 포커스가 가려지지 않게 | 적용 | `ds-table-wrap--scroll` 에 머리 행 높이 + 포커스 링만큼 `scroll-padding`, `--page` 표가 있으면 문서 스크롤 여백에 머리 행 높이를 더한다. 첫 열 고정 표는 `scroll-padding-inline-start` 를 고정 열 폭 + 포커스 링으로, 작업 줄은 줄 높이만큼 `scroll-padding-block-end` |
+| `WCAG 2.5.7` 끌기 대체 | 적용 | 「옮기기 · 파일 크기 · 날짜 표기」 절 — 끌어 놓기에는 "옮기기" 메뉴를 함께 둔다 |
 | `CMP-INPUT-13` ⌘/Ctrl+Enter 제출 | 적용 | `js/ds.js` 가 기본으로 한다. `data-ds-no-submit-shortcut` 으로 끈다 |
 | `STA-07` 빈 화면 도움말 링크 | 예외 | 이 저장소에는 도움말 문서가 없다. 빈 상태는 "설명 + 채우는 행동"으로 만들고, 가리킬 곳이 없는 가짜 도움말 링크를 두지 않는다(2026-11-17 오케스트레이터 결정, 샘플 4개에서 지적) |
 | `PAT-FORM-11` 떠나기 전 경고 | 조건부 예외 | 입력을 이 창의 `sessionStorage` 에 바로 저장해 같은 탭의 이동·새로고침·뒤로 가기에서 잃지 않으면 경고 대신 쓸 수 있다. 화면에 "이 창을 닫기 전까지 남아요"처럼 범위를 알린다(2026-11-17 채점자 판단, 오케스트레이터 결정) |

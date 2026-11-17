@@ -20,6 +20,11 @@
  *   아이콘           DS.icon(name) — 문서 안 스프라이트(<use href="#ds-i-이름">) · DS.iconEl(name) 은 요소
  *   여러 줄 입력     form 안 textarea 에서 ⌘/Ctrl+Enter 로 제출(data-ds-no-submit-shortcut 로 끈다)
  *   로딩             DS.loadingTimer · DS.busy — 300ms 뒤에 보이고 400ms 는 남는다(둘 다 기본)
+ *   스켈레톤         DS.skeleton — 실제 내용을 복제해 색만 바꾼 스켈레톤(.ds-skeletonize)
+ *   서랍             DS.drawer · [data-ds-drawer] — 오른쪽에서 덮는 <dialog class="ds-drawer">, 열림을 주소에 남긴다
+ *   작업 줄          DS.actionbar — 좁은 폭에서 고른 것이 있으면 화면 아래에 붙는 작업 줄
+ *   오류 요약        DS.form.summary — 고칠 칸으로 가는 링크 목록
+ *   첫 열 고정 표    .ds-table--sticky-first — 틀의 scroll-padding-inline-start 를 고정 열 폭에 맞춘다
  */
 (function () {
   'use strict';
@@ -177,24 +182,45 @@
 
   /** 화면낭독기에 한 줄을 읽힌다. 같은 문장을 다시 보내도 다시 읽힌다. */
   var liveTimers = {};
+  var livePending = null; // 아직 쓰지 않은 알림 — 100ms 안에 온 알림을 한 문장으로 모은다
 
-  /**
-   * opts: { assertive(기본 false), clearAfter(ms, 기본 7000 · 0 이면 비우지 않음) }
-   * 새 알림을 보내면 다른 live 영역의 낡은 문장도 비운다. 보낸 문장은 clearAfter 뒤에 비운다.
-   */
-  DS.announce = function (text, opts) {
-    opts = opts || {};
-    var assertive = !!opts.assertive;
+  function writeLive(texts, assertive, keep) {
     var el = liveRegion(assertive);
     var other = liveRegion(!assertive);
     clearTimeout(liveTimers[other.id]);
     other.textContent = '';
     clearTimeout(liveTimers[el.id]);
-    el.textContent = '';
-    setTimeout(function () { el.textContent = text; }, 100);
+    // 합친 문장 사이에 마침표를 둬 화면낭독기가 끊어 읽게 한다(문장이 하나면 그대로)
+    el.textContent = texts.length > 1 ? texts.map(function (t) { return /[.!?…]$/.test(t) ? t : t + '.'; }).join(' ') : texts[0];
+    if (keep > 0) liveTimers[el.id] = setTimeout(function () { el.textContent = ''; }, keep);
+  }
+
+  /**
+   * opts: { assertive(기본 false), clearAfter(ms, 기본 7000 · 0 이면 비우지 않음), merge(기본 true) }
+   * 새 알림을 보내면 다른 live 영역의 낡은 문장도 비운다. 보낸 문장은 clearAfter 뒤에 비운다.
+   * 100ms 안에 연달아 온 알림은 한 문장으로 합쳐 읽힌다(앞 문장이 뒤 문장에 덮이지 않게). 하나라도 assertive 면 alert 영역으로.
+   * merge:false 면 합치지 않고 앞 알림을 이 알림으로 바꾼다(예전 동작).
+   */
+  DS.announce = function (text, opts) {
+    opts = opts || {};
     var keep = typeof opts.clearAfter === 'number' ? opts.clearAfter : 7000;
-    if (keep > 0) liveTimers[el.id] = setTimeout(function () { el.textContent = ''; }, keep + 100);
     DS.fonts.ensureText(text);
+    var p = livePending;
+    if (p && opts.merge !== false) {
+      if (p.texts.indexOf(text) < 0) p.texts.push(text);
+      p.assertive = p.assertive || !!opts.assertive;
+      p.keep = keep === 0 || p.keep === 0 ? 0 : Math.max(p.keep, keep);
+      return;
+    }
+    if (p) clearTimeout(p.timer);
+    p = livePending = { texts: [text], assertive: !!opts.assertive, keep: keep };
+    // 지금 문장을 먼저 비워 두면 같은 문장을 다시 보내도 다시 읽힌다
+    liveRegion(false).textContent = '';
+    liveRegion(true).textContent = '';
+    p.timer = setTimeout(function () {
+      livePending = null;
+      writeLive(p.texts, p.assertive, p.keep);
+    }, 100);
   };
 
   /* ---------- 2. 알림 배너 ---------- */
@@ -354,7 +380,10 @@
     if (!(dlg instanceof HTMLElement) || dlg.tagName !== 'DIALOG') return;
     var opener = openers.get(dlg);
     openers.delete(dlg);
+    var drawer = dlg.classList.contains('ds-drawer');
+    if (drawer) drawerClosed(dlg);
     if (opener && opener.isConnected && isVisible(opener)) opener.focus();
+    else if (drawer) focusEl(returnTarget(dlg));
     else focusEl(nextFocusable(dlg, dlg));
   }, true);
 
@@ -698,9 +727,20 @@
 
   var docked = window.matchMedia ? matchMedia('(min-width: 80rem)') : null;
   var panelOpeners = new WeakMap();
+  var MAIN_MIN_REM = 40; // 붙였을 때 본문이 이 폭(rem)보다 좁아지면 덮는다
 
   function panelControls(panel) {
     return $$('[data-ds-panel="' + panel.id + '"]');
+  }
+
+  /* 연 버튼이 숨었을 때 포커스를 보낼 곳 — data-ds-panel-return(선택자) → 본문의 첫 제목(h1·h2) → 문서 h1 → 본문 */
+  function returnTarget(el) {
+    var sel = el.getAttribute('data-ds-panel-return');
+    var t = sel ? $(sel) : null;
+    if (t && isVisible(t)) return t;
+    var main = $('.ds-app__main') || $('main');
+    var heads = (main ? $$('h1, h2', main) : []).concat($$('h1')).filter(isVisible);
+    return heads[0] || main;
   }
 
   function syncPanel(panel) {
@@ -709,6 +749,12 @@
     var open = !panel.hidden;
     var overlay = open && !(docked && docked.matches);
     app.classList.toggle('ds-app--panel', open);
+    // 미디어 쿼리로는 붙는 폭이어도, 붙였을 때 실제 본문이 40rem 보다 좁으면 덮는다(html 글자 크기를 키운 화면 등)
+    if (open && !overlay) {
+      app.removeAttribute('data-panel-overlay');
+      var main = $(':scope > .ds-app__main', app);
+      if (main && main.getBoundingClientRect().width < remPx() * MAIN_MIN_REM) overlay = true;
+    }
     if (overlay) app.setAttribute('data-panel-overlay', '');
     else app.removeAttribute('data-panel-overlay');
     if (overlay && !$('.ds-app__scrim', app)) {
@@ -759,9 +805,10 @@
         DS.url.set(o);
       }
       var opener = panelOpeners.get(panel) || panelControls(panel)[0];
+      // 연 버튼이 숨었으면(주소로 연 패널의 버튼이 다른 쪽·접힌 목록에 있을 때) 문서 다음 자리가 아니라 본문 제목으로
       if (hadFocus || doc.activeElement === doc.body) {
         if (opener && opener.isConnected && isVisible(opener)) opener.focus();
-        else focusEl(nextFocusable(panel, panel));
+        else focusEl(returnTarget(panel));
       }
       emit(panel, 'ds:panel-close');
     },
@@ -784,7 +831,307 @@
         $$('.ds-app__panel[id]').forEach(syncPanel);
       });
     }
+    // 창 크기가 바뀌면 붙였을 때 본문 폭을 다시 잰다
+    var raf = 0;
+    window.addEventListener('resize', function () {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(function () {
+        $$('.ds-app__panel[id]').forEach(function (p) { if (!p.hidden) syncPanel(p); });
+      });
+    });
   }
+
+  /* ---------- 9-3. 오른쪽 서랍 — <dialog class="ds-dialog ds-drawer">. 덮는 동안 뒤는 inert(showModal) ---------- */
+
+  function drawerControls(dlg) {
+    return $$('[data-ds-drawer="' + dlg.id + '"]');
+  }
+
+  function setDrawerUrl(dlg, open) {
+    var key = dlg.getAttribute('data-url-key');
+    if (!key) return;
+    var o = {};
+    o[key] = open ? (dlg.getAttribute('data-url-value') || 'open') : null;
+    DS.url.set(o);
+  }
+
+  function drawerClosed(dlg) {
+    setDrawerUrl(dlg, false);
+    drawerControls(dlg).forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+    emit(dlg, 'ds:drawer-close', { value: dlg.returnValue });
+  }
+
+  DS.drawer = {
+    /** 서랍을 연다. opts: { opener, fromUrl } — 주소(data-url-key)에 열림을 남긴다 */
+    open: function (dlg, opts) {
+      dlg = resolve(dlg);
+      opts = opts || {};
+      if (!dlg || dlg.open) return;
+      var opener = opts.opener || doc.activeElement;
+      if (!opener || opener === doc.body) opener = drawerControls(dlg)[0]; // 주소로 열었으면 서랍을 여는 버튼으로 돌아간다
+      DS.dialog.open(dlg, opener);
+      if (!opts.fromUrl) setDrawerUrl(dlg, true);
+      drawerControls(dlg).forEach(function (b) { b.setAttribute('aria-expanded', 'true'); });
+      emit(dlg, 'ds:drawer-open');
+    },
+    /** 서랍을 닫는다. 닫히면 연 버튼으로(숨었으면 본문 제목으로) 포커스가 돌아가고 주소에서 지운다 */
+    close: function (dlg, value) { DS.dialog.close(dlg, value); }
+  };
+
+  function initDrawers() {
+    $$('dialog.ds-drawer[id][data-url-key]').forEach(function (dlg) {
+      var want = dlg.getAttribute('data-url-value') || 'open';
+      if (DS.url.get(dlg.getAttribute('data-url-key')) === want) DS.drawer.open(dlg, { fromUrl: true });
+    });
+  }
+
+  /* ---------- 9-4. 작업 줄 — 좁은 폭에서 고른 것이 있으면 화면 아래에 붙는다 ---------- */
+
+  var narrow = window.matchMedia ? matchMedia('(max-width: 47.9375rem)') : null;
+  var bars = [];
+
+  function dockBar(bar) {
+    // 문서 순서도 화면 순서에 맞춰 결과 영역 끝으로 — 처음 자리는 표시(주석 마디)로 남긴다
+    if (!bar._dsHome) {
+      bar._dsHome = doc.createComment('ds-actionbar');
+      bar.parentNode.insertBefore(bar._dsHome, bar);
+    }
+    var end = resolve(bar.getAttribute('data-ds-actionbar-end')) || bar._dsHome.parentNode.closest('section, .ds-section') || bar._dsHome.parentNode;
+    if (end.lastElementChild !== bar) end.appendChild(bar);
+    bar.setAttribute('data-docked', '');
+  }
+
+  function undockBar(bar) {
+    if (bar._dsHome && bar._dsHome.isConnected && bar._dsHome.nextSibling !== bar) bar._dsHome.parentNode.insertBefore(bar, bar._dsHome.nextSibling);
+    bar.removeAttribute('data-docked');
+  }
+
+  /* 포커스 링(굵기 + 간격)까지 붙은 머리줄 아래 ~ 붙은 작업 줄 위(없으면 화면 아래)에 보이는지 */
+  function focusInView(el, bar) {
+    var r = el.getBoundingClientRect();
+    var ring = remPx() * 0.25;
+    var top = $('.ds-app__top');
+    var minY = top && getComputedStyle(top).position === 'sticky' ? top.getBoundingClientRect().bottom : 0;
+    var maxY = bar.hasAttribute('data-docked') ? bar.getBoundingClientRect().top : window.innerHeight;
+    return r.top - ring >= minY && r.bottom + ring <= maxY;
+  }
+
+  /*
+   * 작업 줄을 붙이거나 돌려놓는다(A11Y-WCAG-06).
+   * - 줄이 도구 줄을 떠나면 도구 줄이 줄어 아래 내용이 위로 밀린다 — 옮기기 전 포커스 위치를 재 두고, 밀린 만큼 스크롤을 되돌린다
+   * - 그래도 포커스가 붙은 머리줄 밑이나 작업 줄 밑이면 보이는 곳으로 옮긴다(스크롤 여백 scroll-padding 을 따른다)
+   * - 붙인 줄이 화면 높이의 --ds-actionbar-sticky-max(20%)를 넘으면(좁은 폭 + 큰 글자) 붙이지 않고 제자리에 둔다
+   */
+  function placeBar(bar) {
+    var want = !!bar._dsOn && !!(narrow && narrow.matches);
+    var active = doc.activeElement;
+    var had = bar.contains(active);
+    var anchor = active && active !== doc.body && !had ? active : null;
+    var before = anchor ? anchor.getBoundingClientRect().top : 0;
+    if (want) {
+      dockBar(bar);
+      var h = bar.getBoundingClientRect().height;
+      var max = parseFloat(token('--ds-actionbar-sticky-max')) || 0.2;
+      if (h > window.innerHeight * max) undockBar(bar);
+      else root.style.setProperty('--ds-actionbar-h', (h / remPx()) + 'rem');
+    } else {
+      undockBar(bar);
+    }
+    if (anchor && anchor.isConnected) {
+      var shift = anchor.getBoundingClientRect().top - before;
+      if (Math.abs(shift) >= 0.5) window.scrollBy(0, shift);
+    }
+    if (had && active.isConnected) active.focus({ preventScroll: true });
+    var a = doc.activeElement;
+    if (a && a !== doc.body && a.isConnected && !focusInView(a, bar)) a.scrollIntoView({ block: 'nearest' });
+  }
+
+  DS.actionbar = {
+    /** active: 고른 것이 있는지. 좁은 폭(767 이하)에서 true 면 화면 아래에 붙는다 */
+    set: function (bar, active) {
+      bar = resolve(bar);
+      if (!bar) return;
+      bar._dsOn = !!active;
+      if (bars.indexOf(bar) < 0) bars.push(bar);
+      placeBar(bar);
+    }
+  };
+
+  if (narrow && narrow.addEventListener) narrow.addEventListener('change', function () { bars.forEach(placeBar); });
+  // 화면 높이·글자 크기가 바뀌면 붙일지·줄 높이를 다시 정한다
+  var barRaf = 0;
+  window.addEventListener('resize', function () {
+    cancelAnimationFrame(barRaf);
+    barRaf = requestAnimationFrame(function () { bars.forEach(function (bar) { if (bar._dsOn) placeBar(bar); }); });
+  });
+
+  /* ---------- 9-5. 첫 열 고정 표 — 틀의 가로 스크롤 여백을 고정한 열 폭 + 포커스 링으로 ---------- */
+
+  function syncSticky(table) {
+    var wrap = table.closest('.ds-table-wrap');
+    var row = table.tHead && table.tHead.rows[0] || table.rows[0];
+    if (!wrap || !row) return;
+    var cells = Array.prototype.slice.call(row.cells);
+    var select = cells[0] && cells[0].classList.contains('ds-table__select') ? cells[0] : null;
+    var first = select ? cells[1] : cells[0];
+    if (!first || getComputedStyle(first).position !== 'sticky') {
+      wrap.style.scrollPaddingInlineStart = '';
+      return;
+    }
+    // 고정한 열 폭의 합(가로 스크롤 위치와 상관없다) + 포커스 링(굵기 + 간격)
+    var w = first.getBoundingClientRect().width + (select ? select.getBoundingClientRect().width : 0);
+    wrap.style.scrollPaddingInlineStart = ((w / remPx()) + 0.25) + 'rem';
+  }
+
+  DS.table = {
+    /** 첫 열 고정 표의 스크롤 여백을 다시 잰다(표를 새로 그린 뒤 부른다. 크기가 바뀌면 저절로 다시 잰다) */
+    syncSticky: function (table) { table = resolve(table); if (table) syncSticky(table); }
+  };
+
+  function initStickyTables() {
+    $$('.ds-table--sticky-first').forEach(function (table) {
+      syncSticky(table);
+      if (!window.ResizeObserver) return;
+      var ro = new ResizeObserver(function () { syncSticky(table); });
+      ro.observe(table);
+      var row = table.tHead && table.tHead.rows[0];
+      if (row) Array.prototype.forEach.call(row.cells, function (c) { ro.observe(c); });
+    });
+  }
+
+  /* ---------- 9-6. 오류 요약 — 고칠 칸으로 가는 링크 목록 ---------- */
+
+  DS.form = {
+    /**
+     * box(.ds-error-summary 자리)에 오류 요약을 그린다. errors 가 비면 숨긴다.
+     * errors: [{ id(칸 id), label(칸 이름), text(선택 — 오류 문장) }]
+     * opts: { title(글 또는 개수를 받는 함수), focus(기본 false — 보낼 때 true 로 요약에 포커스) }
+     * 링크를 누르면 그 칸으로 포커스를 옮긴다. 요약을 그린 상자를 돌려준다
+     */
+    summary: function (box, errors, opts) {
+      box = resolve(box);
+      opts = opts || {};
+      if (!box) return null;
+      errors = errors || [];
+      if (!errors.length) { box.hidden = true; return box; }
+      var n = errors.length;
+      var title = typeof opts.title === 'function' ? opts.title(n) : (opts.title || '칸 ' + n + '개를 고쳐 주세요');
+      box.classList.add('ds-error-summary');
+      box.setAttribute('tabindex', '-1');
+      // 이름(aria-labelledby)이 읽히도록 역할을 준다 — 샘플이 이미 준 역할은 그대로 둔다
+      if (!box.hasAttribute('role')) box.setAttribute('role', 'group');
+      box.textContent = '';
+      box.appendChild(iconEl('error', 'ds-error-summary__icon'));
+      var body = make('div', 'ds-error-summary__body');
+      var head = make('p', 'ds-error-summary__title', title);
+      head.id = (box.id || 'ds-error-summary') + '-title';
+      box.setAttribute('aria-labelledby', head.id);
+      body.appendChild(head);
+      var list = make('ul', 'ds-error-summary__list');
+      errors.forEach(function (er) {
+        var li = make('li');
+        var a = make('a', null, er.label);
+        a.href = '#' + er.id;
+        a.addEventListener('click', function (e) {
+          var field = doc.getElementById(er.id);
+          if (!field) return;
+          e.preventDefault();
+          // 칸 이름(라벨)까지 보이게 칸 묶음을 먼저 화면 안으로 옮긴 뒤 칸에 포커스를 둔다
+          var target = field.matches(FOCUSABLE) ? field : (focusables(field)[0] || field);
+          var wrap = field.closest('.ds-field, .ds-fieldset, fieldset');
+          (wrap || target).scrollIntoView({ block: 'nearest' });
+          if (!target.matches(FOCUSABLE) && !target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+          target.focus({ preventScroll: true });
+        });
+        li.appendChild(a);
+        if (er.text) li.appendChild(make('span', 'ds-error-summary__msg', er.text));
+        list.appendChild(li);
+      });
+      body.appendChild(list);
+      box.appendChild(body);
+      box.hidden = false;
+      DS.fonts.ensureText(box.textContent);
+      if (opts.focus) box.focus();
+      return box;
+    }
+  };
+
+  /* ---------- 9-7. 스켈레톤 — 실제 내용을 복제해 색과 보이기만 바꾼다 ---------- */
+
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  // 복제본에서 지우는 연결·고리 속성. data-* 는 KEEP 에 든 것(배치에 쓰는 것)만 남긴다
+  var SK_DROP = ['aria-labelledby', 'aria-describedby', 'aria-controls', 'aria-owns', 'aria-activedescendant',
+    'aria-errormessage', 'aria-details', 'aria-label', 'aria-haspopup', 'form', 'tabindex', 'autofocus', 'contenteditable'];
+  var SK_KEEP = ['data-label', 'data-state'];
+
+  DS.skeleton = {
+    /**
+     * el 을 복제한 스켈레톤을 돌려준다(문서에 붙이지 않는다). 크기·배치는 같고 색만 다르다(.ds-skeletonize).
+     * opts: { prefix(id·for·name 앞에 붙일 글, 기본 'sk-'), keep(남길 data-* 이름 목록) }
+     * - 복제본은 inert + aria-hidden. id·for·name 앞에 prefix 를 붙이고, 연결·스크립트 고리 속성(data-* 포함)을 지운다
+     * - SVG <use href> 는 남긴다(아이콘 자리). 링크 href 는 지운다
+     * - [data-ds-skeleton-keep] 안의 글은 막대로 바꾸지 않는다(고정 안내 글)
+     */
+    from: function (el, opts) {
+      el = resolve(el);
+      opts = opts || {};
+      var prefix = opts.prefix || 'sk-';
+      var keep = SK_KEEP.concat(opts.keep || []);
+      var sk = el.cloneNode(true);
+      sk.hidden = false;
+      // 글자 마디를 먼저 찾는다(고정 안내 글 표시가 data-* 라 속성을 지우기 전에)
+      var walker = doc.createTreeWalker(sk, NodeFilter.SHOW_TEXT, {
+        acceptNode: function (node) {
+          if (!node.nodeValue.trim() || node.parentNode.closest('script, style, template, textarea, select, option, svg, [data-ds-skeleton-keep]')) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      var texts = [];
+      while (walker.nextNode()) texts.push(walker.currentNode);
+      texts.forEach(function (node) {
+        var bar = make('span', 'ds-skeletonize__text');
+        node.parentNode.replaceChild(bar, node);
+        bar.appendChild(node);
+      });
+      [sk].concat($$('*', sk)).forEach(function (x) {
+        SK_DROP.forEach(function (a) { x.removeAttribute(a); });
+        Array.prototype.slice.call(x.attributes).forEach(function (a) {
+          if (a.name.indexOf('data-') === 0 && keep.indexOf(a.name) < 0) x.removeAttribute(a.name);
+        });
+        if (x.namespaceURI !== SVG_NS) x.removeAttribute('href');
+        if (x.id) x.id = prefix + x.id;
+        if (x.htmlFor) x.htmlFor = prefix + x.htmlFor;
+        if (x.name && typeof x.name === 'string' && x.tagName !== 'META') x.name = prefix + x.name;
+        // 고른 표시(체크된 칸·고른 행 바탕)는 내용이 온 뒤에 보인다
+        if (x.type === 'checkbox' || x.type === 'radio') x.checked = false;
+      });
+      sk.classList.add('ds-skeletonize');
+      sk.setAttribute('aria-hidden', 'true');
+      sk.inert = true;
+      return sk;
+    },
+    /** el 앞에 스켈레톤을 붙이고 el 을 숨긴다. 이미 있으면 그대로 둔다. 스켈레톤을 돌려준다 */
+    show: function (el, opts) {
+      el = resolve(el);
+      if (!el || !el.parentNode) return null;
+      var sk = el._dsSkeleton;
+      if (!sk || !sk.isConnected) {
+        sk = DS.skeleton.from(el, opts);
+        el.parentNode.insertBefore(sk, el);
+        el._dsSkeleton = sk;
+      }
+      el.hidden = true;
+      return sk;
+    },
+    /** 스켈레톤을 떼고 el 을 다시 보인다 */
+    hide: function (el) {
+      el = resolve(el);
+      if (!el) return;
+      if (el._dsSkeleton) el._dsSkeleton.remove();
+      el._dsSkeleton = null;
+      el.hidden = false;
+    }
+  };
 
   /* ---------- 10. 테마 — 밝게(기본) · 어둡게 · 시스템 ---------- */
 
@@ -923,7 +1270,16 @@
     };
   };
 
+  var BUSY_SIZE = ['minInlineSize', 'maxInlineSize', 'minBlockSize'];
+
   function showBusy(btn) {
+    // 처리 전 크기를 최소로 잡아 둔다 — 처리 중 글이 더 짧아도 버튼이 줄어들지 않는다.
+    // 처리 중 글이 더 길면 버튼이 그만큼 넓어진다(글을 자르지 않는다). 배치가 바뀌면 안 되는 곳은 data-busy-label 을 짧게 쓴다
+    var r = btn.getBoundingClientRect();
+    var rem = remPx();
+    btn._dsSize = BUSY_SIZE.map(function (k) { return btn.style[k]; });
+    btn.style.minInlineSize = (r.width / rem) + 'rem';
+    btn.style.minBlockSize = (r.height / rem) + 'rem';
     btn._dsLabel = Array.prototype.slice.call(btn.childNodes);
     btn._dsAriaDisabled = btn.getAttribute('aria-disabled');
     btn.setAttribute('aria-busy', 'true');
@@ -932,7 +1288,7 @@
     var spin = make('span', 'ds-spinner');
     spin.setAttribute('aria-hidden', 'true');
     btn.appendChild(spin);
-    btn.appendChild(make('span', null, btn.getAttribute('data-busy-label') || '처리 중…'));
+    btn.appendChild(make('span', 'ds-btn__busy', btn.getAttribute('data-busy-label') || '처리 중…'));
   }
 
   function hideBusy(btn) {
@@ -946,6 +1302,8 @@
       btn._dsLabel.forEach(function (n) { btn.appendChild(n); });
       btn._dsLabel = null;
     }
+    if (btn._dsSize) BUSY_SIZE.forEach(function (k, i) { btn.style[k] = btn._dsSize[i]; });
+    btn._dsSize = null;
   }
 
   /**
@@ -1024,17 +1382,32 @@
     var t = e.target;
     if (!t.closest) return;
 
-    // 열린 메뉴 — 항목을 누르면 닫고 메뉴 버튼으로, 바깥을 누르면 그냥 닫는다
+    // 열린 메뉴 — 항목을 누르면 닫고 메뉴 버튼으로, 바깥을 누르면 그냥 닫는다.
+    // 체크 메뉴(ds-menu--check)의 menuitemcheckbox 는 켜고 끄기만 하고 열어 둔다(ds:menucheck)
     if (openMenuBtn && !openMenuBtn.contains(t)) {
       var openMenuEl = menuOf(openMenuBtn);
       var picked = t.closest('[role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"]');
-      if (picked && openMenuEl && openMenuEl.contains(picked)) closeMenu(openMenuBtn, true);
-      else if (!openMenuEl || !openMenuEl.contains(t)) closeMenu(openMenuBtn, false);
+      if (picked && openMenuEl && openMenuEl.contains(picked)) {
+        if (picked.getAttribute('role') === 'menuitemcheckbox' && openMenuEl.classList.contains('ds-menu--check')) {
+          var on = picked.getAttribute('aria-checked') !== 'true';
+          picked.setAttribute('aria-checked', on ? 'true' : 'false');
+          picked.focus();
+          emit(picked, 'ds:menucheck', { checked: on, value: picked.getAttribute('data-value') });
+          return;
+        }
+        closeMenu(openMenuBtn, true);
+      } else if (!openMenuEl || !openMenuEl.contains(t)) closeMenu(openMenuBtn, false);
     }
 
     var dismiss = t.closest('[data-ds-dismiss]');
     if (dismiss) {
       DS.banner.dismiss(dismiss.closest('[data-ds-banner]'));
+      return;
+    }
+
+    var drawerBtn = t.closest('[data-ds-drawer]');
+    if (drawerBtn) {
+      DS.drawer.open(doc.getElementById(drawerBtn.getAttribute('data-ds-drawer')), { opener: drawerBtn });
       return;
     }
 
@@ -1050,8 +1423,8 @@
       return;
     }
 
-    // 가림막을 눌러 닫는 대화상자(data-ds-light-dismiss)
-    if (t.tagName === 'DIALOG' && t.open && t.hasAttribute('data-ds-light-dismiss')) {
+    // 가림막을 눌러 닫는 대화상자(data-ds-light-dismiss) · 서랍(ds-drawer)은 늘
+    if (t.tagName === 'DIALOG' && t.open && (t.hasAttribute('data-ds-light-dismiss') || t.classList.contains('ds-drawer'))) {
       var r = t.getBoundingClientRect();
       var inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
       if (!inside) DS.dialog.close(t);
@@ -1274,13 +1647,25 @@
 
   /* ---------- 시작 ---------- */
 
+  /* 머리줄 높이를 --ds-app-top 에 적는다. 화면 높이의 --ds-topbar-sticky-max(20%)를 넘으면 붙이지 않고(data-top-static) 0 으로 둔다 —
+     좁은 폭 + 큰 글자에서 여러 줄이 된 머리줄이 화면의 큰 몫을 늘 덮지 않게 */
   function watchTopbar() {
     var top = $('.ds-app__top');
     if (!top) return;
-    var set = function () { root.style.setProperty('--ds-app-top', Math.round(top.getBoundingClientRect().height) + 'px'); };
+    var app = top.closest('.ds-app');
+    var set = function () {
+      var h = top.getBoundingClientRect().height;
+      var max = parseFloat(token('--ds-topbar-sticky-max')) || 0.2;
+      var free = h > window.innerHeight * max;
+      if (app) {
+        if (free) app.setAttribute('data-top-static', '');
+        else app.removeAttribute('data-top-static');
+      }
+      root.style.setProperty('--ds-app-top', free ? '0rem' : Math.round(h) + 'px');
+    };
     set();
     if (window.ResizeObserver) new ResizeObserver(set).observe(top);
-    else window.addEventListener('resize', set);
+    window.addEventListener('resize', set);
   }
 
   function init() {
@@ -1292,6 +1677,8 @@
     initSort();
     initTabsAndRadios();
     initPanels();
+    initDrawers();
+    initStickyTables();
     $$('[data-ds-banner][data-replaces]').forEach(function (b) { hideReplaced(b, b.getAttribute('data-replaces')); });
     if (wide) {
       var onWide = function () {

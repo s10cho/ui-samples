@@ -1,0 +1,415 @@
+/*
+ * 첫 사용 안내 샘플 전용(onb-). 부품은 kit(css/components.css)에서 오고, 여기에는 kit 에 없는
+ * 가운데 한 열 배치·주소 칸 뒤 고정 글·이메일 칸 줄·상태 줄 목록·건너뛴 단계 표시만 둔다.
+ * 값은 css/tokens.css 변수와 아래 샘플 토큰만 쓴다. 폭 경계는 kit 과 같은 rem 이다.
+ * 색·너비 전환(transition)은 두지 않는다(MOT-05).
+ */
+
+/* 샘플 토큰 — kit 에 같은 뜻의 값이 없다(설계서 4절) */
+:root {
+  --onboarding-setup-col-max: 40rem; /* 본문 한 열 — 넓은 화면에서 폼을 가운데에 모은다(LAY-04) */
+}
+
+/* 아주 좁은 폭 — 화면 밝기 고르기는 아이콘만(이름은 툴팁과 aria-label 로) */
+@media (max-width: 29.9375rem) {
+  .onb-theme-text {
+    display: none;
+  }
+}
+
+/* ───────── 배치 ───────── */
+
+.onb-page {
+  max-width: calc(var(--onboarding-setup-col-max) + 2 * var(--ds-gap-page-x));
+}
+
+.onb-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-gap-section);
+  min-width: 0;
+}
+
+.onb-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  min-width: 0;
+}
+
+.onb-step__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.onb-step__title {
+  align-self: flex-start;
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+}
+
+.onb-step__desc {
+  color: var(--ds-color-fg-muted);
+}
+
+.onb-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-gap-section);
+  min-width: 0;
+}
+
+/* 묶음 이름은 칸 이름(ds-field__label)과 같은 굵기(500) */
+.onb-legend,
+.ds-fieldset > legend.onb-legend {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-weight);
+}
+
+.onb-sub {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.onb-strong {
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.onb-break {
+  overflow-wrap: anywhere;
+}
+
+/* 단계 버튼 — 주 버튼은 줄 끝. 좁으면 줄을 바꾼다 */
+.onb-actions {
+  align-items: center;
+}
+
+.onb-actions > .ds-btn--primary {
+  margin-inline-start: auto;
+}
+
+/* ───────── 알림 배너 — 좁은 자리에서 본문이 한 글자씩 접히지 않게(kit 메움) ───────── */
+
+/* kit 배너는 아이콘 · 본문 · 닫기 3열이다. 320 + 글자 200% 에서 본문 열이 16px 남짓으로 줄어
+   한 글자씩 접힌다. 배너 자리가 20rem 보다 좁으면 첫 줄에 아이콘·닫기, 다음 줄에 본문 전체 폭을 둔다 */
+.onb-view > .ds-banner-slot {
+  container-type: inline-size;
+}
+
+@container (max-width: 20rem) {
+  .ds-banner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "icon . close" "body body body";
+  }
+
+  .ds-banner > .ds-banner__icon {
+    grid-area: icon;
+  }
+
+  .ds-banner > .ds-banner__body {
+    grid-area: body;
+  }
+
+  .ds-banner > .ds-banner__close {
+    grid-area: close;
+  }
+}
+
+/* ───────── 진행 단계 — 건너뛴 단계(kit 에 없는 상태) ───────── */
+
+/* 끝낸 단계(체크)와 모양을 다르게 — 점선 테두리 + 빼기 아이콘 + 숨긴 글 "건너뜀"(CLR-05) */
+.ds-steps__item[data-state="skipped"] {
+  color: var(--ds-color-fg-muted);
+}
+
+.ds-steps__item[data-state="skipped"] .ds-steps__mark {
+  border-style: dashed;
+  border-color: var(--ds-color-line-control);
+  background: var(--ds-color-surface-default);
+  color: var(--ds-color-fg-muted);
+}
+
+/* ───────── 1단계 — 주소 칸 뒤 고정 글 ───────── */
+
+.onb-addr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+}
+
+.onb-addr__input {
+  flex: 1 1 8rem;
+  width: auto;
+  min-width: 0;
+}
+
+.onb-addr__suffix {
+  flex: none;
+  color: var(--ds-color-fg-muted);
+}
+
+/* ───────── 2단계 — 이메일 칸 줄 ───────── */
+
+.onb-invite {
+  gap: var(--ds-space-2);
+}
+
+.onb-invite__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  max-width: var(--ds-size-field-max);
+}
+
+/* 번호 · 칸 · 지우기 — 지우기는 칸이 2개 이상일 때만 있다 */
+.onb-invite__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  align-items: start;
+}
+
+.onb-invite__n {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-inline-size: 2ch;
+  min-block-size: var(--ds-control-height-md);
+  color: var(--ds-color-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.onb-invite__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  min-width: 0;
+}
+
+.onb-invite__more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-3);
+}
+
+/* 보내는 동안 칸을 고칠 수 없다 — fieldset disabled */
+.onb-invite:disabled .onb-invite__n {
+  color: var(--ds-color-fg-disabled);
+}
+
+.onb-sent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+/* ───────── 상태가 붙은 줄 목록 — 보낸 초대 · 채널 · 결과 · 체크리스트 ───────── */
+
+.onb-rows {
+  display: flex;
+  flex-direction: column;
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-surface-default);
+}
+
+/* 카드 안에서는 바깥 테두리 없이 위 구분선만 */
+.onb-rows--flush {
+  border: 0;
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+  border-radius: 0;
+}
+
+.onb-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "lead main action";
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  min-height: var(--ds-row-height);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.onb-row:last-child {
+  border-block-end: 0;
+}
+
+.onb-row--plain {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "main action";
+}
+
+.onb-row__lead {
+  grid-area: lead;
+  display: flex;
+  align-self: start;
+  align-items: center;
+  min-block-size: calc(var(--ds-text-label-size) * var(--ds-text-label-leading));
+  color: var(--ds-color-fg-muted);
+}
+
+.onb-row__main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-0-5);
+  min-width: 0;
+}
+
+.onb-row__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.onb-row__meta {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.onb-row__main > .ds-field__error {
+  margin-block-start: var(--ds-space-1);
+}
+
+.onb-row__action {
+  grid-area: action;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.onb-channel__icon {
+  width: var(--ds-icon-size-lg);
+  height: var(--ds-icon-size-lg);
+}
+
+/* 좁은 폭(글자를 키운 화면 포함) — 버튼을 글 아래로 */
+@media (max-width: 29.9375rem) {
+  .onb-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "lead main" ". action";
+  }
+
+  .onb-row--plain {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "main" "action";
+  }
+
+  .onb-row__action {
+    justify-content: flex-start;
+  }
+}
+
+/* 결과 목록의 "바꾸기"·"지금 하기" — 단계로 가는 링크. 누르는 영역 24(터치 44) */
+.onb-link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--ds-target-min);
+  margin-inline: calc(-1 * var(--ds-space-1)); /* 글자 시작을 줄 글과 맞춘다 — 누르는 영역은 그대로 */
+  padding-inline: var(--ds-space-1);
+  color: var(--ds-color-fg-accent);
+  font-weight: var(--ds-text-label-weight);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.onb-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.onb-note .ds-icon {
+  flex: none;
+  width: var(--ds-icon-size-sm);
+  height: var(--ds-icon-size-sm);
+  margin-block-start: calc((var(--ds-text-body-sm-leading) * 1em - var(--ds-icon-size-sm)) / 2);
+  color: var(--ds-color-fg-info);
+}
+
+/* ───────── 첫 화면 — 체크리스트 ───────── */
+
+.onb-start {
+  gap: 0;
+}
+
+.onb-start__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+}
+
+.onb-start__done {
+  color: var(--ds-color-fg-muted);
+}
+
+/* 끝낸 일 — 성공 아이콘 + 숨긴 글 "(끝냄)". 남은 일 — 빈 원 + "(남음)". 모양으로 나눈다 */
+.onb-check__done {
+  width: var(--ds-icon-size-lg);
+  height: var(--ds-icon-size-lg);
+  color: var(--ds-color-fg-success);
+}
+
+.onb-check__todo {
+  display: block;
+  width: var(--ds-icon-size-lg);
+  height: var(--ds-icon-size-lg);
+  border: var(--ds-size-border-strong) solid var(--ds-color-line-control);
+  border-radius: var(--ds-radius-pill);
+}
+
+.onb-row--done .onb-row__title {
+  color: var(--ds-color-fg-muted);
+}
+
+/* ───────── 바닥줄 ───────── */
+
+.onb-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2) var(--ds-space-4);
+  padding-block-start: var(--ds-space-4);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+/* ───────── 고대비(강제 색) 모드 ───────── */
+
+@media (forced-colors: active) {
+  .ds-steps__item[data-state="skipped"] .ds-steps__mark {
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+
+  .onb-check__todo {
+    border-color: CanvasText;
+  }
+
+  .onb-check__done {
+    color: CanvasText;
+  }
+
+  .onb-link {
+    color: LinkText;
+  }
+
+  .onb-note .ds-icon {
+    color: CanvasText;
+  }
+}

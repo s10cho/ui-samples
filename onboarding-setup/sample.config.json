@@ -1,0 +1,6 @@
+{
+  "kit": "app",
+  "build": [],
+  "states": ["", "?state=invalid", "?state=invite-partial", "?state=connect-fail", "?state=skipped", "?view=home"],
+  "budgetKB": 150
+}

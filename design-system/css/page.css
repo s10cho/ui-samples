@@ -313,9 +313,25 @@ code {
   }
 }
 
-/* 지표 카드 스켈레톤이 글줄 높이를 차지하게(CMP-FB-09: 불러온 뒤 밀리지 않게) */
-.ds-stat__value > .ds-skeleton,
-.ds-stat__delta > .ds-skeleton {
-  display: inline-block;
-  vertical-align: middle;
+/* 지표 카드 스켈레톤의 글줄 높이는 kit(components.css)이 맞춘다 */
+
+/* 복제 스켈레톤 견본 — 스켈레톤과 내용이 같은 자리에 온다 */
+.dsx-sk-target {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* 첫 열 고정 견본 — 넓은 화면에서도 가로로 밀어 볼 수 있게 표를 틀보다 넓게 둔다 */
+.dsx-wide {
+  min-width: calc(var(--ds-size-content-max) * 0.9);
+}
+
+.dsx-wide :is(th, td) {
+  white-space: nowrap;
+}
+
+/* 작업 줄이 붙는 동안 옮겨 갈 자리(작업 표 바로 뒤) — 배치에는 끼지 않는다 */
+.dsx-task-area {
+  display: contents;
 }

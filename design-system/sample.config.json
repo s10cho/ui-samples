@@ -1,6 +1,6 @@
 {
   "kit": "app",
   "build": [],
-  "states": ["", "?state=loading", "?state=empty", "?state=error", "?state=dialog", "?panel=task", "?theme=dark"],
+  "states": ["", "?state=loading", "?state=empty", "?state=error", "?state=dialog", "?panel=task", "?drawer=filter", "?theme=dark"],
   "budgetKB": 150
 }
