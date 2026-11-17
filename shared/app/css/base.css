@@ -1,0 +1,255 @@
+/*
+ * 바탕 — 리셋 · 글자 · 포커스 링 · 건너뛰기 링크 · 화면에서 숨긴 글.
+ * tokens.css 다음, components.css 앞에 둔다. 값은 토큰 변수만 쓴다.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* 고정 머리줄 아래로 포커스·앵커가 숨지 않게(CMP-NAV-15) */
+  scroll-padding-top: calc(var(--ds-size-topbar) + var(--ds-space-4));
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-text-body-size);
+  line-height: var(--ds-text-body-leading);
+  font-weight: var(--ds-text-body-weight);
+  color: var(--ds-color-fg-default);
+  background: var(--ds-color-surface-default);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 한국어 줄바꿈 — 어절 단위, 긴 영문·주소는 넘치지 않게(TYP-KO-01) */
+:lang(ko) {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-break: strict;
+}
+
+h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd {
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-size: inherit;
+  font-weight: inherit;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+ul[class], ol[class] {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+}
+
+img, video {
+  height: auto;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+a {
+  color: var(--ds-color-fg-accent);
+  text-decoration-thickness: var(--ds-size-hairline);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: var(--ds-size-border-strong);
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/* 숫자를 세로로 비교하는 곳은 고정폭 숫자(TYP-KO-05) */
+.ds-num,
+time {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 포커스 링 — 키보드로 옮겼을 때만 보인다. 두께·간격은 토큰(SHP-09) */
+:focus-visible {
+  outline: var(--ds-size-focus-ring) solid var(--ds-color-line-focus);
+  outline-offset: var(--ds-size-focus-offset);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* 건너뛰기 링크 — 첫 요소로 둔다(CMP-NAV-14). 포커스를 받을 때만 보인다 */
+.ds-skip-link {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ds-target-min);
+  inset-inline-start: var(--ds-space-2);
+  inset-block-start: var(--ds-space-2);
+  z-index: var(--ds-z-skip-link);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-control-radius);
+  background: var(--ds-color-surface-raised);
+  color: var(--ds-color-fg-default);
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+  transform: translateY(calc(-100% - var(--ds-space-4)));
+}
+
+.ds-skip-link:focus {
+  box-shadow: var(--ds-shadow-overlay);
+  transform: none;
+}
+
+/* 화면에서는 숨기고 화면낭독기에는 읽히는 글 */
+.ds-sr-only {
+  position: absolute;
+  width: var(--ds-size-hairline);
+  height: var(--ds-size-hairline);
+  margin: calc(-1 * var(--ds-size-hairline));
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* live 영역 — 처음부터 렌더링해 두고 내용만 바꾼다. display:none 으로 숨기지 않는다 */
+.ds-live {
+  position: absolute;
+  width: var(--ds-size-hairline);
+  height: var(--ds-size-hairline);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 아이콘 — 글자 크기를 따라간다. 뜻이 있는 아이콘은 옆에 글자를 둔다 */
+.ds-icon {
+  display: inline-block;
+  flex: none;
+  width: var(--ds-icon-size-md);
+  height: var(--ds-icon-size-md);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+}
+
+.ds-icon--sm {
+  width: var(--ds-icon-size-sm);
+  height: var(--ds-icon-size-sm);
+}
+
+.ds-icon--lg {
+  width: var(--ds-icon-size-lg);
+  height: var(--ds-icon-size-lg);
+}
+
+.ds-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* 글자 스타일 — 부품 밖에서 글자만 맞출 때 쓴다 */
+.ds-text-display {
+  font-size: var(--ds-text-display-size);
+  line-height: var(--ds-text-display-leading);
+  font-weight: var(--ds-text-display-weight);
+  letter-spacing: var(--ds-text-display-tracking);
+}
+
+.ds-text-title {
+  font-size: var(--ds-text-title-size);
+  line-height: var(--ds-text-title-leading);
+  font-weight: var(--ds-text-title-weight);
+  letter-spacing: var(--ds-text-title-tracking);
+}
+
+.ds-text-title-sm {
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+}
+
+.ds-text-body {
+  font-size: var(--ds-text-body-size);
+  line-height: var(--ds-text-body-leading);
+  font-weight: var(--ds-text-body-weight);
+}
+
+.ds-text-body-reading {
+  font-size: var(--ds-text-body-reading-size);
+  line-height: var(--ds-text-body-reading-leading);
+  max-width: var(--ds-size-reading-max);
+}
+
+.ds-text-body-sm {
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.ds-text-label {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-weight);
+}
+
+.ds-text-label-sm {
+  font-size: var(--ds-text-label-sm-size);
+  line-height: var(--ds-text-label-sm-leading);
+  font-weight: var(--ds-text-label-weight);
+}
+
+.ds-text-caption {
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+  font-weight: var(--ds-text-caption-weight);
+}
+
+.ds-text-muted {
+  color: var(--ds-color-fg-muted);
+}
+
+/* 고대비(강제 색) 모드 — 포커스 링은 시스템 색으로 남긴다 */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline-color: Highlight;
+  }
+}

@@ -1,0 +1,677 @@
+/*
+ * 운영 대시보드 — 샘플 고유 CSS. 부품은 kit(css/components.css)에서 오고, 여기에는 이 화면의 배치·지표 띠·그래프만 둔다.
+ * 값은 --ds-* 토큰만 쓴다. 토큰에 없는 값은 아래 --ops-dashboard-* 에 두고 설계서 4절에 이유를 적었다.
+ */
+:root {
+  --ops-dashboard-series-1: #2a78d6;      /* 그래프 이번 기간 — dataviz 팔레트 1번(밝게). 강조색과 역할을 나눈다 */
+  --ops-dashboard-wash-opacity: 0.1;      /* 이번 기간 선 아래 옅은 면 */
+  --ops-dashboard-refetch-opacity: 0.55;  /* 다시 불러오는 동안 이전 그림을 옅게 남긴다 */
+  --ops-dashboard-chart-h: 12rem;         /* 그래프 그림 높이(축 글자 띠 별도) */
+  --ops-dashboard-chart-band: calc(var(--ds-space-8) + var(--ds-space-0-5)); /* 축 글자 띠 — js/chart.js 와 같은 값 */
+  --ops-dashboard-rail: 22rem;            /* 넓은 폭 알림 열 */
+  --ops-dashboard-alerts-max: 40rem;      /* 넓은 폭 알림 목록 최대 높이 */
+  --ops-dashboard-meter-w: 4rem;          /* 목표 진행 막대 길이 */
+  --ops-dashboard-date-w: 14rem;          /* 날짜 칸 최대 너비(입력 칸 480 은 날짜에 너무 넓다) */
+}
+
+[data-theme="dark"] {
+  --ops-dashboard-series-1: #3987e5;      /* dataviz 팔레트 1번(어둡게) */
+}
+
+/* ───────── 페이지 머리 — 갱신 상태 ───────── */
+
+.ops-muted {
+  color: var(--ds-color-fg-muted);
+}
+
+.ops-refresh {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.ops-refresh__time {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1);
+}
+
+.ops-refresh__time time {
+  font-weight: var(--ds-font-weight-medium);
+}
+
+.ops-refresh__auto {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+}
+
+.ops-refresh__auto .ds-switch {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+}
+
+/* ───────── 기간 ───────── */
+
+.ops-range {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-4);
+}
+
+.ops-range__text {
+  color: var(--ds-color-fg-muted);
+}
+
+.ops-custom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--ds-space-3) var(--ds-space-4);
+}
+
+.ops-custom .ds-field {
+  flex: 1 1 auto;
+  max-width: var(--ops-dashboard-date-w);
+}
+
+/* 버튼을 입력 칸과 같은 줄에 맞춘다 — 라벨 한 줄 + 라벨과 칸 사이 간격만큼 내린다 */
+.ops-custom__apply {
+  margin-block-start: calc(var(--ds-text-label-size) * var(--ds-text-label-leading) + var(--ds-space-1-5));
+}
+
+.ops-custom__hint {
+  flex: 1 0 100%;
+}
+
+/* ───────── 본문 배치 — 본문 폭으로 나눈다(컨테이너 쿼리) ───────── */
+
+.ops-dash-wrap {
+  container: ops-dash / inline-size;
+}
+
+.ops-dash {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-gap-section);
+  align-items: start;
+}
+
+.ops-kpi-sec {
+  container: ops-kpis / inline-size;
+  min-width: 0;
+}
+
+.ops-state {
+  padding: var(--ds-space-8) var(--ds-space-6);
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-container-radius);
+}
+
+.ops-alerts {
+  container: ops-alerts / inline-size;
+  min-height: 0;
+}
+
+@container ops-dash (min-width: 60rem) {
+  /* 한 열일 때는 DOM 순서(지표 → 알림 → 추세)대로 쌓고, 두 열일 때만 이름 붙인 자리를 쓴다 */
+  .ops-dash:not(.is-blank) {
+    grid-template-columns: var(--ops-dashboard-rail) minmax(0, 1fr);
+    grid-template-areas: "kpi kpi" "alerts trends";
+  }
+
+  .ops-dash:not(.is-blank) > .ops-kpi-sec {
+    grid-area: kpi;
+  }
+
+  .ops-dash:not(.is-blank) > .ops-alerts {
+    grid-area: alerts;
+  }
+
+  .ops-dash:not(.is-blank) > .ops-trends {
+    grid-area: trends;
+  }
+
+  .ops-dash:not(.is-blank) .ops-alerts {
+    max-height: var(--ops-dashboard-alerts-max);
+  }
+}
+
+/* 다시 불러오는 동안 — 이전 그림을 옅게 남긴다. 스켈레톤을 다시 깔지 않는다(PAT-DASH-12) */
+.ops-dash :is(.ops-kpis, .ops-alerts__panel, .ops-chart__plot, .ops-chart__table, .ops-legend) {
+  transition: opacity var(--ds-motion-crossfade);
+}
+
+.ops-dash.is-refreshing :is(.ops-kpis, .ops-alerts__panel, .ops-chart__plot, .ops-chart__table, .ops-legend) {
+  opacity: var(--ops-dashboard-refetch-opacity);
+}
+
+/* ───────── 지표 띠 — 테두리 하나 안을 구분선으로 나눈다(카드 4장이 아니다) ───────── */
+
+.ops-kpis {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-size-hairline);
+  overflow: hidden;
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-line-subtle);
+}
+
+@container ops-kpis (min-width: 30rem) {
+  .ops-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container ops-kpis (min-width: 56rem) {
+  .ops-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.ops-kpi {
+  min-width: 0;
+  padding: var(--ds-space-4);
+  background: var(--ds-color-surface-default);
+}
+
+.ops-kpi__goal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  margin-block-start: var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.ops-meter {
+  display: inline-block;
+  flex: none;
+  width: var(--ops-dashboard-meter-w);
+  height: var(--ds-size-progress);
+  overflow: hidden;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-color-surface-hover);
+}
+
+.ops-meter__bar {
+  display: block;
+  width: var(--ops-meter, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ops-dashboard-series-1);
+}
+
+.ops-kpi .ds-skeleton + .ds-skeleton {
+  margin-block-start: var(--ds-space-2);
+}
+
+/* ───────── 알림 ───────── */
+
+.ops-alerts__head {
+  align-items: baseline;
+}
+
+.ops-alerts__sum {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.ops-alerts__note {
+  padding: 0 var(--ds-space-4);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.ops-alerts__tabs {
+  position: relative; /* 탭 안 화면에서 숨긴 글(.ds-sr-only)이 탭 띠 밖으로 새어 페이지를 넓히지 않게(공용 부품 보고) */
+  flex: none;
+  padding-inline: var(--ds-space-2);
+}
+
+.ops-alerts__panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* 카드가 안쪽을 자르므로 포커스 링을 안으로 그린다 */
+.ops-alerts__panel:focus-visible {
+  outline-offset: calc(-1 * var(--ds-size-focus-ring));
+}
+
+.ops-alert {
+  align-items: flex-start;
+  padding: var(--ds-space-3) var(--ds-space-4);
+}
+
+.ops-alert__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+}
+
+.ops-alert__btn {
+  flex: none;
+}
+
+/* 알림 틀이 좁으면(글자를 키웠을 때 등) 버튼을 글 아래로 내린다 */
+@container ops-alerts (max-width: 20rem) {
+  .ops-alert {
+    flex-wrap: wrap;
+  }
+
+  .ops-alert > .ds-list__main {
+    flex-basis: 100%;
+  }
+}
+
+.ops-alert .ds-skeleton {
+  margin-block: var(--ds-space-1);
+}
+
+.ops-alerts__empty {
+  padding: var(--ds-space-6) var(--ds-space-4);
+}
+
+/* ───────── 추세 — 그래프 3개를 한 틀 안에 구분선으로 나눈다 ───────── */
+
+.ops-trends {
+  gap: 0;
+  padding: 0;
+}
+
+.ops-trends__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-4) var(--ds-space-4) var(--ds-space-3);
+}
+
+.ops-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-width: 0;
+  margin: 0;
+  padding: var(--ds-space-4);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.ops-chart__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-2) var(--ds-space-4);
+}
+
+.ops-chart__titles {
+  display: flex;
+  flex: 1 1 var(--ds-size-card-min);
+  flex-direction: column;
+  gap: var(--ds-space-0-5);
+  min-width: 0;
+}
+
+.ops-chart__title {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.ops-chart__sum {
+  max-width: var(--ds-size-reading-max);
+}
+
+.ops-view .ds-segmented__item {
+  min-height: var(--ds-target-min);
+  padding-inline: var(--ds-space-2);
+  font-size: var(--ds-text-body-sm-size);
+}
+
+.ops-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1) var(--ds-space-4);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.ops-legend:empty {
+  display: none;
+}
+
+.ops-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+}
+
+/* 계열 표시 — 선 그래프는 짧은 선, 막대 그래프는 작은 막대 */
+.ops-key {
+  display: inline-block;
+  flex: none;
+  width: var(--ds-space-4);
+  height: var(--ds-size-border-strong);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ops-dashboard-series-1);
+}
+
+.ops-key--prev {
+  background: var(--ds-color-line-control);
+}
+
+.ops-key--target {
+  height: 0;
+  border-block-start: var(--ds-size-border-strong) dashed var(--ds-color-fg-muted);
+  border-radius: 0;
+  background: transparent;
+}
+
+.ops-key--bar,
+.ops-key--over {
+  width: var(--ds-space-2);
+  height: var(--ds-space-3);
+  border-radius: var(--ds-radius-xs) var(--ds-radius-xs) 0 0;
+}
+
+.ops-key--over {
+  background: var(--ds-color-fill-danger);
+}
+
+.ops-chart__plot {
+  position: relative;
+  min-height: calc(var(--ops-dashboard-chart-h) + var(--ops-dashboard-chart-band));
+  touch-action: pan-y;
+  border-radius: var(--ds-radius-xs);
+}
+
+.ops-chart__plot:focus-visible {
+  outline-offset: var(--ds-space-1);
+}
+
+.ops-chart__skel {
+  height: calc(var(--ops-dashboard-chart-h) + var(--ops-dashboard-chart-band));
+  border-radius: var(--ds-container-radius);
+}
+
+.ops-chart__fail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--ds-space-3);
+  min-height: calc(var(--ops-dashboard-chart-h) + var(--ops-dashboard-chart-band));
+}
+
+.ops-chart__failtext {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+}
+
+.ops-chart__failtext .ds-icon {
+  margin-block-start: calc((var(--ds-text-body-leading) * 1em - var(--ds-icon-size-md)) / 2);
+  color: var(--ds-color-fg-danger);
+}
+
+/* 그래프 툴팁 — 값이 앞, 이름이 뒤 */
+.ops-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: var(--ds-z-tooltip);
+  max-width: var(--ds-size-tooltip-max);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-surface-raised);
+  box-shadow: var(--ds-shadow-overlay);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+  pointer-events: none;
+}
+
+.ops-tip__title,
+.ops-tip__state {
+  color: var(--ds-color-fg-muted);
+  white-space: nowrap;
+}
+
+.ops-tip__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  white-space: nowrap;
+}
+
+.ops-tip__row strong {
+  font-weight: var(--ds-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ops-tip__row span:last-child {
+  color: var(--ds-color-fg-muted);
+}
+
+/* SVG — 색은 모두 여기서 토큰으로 칠한다 */
+.ops-c {
+  display: block;
+  overflow: visible;
+  font-family: var(--ds-font-family);
+}
+
+.ops-c-gridline {
+  stroke: var(--ds-color-line-subtle);
+  stroke-width: 1;
+}
+
+.ops-c-base {
+  stroke: var(--ds-color-line-strong);
+  stroke-width: 1;
+}
+
+.ops-c-tick {
+  fill: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  font-variant-numeric: tabular-nums;
+}
+
+.ops-c-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ops-c-line--cur {
+  stroke: var(--ops-dashboard-series-1);
+}
+
+.ops-c-line--prev {
+  stroke: var(--ds-color-line-control);
+}
+
+.ops-c-wash {
+  fill: var(--ops-dashboard-series-1);
+  fill-opacity: var(--ops-dashboard-wash-opacity);
+}
+
+.ops-c-bar {
+  fill: var(--ops-dashboard-series-1);
+}
+
+.ops-c-bar--over {
+  fill: var(--ds-color-fill-danger);
+}
+
+.ops-c-band {
+  fill: var(--ds-color-surface-subtle);
+}
+
+.ops-c-target {
+  stroke: var(--ds-color-fg-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.ops-c-target-label,
+.ops-c-endlabel {
+  font-size: var(--ds-text-caption-size);
+  font-variant-numeric: tabular-nums;
+  paint-order: stroke;
+  stroke: var(--ds-color-surface-default);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.ops-c-target-label {
+  fill: var(--ds-color-fg-muted);
+}
+
+.ops-c-endlabel {
+  fill: var(--ds-color-fg-default);
+  font-weight: var(--ds-font-weight-semibold);
+}
+
+.ops-c-dot,
+.ops-c-mark {
+  stroke: var(--ds-color-surface-default);
+  stroke-width: 2;
+  fill: var(--ops-dashboard-series-1);
+}
+
+.ops-c-mark--prev {
+  fill: var(--ds-color-line-control);
+}
+
+.ops-c-cross {
+  stroke: var(--ds-color-fg-muted);
+  stroke-width: 1;
+}
+
+/* ───────── 바닥줄 ───────── */
+
+.ops-foot {
+  padding-block-start: var(--ds-space-4);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+}
+
+/* 아주 좁은 폭 — 화면 밝기 글자는 숨기고 아이콘과 툴팁만 남긴다 */
+@media (max-width: 479px) {
+  .ops-theme-text {
+    display: none;
+  }
+}
+
+/* 고대비(강제 색) 모드 — 그래프 색을 시스템 색으로 바꾸고, 지표 칸 구분선을 테두리로 남긴다 */
+@media (forced-colors: active) {
+  .ops-c,
+  .ops-key,
+  .ops-meter__bar {
+    forced-color-adjust: none;
+  }
+
+  .ops-c-gridline,
+  .ops-c-base {
+    stroke: GrayText;
+  }
+
+  .ops-c-tick {
+    fill: CanvasText;
+  }
+
+  /* 테두리 글(paint-order: stroke)만 바탕색 테두리를 둔다 */
+  .ops-c-target-label,
+  .ops-c-endlabel {
+    fill: CanvasText;
+    stroke: Canvas;
+  }
+
+  .ops-c-line--cur,
+  .ops-c-cross {
+    stroke: Highlight;
+  }
+
+  .ops-c-line--prev {
+    stroke: GrayText;
+  }
+
+  .ops-c-wash {
+    fill: Highlight;
+  }
+
+  .ops-c-bar,
+  .ops-c-dot,
+  .ops-c-mark,
+  .ops-key,
+  .ops-key--bar,
+  .ops-meter__bar {
+    fill: Highlight;
+    background: Highlight;
+  }
+
+  .ops-c-bar--over,
+  .ops-key--over {
+    fill: CanvasText;
+    background: CanvasText;
+  }
+
+  .ops-c-mark--prev,
+  .ops-key--prev {
+    fill: GrayText;
+    background: GrayText;
+  }
+
+  .ops-c-dot,
+  .ops-c-mark {
+    stroke: Canvas;
+  }
+
+  .ops-c-target {
+    stroke: CanvasText;
+  }
+
+  .ops-c-band {
+    fill: Canvas;
+    stroke: Highlight;
+  }
+
+  .ops-key--target {
+    border-color: CanvasText;
+    background: transparent;
+  }
+
+  .ops-kpi {
+    outline: var(--ds-size-hairline) solid CanvasText;
+  }
+
+  .ops-meter,
+  .ops-tip,
+  .ops-state {
+    border: var(--ds-size-hairline) solid CanvasText;
+  }
+}
+
+/* hidden 속성이 이긴다 — 위에서 display 를 준 요소(.ops-custom 등)도 숨길 때는 숨긴다 */
+[hidden] {
+  display: none;
+}

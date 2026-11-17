@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>운영 현황 — 운영 대시보드</title>
+  <meta name="description" content="가상 쇼핑몰의 주문·응답 시간·오류 지표와 알림, 추세 그래프를 기간별로 보는 운영 대시보드 샘플이에요.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="data:,">
+  <script>
+    (function () {
+      var root = document.documentElement;
+      // 저장된 화면 밝기를 그리기 전에 적용한다. 저장값이 없으면 밝게 시작한다.
+      try {
+        var mode = new URLSearchParams(location.search).get('theme') || localStorage.getItem('ds-theme') || 'light';
+        if (mode === 'system') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
+      } catch (e) { /* 저장소를 못 읽으면 밝게 */ }
+      // 파일로 열면(file://) 브라우저가 웹 글꼴을 막는다. 그때는 시스템 한글 글꼴로 그린다.
+      if (location.protocol !== 'file:') {
+        [['preload', 'vendor/pretendard/PretendardVariable.page.woff2'], ['stylesheet', 'vendor/pretendard/pretendard-page-subset.css']].forEach(function (item) {
+          var link = document.createElement('link');
+          link.rel = item[0];
+          link.href = item[1];
+          if (item[0] === 'preload') { link.as = 'font'; link.type = 'font/woff2'; link.crossOrigin = 'anonymous'; }
+          document.head.appendChild(link);
+        });
+      }
+    })();
+  </script>
+  <noscript>
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  </noscript>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/page.css">
+  <script src="js/ds.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/chart.js" defer></script>
+  <script src="js/page.js" defer></script>
+</head>
+<body>
+  <a class="ds-skip-link" href="#main">본문으로 건너뛰기</a>
+  <div id="ds-live" class="ds-live" role="status"></div>
+  <div id="ds-live-alert" class="ds-live" role="alert"></div>
+
+  <div class="ds-app" id="app">
+    <header class="ds-app__top ds-topbar">
+      <button class="ds-btn ds-btn--ghost ds-btn--icon ds-topbar__menu" type="button" data-ds-nav-toggle aria-controls="nav" aria-expanded="false" aria-label="메뉴 열기">
+        <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-menu"></use></svg>
+      </button>
+      <a class="ds-topbar__brand" href="../index.html">UI 샘플</a>
+      <span class="ds-topbar__spacer"></span>
+      <div class="ds-segmented" role="radiogroup" aria-label="화면 밝기" data-ds-theme-control>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="light" aria-label="밝게" data-ds-tip="밝게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-sun"></use></svg><span class="ops-theme-text">밝게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="dark" aria-label="어둡게" data-ds-tip="어둡게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-moon"></use></svg><span class="ops-theme-text">어둡게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="system" aria-label="시스템 설정 따르기" data-ds-tip="시스템 설정 따르기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-monitor"></use></svg><span class="ops-theme-text">시스템</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="ds-app__nav ds-sidenav" id="nav" aria-label="메뉴">
+      <div class="ds-sidenav__close">
+        <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" data-ds-nav-close aria-label="메뉴 닫기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg>
+        </button>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-ops">운영</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-ops">
+          <li><a class="ds-nav__link" href="#main" aria-current="page">운영 현황</a></li>
+        </ul>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-here">이 화면</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-here">
+          <li><a class="ds-nav__link" href="#kpi">지표</a></li>
+          <li><a class="ds-nav__link" href="#alerts">알림</a></li>
+          <li><a class="ds-nav__link" href="#trends">추세</a></li>
+        </ul>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-repo">이 저장소</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-repo">
+          <li><a class="ds-nav__link" href="../index.html">샘플 목록</a></li>
+          <li><a class="ds-nav__link" href="../design-system/index.html">부품 모음</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="ds-app__main" id="main" tabindex="-1">
+      <div class="ds-page">
+        <header class="ds-page__head">
+          <div class="ds-page__titles">
+            <h1 class="ds-page__title">운영 현황</h1>
+            <p class="ds-page__desc">가상 쇼핑몰의 주문·응답 시간·오류를 기간별로 봐요.</p>
+          </div>
+          <div class="ops-refresh">
+            <p class="ops-refresh__time" id="updated-line" hidden>
+              <span class="ops-muted">마지막 갱신</span>
+              <time id="updated"></time>
+            </p>
+            <span class="ds-badge ds-badge--warning" id="lag-badge" hidden><span class="ds-badge__dot"></span><span id="lag-text"></span></span>
+            <span class="ds-loading ops-refresh__busy" id="busy" hidden><span class="ds-spinner" aria-hidden="true"></span>불러오는 중…</span>
+            <span class="ops-refresh__auto">
+              <label class="ds-switch">
+                <input class="ds-switch__input" type="checkbox" role="switch" id="auto" aria-describedby="auto-hint">
+                <span class="ds-switch__track" aria-hidden="true"></span>
+                <span>자동 새로고침</span>
+              </label>
+              <span class="ops-muted" id="auto-hint">30초마다</span>
+            </span>
+            <button class="ds-btn ds-btn--sm" type="button" id="refresh" data-busy-label="새로고침 중…">지금 새로고침</button>
+          </div>
+        </header>
+
+        <div class="ops-range">
+          <div class="ds-segmented" role="radiogroup" aria-label="기간" data-url-key="range" id="range">
+            <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="today">오늘</button>
+            <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="7d">7일</button>
+            <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="30d">30일</button>
+            <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="custom">직접</button>
+          </div>
+          <p class="ops-range__text" id="range-text"></p>
+        </div>
+
+        <form class="ops-custom" id="custom" hidden novalidate aria-label="직접 고르는 기간">
+          <div class="ds-field">
+            <label class="ds-field__label" for="from">시작일</label>
+            <input class="ds-input" type="date" id="from" name="from" aria-describedby="custom-hint">
+            <p class="ds-field__error" id="from-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+          </div>
+          <div class="ds-field">
+            <label class="ds-field__label" for="to">종료일</label>
+            <input class="ds-input" type="date" id="to" name="to" aria-describedby="custom-hint">
+            <p class="ds-field__error" id="to-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+          </div>
+          <button class="ds-btn ops-custom__apply" type="submit">기간 적용</button>
+          <p class="ds-field__hint ops-custom__hint" id="custom-hint"></p>
+        </form>
+
+        <div class="ds-banner-slot" id="banner-slot"></div>
+
+        <div class="ops-dash-wrap">
+          <div class="ops-dash" id="dash" aria-busy="true">
+            <section class="ops-kpi-sec" id="kpi" aria-labelledby="kpi-title">
+              <h2 class="ds-sr-only" id="kpi-title">핵심 지표</h2>
+              <div class="ops-kpis" id="kpis"></div>
+            </section>
+
+            <div class="ops-state" id="dash-state" hidden></div>
+
+            <section class="ds-card ds-card--flush ops-alerts" id="alerts" aria-labelledby="alerts-title">
+              <div class="ds-card__head ops-alerts__head">
+                <h2 class="ds-card__title" id="alerts-title">알림</h2>
+                <p class="ops-alerts__sum" id="alerts-sum"></p>
+              </div>
+              <p class="ops-alerts__note" id="viewer-note" hidden>보기 전용 권한이에요. 확인 처리는 운영 담당자에게 요청해 주세요.</p>
+              <div class="ds-tabs ops-alerts__tabs" role="tablist" aria-label="알림 보기" data-url-key="alerts">
+                <button class="ds-tab" type="button" role="tab" id="tab-open" aria-controls="panel-open" aria-selected="true" data-value="open">확인 안 함 <span class="ds-count" hidden><span id="count-open">0</span><span class="ds-sr-only">건</span></span></button>
+                <button class="ds-tab" type="button" role="tab" id="tab-all" aria-controls="panel-all" aria-selected="false" data-value="all">이 기간 전체 <span class="ds-count" hidden><span id="count-all">0</span><span class="ds-sr-only">건</span></span></button>
+              </div>
+              <div class="ds-tabpanel ops-alerts__panel" role="tabpanel" id="panel-open" aria-labelledby="tab-open" tabindex="0"></div>
+              <div class="ds-tabpanel ops-alerts__panel" role="tabpanel" id="panel-all" aria-labelledby="tab-all" tabindex="0" hidden></div>
+            </section>
+
+            <section class="ds-card ops-trends" id="trends" aria-labelledby="trends-title">
+              <div class="ops-trends__head">
+                <h2 class="ds-card__title" id="trends-title">추세</h2>
+                <p class="ops-muted" id="trends-desc"></p>
+              </div>
+              <p class="ds-sr-only" id="chart-keys">왼쪽·오른쪽 화살표로 시점을 옮겨요.</p>
+
+              <figure class="ops-chart" id="chart-orders" data-metric="orders" aria-labelledby="orders-title">
+                <figcaption class="ops-chart__head">
+                  <div class="ops-chart__titles">
+                    <h3 class="ops-chart__title" id="orders-title">주문 수</h3>
+                    <p class="ops-chart__sum" id="orders-sum"></p>
+                  </div>
+                  <div class="ds-segmented ops-view" role="radiogroup" aria-label="주문 수 보기 방식" data-url-key="view-orders">
+                    <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="chart">그래프</button>
+                    <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="table">표</button>
+                  </div>
+                </figcaption>
+                <ul class="ops-legend" id="orders-legend"></ul>
+                <span class="ds-skeleton ops-chart__skel" aria-hidden="true" hidden></span>
+                <div class="ops-chart__plot" id="orders-plot" tabindex="0" role="slider" aria-label="주문 수 시점" aria-describedby="orders-sum chart-keys"></div>
+                <div class="ds-table-wrap ds-table-wrap--scroll ops-chart__table" id="orders-table" role="region" aria-label="주문 수 표" tabindex="0" hidden></div>
+                <div class="ops-chart__fail" id="orders-fail" hidden></div>
+              </figure>
+
+              <figure class="ops-chart" id="chart-latency" data-metric="latency" aria-labelledby="latency-title">
+                <figcaption class="ops-chart__head">
+                  <div class="ops-chart__titles">
+                    <h3 class="ops-chart__title" id="latency-title">응답 시간</h3>
+                    <p class="ops-chart__sum" id="latency-sum"></p>
+                  </div>
+                  <div class="ds-segmented ops-view" role="radiogroup" aria-label="응답 시간 보기 방식" data-url-key="view-latency">
+                    <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="chart">그래프</button>
+                    <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="table">표</button>
+                  </div>
+                </figcaption>
+                <ul class="ops-legend" id="latency-legend"></ul>
+                <span class="ds-skeleton ops-chart__skel" aria-hidden="true" hidden></span>
+                <div class="ops-chart__plot" id="latency-plot" tabindex="0" role="slider" aria-label="응답 시간 시점" aria-describedby="latency-sum chart-keys"></div>
+                <div class="ds-table-wrap ds-table-wrap--scroll ops-chart__table" id="latency-table" role="region" aria-label="응답 시간 표" tabindex="0" hidden></div>
+                <div class="ops-chart__fail" id="latency-fail" hidden></div>
+              </figure>
+
+              <figure class="ops-chart" id="chart-errors" data-metric="errorRate" aria-labelledby="errors-title">
+                <figcaption class="ops-chart__head">
+                  <div class="ops-chart__titles">
+                    <h3 class="ops-chart__title" id="errors-title">오류율</h3>
+                    <p class="ops-chart__sum" id="errors-sum"></p>
+                  </div>
+                  <div class="ds-segmented ops-view" role="radiogroup" aria-label="오류율 보기 방식" data-url-key="view-errors">
+                    <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="chart">그래프</button>
+                    <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="table">표</button>
+                  </div>
+                </figcaption>
+                <ul class="ops-legend" id="errors-legend"></ul>
+                <span class="ds-skeleton ops-chart__skel" aria-hidden="true" hidden></span>
+                <div class="ops-chart__plot" id="errors-plot" tabindex="0" role="slider" aria-label="오류율 시점" aria-describedby="errors-sum chart-keys"></div>
+                <div class="ds-table-wrap ds-table-wrap--scroll ops-chart__table" id="errors-table" role="region" aria-label="오류율 표" tabindex="0" hidden></div>
+                <div class="ops-chart__fail" id="errors-fail" hidden></div>
+              </figure>
+            </section>
+          </div>
+        </div>
+
+        <footer class="ops-foot">
+          <p>이 화면의 지표·알림은 모두 가상의 샘플 데이터예요.</p>
+        </footer>
+        <noscript><p class="ops-foot">이 화면은 자바스크립트로 지표와 그래프를 그려요. 자바스크립트를 켜 주세요.</p></noscript>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

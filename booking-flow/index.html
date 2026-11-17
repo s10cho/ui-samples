@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>공간과 시간 고르기 (1/4) — 공간 예약</title>
+  <meta name="description" content="회의실과 스튜디오를 4단계로 예약하는 흐름 샘플이에요.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="data:,">
+  <script>
+    (function () {
+      var root = document.documentElement;
+      // 저장된 화면 밝기를 그리기 전에 적용한다. 저장값이 없으면 밝게 시작한다.
+      try {
+        var mode = new URLSearchParams(location.search).get('theme') || localStorage.getItem('ds-theme') || 'light';
+        if (mode === 'system') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
+      } catch (e) { /* 저장소를 못 읽으면 밝게 */ }
+      // 파일로 열면(file://) 브라우저가 웹 글꼴을 막는다. 그때는 시스템 한글 글꼴로 그린다.
+      if (location.protocol !== 'file:') {
+        [['preload', 'vendor/pretendard/PretendardVariable.page.woff2'], ['stylesheet', 'vendor/pretendard/pretendard-page-subset.css']].forEach(function (item) {
+          var link = document.createElement('link');
+          link.rel = item[0];
+          link.href = item[1];
+          if (item[0] === 'preload') { link.as = 'font'; link.type = 'font/woff2'; link.crossOrigin = 'anonymous'; }
+          document.head.appendChild(link);
+        });
+      }
+    })();
+  </script>
+  <noscript>
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  </noscript>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/page.css">
+  <script src="js/ds.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/page.js" defer></script>
+</head>
+<body>
+  <a class="ds-skip-link" href="#main">본문으로 건너뛰기</a>
+  <div id="ds-live" class="ds-live" role="status"></div>
+  <div id="ds-live-alert" class="ds-live" role="alert"></div>
+
+  <div class="ds-app bf-app" id="app">
+    <header class="ds-app__top ds-topbar">
+      <a class="ds-topbar__brand" href="../index.html">UI 샘플</a>
+      <span class="ds-topbar__spacer"></span>
+      <div class="ds-segmented" role="radiogroup" aria-label="화면 밝기" data-ds-theme-control>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="light" aria-label="밝게" data-ds-tip="밝게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-sun"></use></svg><span class="bf-theme-text">밝게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="dark" aria-label="어둡게" data-ds-tip="어둡게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-moon"></use></svg><span class="bf-theme-text">어둡게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="system" aria-label="시스템 설정 따르기" data-ds-tip="시스템 설정 따르기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-monitor"></use></svg><span class="bf-theme-text">시스템</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="ds-app__main" id="main" tabindex="-1">
+      <div class="ds-page bf-page">
+        <header class="ds-page__head">
+          <div class="ds-page__titles">
+            <h1 class="ds-page__title">공간 예약</h1>
+            <p class="ds-page__desc">회의실과 스튜디오를 4단계로 예약해요. 입력한 값은 이 창을 닫기 전까지 남아요.</p>
+          </div>
+        </header>
+
+        <ol class="ds-steps bf-steps" id="steps" aria-label="예약 단계">
+          <li class="ds-steps__item" data-step="1"><span class="ds-steps__mark" data-n="1">1</span><span class="bf-steps__label">공간·시간</span><span class="ds-sr-only bf-steps__done"></span></li>
+          <li class="ds-steps__item" data-step="2"><span class="ds-steps__mark" data-n="2">2</span><span class="bf-steps__label">예약자 정보</span><span class="ds-sr-only bf-steps__done"></span></li>
+          <li class="ds-steps__item" data-step="3"><span class="ds-steps__mark" data-n="3">3</span><span class="bf-steps__label">확인</span><span class="ds-sr-only bf-steps__done"></span></li>
+          <li class="ds-steps__item" data-step="4"><span class="ds-steps__mark" data-n="4">4</span><span class="bf-steps__label">완료</span><span class="ds-sr-only bf-steps__done"></span></li>
+        </ol>
+
+        <div class="ds-banner-slot" id="banner-slot"></div>
+
+        <!-- 1단계 — 공간·시간 -->
+        <section class="bf-step" id="step-1" aria-labelledby="h-step-1">
+          <h2 class="bf-step__title" id="h-step-1" tabindex="-1">공간과 시간 고르기</h2>
+          <form class="bf-form" id="form-1" novalidate>
+            <div class="bf-form__body">
+              <fieldset class="ds-fieldset bf-group" id="grp-space">
+                <legend class="bf-legend">공간</legend>
+                <div class="bf-options bf-options--space" id="space-list"></div>
+              </fieldset>
+
+              <div class="bf-when" id="grp-when" aria-busy="false">
+                <fieldset class="ds-fieldset bf-group bf-date" id="grp-date" aria-describedby="date-error">
+                  <legend class="bf-legend">날짜</legend>
+                  <div class="bf-cal" id="cal">
+                    <div class="bf-cal__head">
+                      <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" id="cal-prev" aria-label="이전 달" data-ds-tip="이전 달">
+                        <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-chevron-left"></use></svg>
+                      </button>
+                      <p class="bf-cal__month" id="cal-month"></p>
+                      <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" id="cal-next" aria-label="다음 달" data-ds-tip="다음 달">
+                        <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-chevron-right"></use></svg>
+                      </button>
+                    </div>
+                    <table class="bf-cal__grid" id="cal-grid" aria-labelledby="cal-month" data-ds-allow-disabled>
+                      <thead>
+                        <tr>
+                          <th scope="col" abbr="일요일">일</th>
+                          <th scope="col" abbr="월요일">월</th>
+                          <th scope="col" abbr="화요일">화</th>
+                          <th scope="col" abbr="수요일">수</th>
+                          <th scope="col" abbr="목요일">목</th>
+                          <th scope="col" abbr="금요일">금</th>
+                          <th scope="col" abbr="토요일">토</th>
+                        </tr>
+                      </thead>
+                      <tbody id="cal-body"></tbody>
+                    </table>
+                    <div class="bf-cal__skeleton" id="cal-skeleton" aria-hidden="true" hidden></div>
+                    <p class="bf-note" id="cal-wait" hidden>날짜와 시간은 예약 현황을 불러온 뒤에 보여요.</p>
+                    <p class="bf-cal__legend" id="cal-legend">
+                      <span class="bf-cal__key"><span class="bf-cal__swatch bf-cal__swatch--full" aria-hidden="true">20</span>줄 그은 날은 예약이 다 찼어요.</span>
+                      <span class="bf-cal__key"><span class="bf-cal__swatch bf-cal__swatch--past" aria-hidden="true">3</span>흐린 날은 지난 날이에요.</span>
+                      <span class="bf-cal__keys" id="cal-keys">화살표 키로 날짜를 옮기고 Enter로 골라요.</span>
+                    </p>
+                    <p class="bf-note" id="cal-note" hidden></p>
+                  </div>
+                  <p class="ds-field__error" id="date-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                </fieldset>
+
+                <div class="bf-time">
+                  <div class="bf-group">
+                    <p class="bf-legend" id="dur-label">이용 시간</p>
+                    <div class="ds-segmented" role="radiogroup" aria-labelledby="dur-label" id="dur">
+                      <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="1">1시간</button>
+                      <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="2">2시간</button>
+                      <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="3">3시간</button>
+                      <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="4">4시간</button>
+                    </div>
+                  </div>
+                  <fieldset class="ds-fieldset bf-group" id="grp-start" aria-describedby="start-hint start-error">
+                    <legend class="bf-legend">시작 시간</legend>
+                    <p class="ds-field__hint" id="start-hint">운영 시간은 09:00–21:00이에요.</p>
+                    <div class="bf-slot-area" id="slot-area"></div>
+                    <p class="ds-field__error" id="start-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                  </fieldset>
+                </div>
+              </div>
+
+              <div class="ds-field bf-group">
+                <label class="bf-legend" for="people">인원</label>
+                <div class="bf-stepper">
+                  <button class="ds-btn ds-btn--icon" type="button" id="people-minus" aria-label="1명 줄이기" aria-controls="people">
+                    <svg class="ds-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+                  </button>
+                  <input class="ds-input bf-stepper__input ds-num" id="people" name="people" type="number" inputmode="numeric" min="1" max="4" value="1" aria-describedby="people-hint people-error">
+                  <button class="ds-btn ds-btn--icon" type="button" id="people-plus" aria-label="1명 늘리기" aria-controls="people">
+                    <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-plus"></use></svg>
+                  </button>
+                  <span class="bf-stepper__unit" aria-hidden="true">명</span>
+                </div>
+                <p class="ds-field__hint" id="people-hint"></p>
+                <p class="ds-field__error" id="people-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+              </div>
+            </div>
+
+            <div class="ds-form-actions bf-form__actions">
+              <button class="ds-btn ds-btn--primary" type="submit" id="next-1">예약자 정보 입력하기</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- 2단계 — 예약자 정보 -->
+        <section class="bf-step" id="step-2" aria-labelledby="h-step-2" hidden>
+          <h2 class="bf-step__title" id="h-step-2" tabindex="-1">예약자 정보 입력</h2>
+          <form class="bf-form" id="form-2" novalidate>
+            <div class="bf-form__body bf-fields">
+              <div class="ds-field">
+                <label class="ds-field__label" for="f-name">이름<span class="ds-field__req" aria-hidden="true">필수</span></label>
+                <input class="ds-input" id="f-name" name="name" autocomplete="name" maxlength="20" aria-required="true" aria-describedby="f-name-error">
+                <p class="ds-field__error" id="f-name-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+              </div>
+              <div class="ds-field">
+                <label class="ds-field__label" for="f-phone">휴대전화<span class="ds-field__req" aria-hidden="true">필수</span></label>
+                <input class="ds-input ds-num" id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" aria-required="true" placeholder="예: 010-0000-0000…" aria-describedby="f-phone-hint f-phone-error">
+                <p class="ds-field__hint" id="f-phone-hint">공간에 문제가 생기면 이 번호로 연락해요.</p>
+                <p class="ds-field__error" id="f-phone-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+              </div>
+              <div class="ds-field">
+                <label class="ds-field__label" for="f-email">이메일<span class="ds-field__req" aria-hidden="true">필수</span></label>
+                <input class="ds-input" id="f-email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="80" aria-required="true" spellcheck="false" placeholder="예: name@example.com…" aria-describedby="f-email-hint f-email-error">
+                <p class="ds-field__hint" id="f-email-hint">예약 확인 메일을 보내요.</p>
+                <p class="ds-field__error" id="f-email-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+              </div>
+              <div class="ds-field">
+                <label class="ds-field__label" for="f-request">요청 사항<span class="ds-field__req" aria-hidden="true">선택</span></label>
+                <textarea class="ds-textarea" id="f-request" name="request" maxlength="200" placeholder="예: 화이트보드 마커를 준비해 주세요…" aria-describedby="f-request-hint"></textarea>
+                <p class="ds-field__hint" id="f-request-hint"><span class="ds-num" id="request-count">0</span>/200자</p>
+              </div>
+            </div>
+            <div class="ds-form-actions bf-form__actions">
+              <button class="ds-btn" type="button" data-back>이전 단계</button>
+              <button class="ds-btn ds-btn--primary" type="submit" id="next-2">예약 내용 확인하기</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- 3단계 — 확인 -->
+        <section class="bf-step" id="step-3" aria-labelledby="h-step-3" hidden>
+          <h2 class="bf-step__title" id="h-step-3" tabindex="-1">예약 내용 확인</h2>
+          <form class="bf-form" id="form-3" novalidate>
+            <div class="bf-form__body bf-review">
+              <section class="ds-card bf-review__card" aria-labelledby="rv-booking">
+                <h3 class="ds-card__title" id="rv-booking">예약 내용</h3>
+                <dl class="bf-review__list">
+                  <div class="bf-review__row"><dt>공간</dt><dd id="rv-space"></dd><dd class="bf-review__act"><a class="ds-btn ds-btn--ghost ds-btn--sm" href="?step=1" data-edit="space" aria-label="공간 바꾸기">바꾸기</a></dd></div>
+                  <div class="bf-review__row"><dt>날짜</dt><dd id="rv-date"></dd><dd class="bf-review__act"><a class="ds-btn ds-btn--ghost ds-btn--sm" href="?step=1" data-edit="date" aria-label="날짜 바꾸기">바꾸기</a></dd></div>
+                  <div class="bf-review__row"><dt>시간</dt><dd id="rv-time" class="ds-num"></dd><dd class="bf-review__act"><a class="ds-btn ds-btn--ghost ds-btn--sm" href="?step=1" data-edit="time" aria-label="시간 바꾸기">바꾸기</a></dd></div>
+                  <div class="bf-review__row"><dt>인원</dt><dd id="rv-people"></dd><dd class="bf-review__act"><a class="ds-btn ds-btn--ghost ds-btn--sm" href="?step=1" data-edit="people" aria-label="인원 바꾸기">바꾸기</a></dd></div>
+                  <div class="bf-review__row"><dt>요금</dt><dd id="rv-price" class="ds-num"></dd></div>
+                </dl>
+              </section>
+              <section class="ds-card bf-review__card" aria-labelledby="rv-person">
+                <h3 class="ds-card__title" id="rv-person">예약자</h3>
+                <dl class="bf-review__list">
+                  <div class="bf-review__row"><dt>이름</dt><dd id="rv-name"></dd><dd class="bf-review__act"><a class="ds-btn ds-btn--ghost ds-btn--sm" href="?step=2" data-edit="name" aria-label="이름 바꾸기">바꾸기</a></dd></div>
+                  <div class="bf-review__row"><dt>휴대전화</dt><dd id="rv-phone" class="ds-num"></dd><dd class="bf-review__act"><a class="ds-btn ds-btn--ghost ds-btn--sm" href="?step=2" data-edit="phone" aria-label="휴대전화 바꾸기">바꾸기</a></dd></div>
+                  <div class="bf-review__row"><dt>이메일</dt><dd id="rv-email"></dd><dd class="bf-review__act"><a class="ds-btn ds-btn--ghost ds-btn--sm" href="?step=2" data-edit="email" aria-label="이메일 바꾸기">바꾸기</a></dd></div>
+                  <div class="bf-review__row"><dt>요청 사항</dt><dd id="rv-request"></dd><dd class="bf-review__act"><a class="ds-btn ds-btn--ghost ds-btn--sm" href="?step=2" data-edit="request" aria-label="요청 사항 바꾸기">바꾸기</a></dd></div>
+                </dl>
+              </section>
+              <section class="bf-terms" aria-labelledby="terms-title">
+                <h3 class="bf-sub" id="terms-title">취소 규정</h3>
+                <p class="ds-text-body-reading">이용 하루 전까지 취소하면 요금을 모두 돌려받아요. 이용 당일에 취소하면 돌려받지 못해요.</p>
+                <div class="ds-options">
+                  <label class="ds-check"><input type="checkbox" id="agree" name="agree" aria-required="true" aria-describedby="agree-error"><span>취소 규정을 읽었고 동의해요</span></label>
+                  <p class="ds-field__error" id="agree-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                </div>
+              </section>
+            </div>
+            <div class="ds-form-actions bf-form__actions">
+              <button class="ds-btn" type="button" data-back>이전 단계</button>
+              <button class="ds-btn ds-btn--primary" type="submit" id="confirm" data-busy-label="예약하는 중…">예약 확정하기</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- 4단계 — 완료 -->
+        <section class="bf-step" id="step-4" aria-labelledby="h-step-4" hidden>
+          <h2 class="bf-step__title bf-step__title--done" id="h-step-4" tabindex="-1"><svg class="ds-icon ds-icon--lg" aria-hidden="true"><use href="#ds-i-success"></use></svg>예약을 마쳤어요</h2>
+          <div class="bf-done">
+            <div class="ds-card bf-done__card">
+              <dl class="ds-dl">
+                <dt>예약 번호</dt><dd><strong class="ds-num bf-done__no" id="done-no"></strong></dd>
+                <dt>공간</dt><dd id="done-space"></dd>
+                <dt>날짜</dt><dd id="done-date"></dd>
+                <dt>시간</dt><dd id="done-time" class="ds-num"></dd>
+                <dt>인원</dt><dd id="done-people"></dd>
+                <dt>요금</dt><dd id="done-price" class="ds-num"></dd>
+                <dt>확인 메일</dt><dd id="done-email" class="bf-break"></dd>
+              </dl>
+              <div class="bf-done__copy">
+                <button class="ds-btn ds-btn--sm" type="button" id="copy-no"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-copy"></use></svg>예약 번호 복사</button>
+                <span class="bf-note" id="copy-status"></span>
+              </div>
+            </div>
+            <section class="bf-calendar-help" aria-labelledby="cal-add-title">
+              <h3 class="bf-sub" id="cal-add-title">일정에 넣기</h3>
+              <p class="ds-text-body-reading">이 샘플은 일정 파일을 만들지 않아요. 쓰는 일정 앱에 날짜·시간·공간을 직접 넣어 주세요.</p>
+            </section>
+            <div class="ds-form-actions">
+              <button class="ds-btn ds-btn--primary" type="button" id="restart">새 예약 시작하기</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 1·2단계 오른쪽 요약 — page.js 가 지금 단계의 폼 안(버튼 앞)으로 옮긴다 -->
+        <aside class="ds-card bf-summary" id="summary" aria-labelledby="summary-title" hidden>
+          <h3 class="ds-card__title" id="summary-title">고른 내용</h3>
+          <dl class="ds-dl bf-summary__list">
+            <dt>공간</dt><dd id="sum-space"></dd>
+            <dt>날짜</dt><dd id="sum-date"></dd>
+            <dt>시간</dt><dd id="sum-time" class="ds-num"></dd>
+            <dt>인원</dt><dd id="sum-people"></dd>
+            <dt>요금</dt><dd id="sum-price" class="ds-num"></dd>
+          </dl>
+        </aside>
+
+        <footer class="bf-foot">
+          <p>이 화면의 공간과 예약 현황은 가상의 샘플 데이터예요.</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

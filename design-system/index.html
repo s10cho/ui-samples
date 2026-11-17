@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>업무 화면 부품 모음</title>
+  <meta name="description" content="업무 화면 샘플이 함께 쓰는 토큰과 부품을 상태별로 모았어요.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="data:,">
+  <script>
+    (function () {
+      var root = document.documentElement;
+      // 저장된 화면 밝기를 그리기 전에 적용한다. 저장값이 없으면 밝게 시작한다.
+      try {
+        var mode = new URLSearchParams(location.search).get('theme') || localStorage.getItem('ds-theme') || 'light';
+        if (mode === 'system') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
+      } catch (e) { /* 저장소를 못 읽으면 밝게 */ }
+      // 파일로 열면(file://) 브라우저가 웹 글꼴을 막는다. 그때는 시스템 한글 글꼴로 그린다.
+      if (location.protocol !== 'file:') {
+        [['preload', 'vendor/pretendard/PretendardVariable.page.woff2'], ['stylesheet', 'vendor/pretendard/pretendard-page-subset.css']].forEach(function (item) {
+          var link = document.createElement('link');
+          link.rel = item[0];
+          link.href = item[1];
+          if (item[0] === 'preload') { link.as = 'font'; link.type = 'font/woff2'; link.crossOrigin = 'anonymous'; }
+          document.head.appendChild(link);
+        });
+      }
+    })();
+  </script>
+  <noscript>
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  </noscript>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/page.css">
+  <script src="js/ds.js" defer></script>
+  <script src="js/page.js" defer></script>
+</head>
+<body>
+  <a class="ds-skip-link" href="#main">본문으로 건너뛰기</a>
+  <div id="ds-live" class="ds-live" role="status"></div>
+  <div id="ds-live-alert" class="ds-live" role="alert"></div>
+
+  <div class="ds-app" id="app">
+    <header class="ds-app__top ds-topbar">
+      <button class="ds-btn ds-btn--ghost ds-btn--icon ds-topbar__menu" type="button" data-ds-nav-toggle aria-controls="nav" aria-expanded="false" aria-label="메뉴 열기">
+        <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-menu"></use></svg>
+      </button>
+      <a class="ds-topbar__brand" href="../index.html">UI 샘플</a>
+      <span class="ds-topbar__spacer"></span>
+      <div class="ds-segmented" role="radiogroup" aria-label="화면 밝기" data-ds-theme-control>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="light" aria-label="밝게" data-ds-tip="밝게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-sun"></use></svg><span class="dsx-theme-text">밝게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="dark" aria-label="어둡게" data-ds-tip="어둡게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-moon"></use></svg><span class="dsx-theme-text">어둡게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="system" aria-label="시스템 설정 따르기" data-ds-tip="시스템 설정 따르기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-monitor"></use></svg><span class="dsx-theme-text">시스템</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="ds-app__nav ds-sidenav" id="nav" aria-label="부품 묶음">
+      <div class="ds-sidenav__close">
+        <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" data-ds-nav-close aria-label="메뉴 닫기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg>
+        </button>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-base">기초</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-base">
+          <li><a class="ds-nav__link" href="#colors">색</a></li>
+          <li><a class="ds-nav__link" href="#type">글자</a></li>
+          <li><a class="ds-nav__link" href="#space">간격·모서리·그림자</a></li>
+          <li><a class="ds-nav__link" href="#icons">아이콘</a></li>
+        </ul>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-parts">부품</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-parts">
+          <li><a class="ds-nav__link" href="#buttons">버튼</a></li>
+          <li><a class="ds-nav__link" href="#inputs">입력</a></li>
+          <li><a class="ds-nav__link" href="#choices">선택</a></li>
+          <li><a class="ds-nav__link" href="#table">표</a></li>
+          <li><a class="ds-nav__link" href="#tabs">탭</a></li>
+          <li><a class="ds-nav__link" href="#badges">배지·칩</a></li>
+          <li><a class="ds-nav__link" href="#banners">알림 배너</a></li>
+          <li><a class="ds-nav__link" href="#states">빈 상태·로딩</a></li>
+          <li><a class="ds-nav__link" href="#dialog">대화상자</a></li>
+          <li><a class="ds-nav__link" href="#pagination">페이지 나누기</a></li>
+          <li><a class="ds-nav__link" href="#overlays">툴팁·메뉴</a></li>
+          <li><a class="ds-nav__link" href="#cards">카드·목록</a></li>
+          <li><a class="ds-nav__link" href="#frame">앱 틀</a></li>
+        </ul>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-repo">이 저장소</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-repo">
+          <li><a class="ds-nav__link" href="../index.html">샘플 목록</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="ds-app__main" id="main" tabindex="-1">
+      <div class="ds-page">
+        <header class="ds-page__head">
+          <div class="ds-page__titles">
+            <h1 class="ds-page__title">업무 화면 부품 모음</h1>
+            <p class="ds-page__desc">업무 화면 샘플이 함께 쓰는 토큰과 부품을 상태별로 모았어요. 값은 저장소의 DESIGN.md와 같아요.</p>
+          </div>
+        </header>
+
+        <div class="ds-banner-slot" id="banner-slot"></div>
+
+        <!-- 색 -->
+        <section class="ds-section" id="colors" aria-labelledby="h-colors">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-colors">색</h2></div>
+          <p class="ds-section__desc">부품은 역할 이름이 붙은 색만 써요. 오른쪽 값은 지금 고른 화면 밝기에서 읽은 값이에요.</p>
+          <p class="dsx-api"><code>--ds-color-surface-*</code> · <code>fg-*</code> · <code>fill-*</code> · <code>line-*</code> · 어두운 UI <code>&lt;html data-theme="dark"&gt;</code></p>
+          <div class="dsx-swatch-groups" id="swatches"></div>
+        </section>
+
+        <!-- 글자 -->
+        <section class="ds-section" id="type" aria-labelledby="h-type">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-type">글자</h2></div>
+          <p class="ds-section__desc">크기는 rem이라 브라우저 글자 크기 설정을 따라요. 제목 단계는 3개만 써요.</p>
+          <p class="dsx-api"><code>--ds-text-{스타일}-size</code> · <code>-leading</code> · <code>-weight</code> · 클래스 <code>.ds-text-{스타일}</code></p>
+          <div class="ds-table-wrap" role="region" aria-label="글자 스타일 표" tabindex="0">
+            <table class="ds-table dsx-matrix">
+              <thead><tr><th scope="col">스타일</th><th scope="col">보기</th><th scope="col" class="ds-num">크기 / 행간</th><th scope="col" class="ds-num">굵기</th></tr></thead>
+              <tbody>
+                <tr><th scope="row"><code>display</code></th><td><span class="ds-text-display">1,284</span></td><td class="ds-num">28 / 36</td><td class="ds-num">700</td></tr>
+                <tr><th scope="row"><code>title</code></th><td><span class="ds-text-title">작업 목록</span></td><td class="ds-num">20 / 28</td><td class="ds-num">600</td></tr>
+                <tr><th scope="row"><code>title-sm</code></th><td><span class="ds-text-title-sm">이번 주 마감</span></td><td class="ds-num">16 / 22</td><td class="ds-num">600</td></tr>
+                <tr><th scope="row"><code>body</code></th><td><span class="ds-text-body">표 칸과 본문에 쓰는 글자예요.</span></td><td class="ds-num">14 / 20</td><td class="ds-num">400</td></tr>
+                <tr><th scope="row"><code>body-reading</code></th><td><span class="ds-text-body-reading">여러 줄로 읽는 설명 글이에요. 줄 사이를 조금 더 넓게 둬요.</span></td><td class="ds-num">14 / 22</td><td class="ds-num">400</td></tr>
+                <tr><th scope="row"><code>body-sm</code></th><td><span class="ds-text-body-sm">도움말과 메타 정보예요.</span></td><td class="ds-num">13 / 18</td><td class="ds-num">400</td></tr>
+                <tr><th scope="row"><code>label</code></th><td><span class="ds-text-label">변경 내용 저장</span></td><td class="ds-num">14 / 20</td><td class="ds-num">500</td></tr>
+                <tr><th scope="row"><code>label-sm</code></th><td><span class="ds-text-label-sm">검토 중</span></td><td class="ds-num">12 / 16</td><td class="ds-num">500</td></tr>
+                <tr><th scope="row"><code>caption</code></th><td><span class="ds-text-caption">오후 3:20 고침</span></td><td class="ds-num">12 / 16</td><td class="ds-num">400</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 간격·모서리·그림자 -->
+        <section class="ds-section" id="space" aria-labelledby="h-space">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-space">간격·모서리·그림자</h2></div>
+          <p class="ds-section__desc">간격은 4픽셀 단위예요. 토큰 이름의 숫자에 4를 곱하면 픽셀 값이에요.</p>
+          <p class="dsx-api"><code>--ds-space-N</code> · <code>--ds-control-radius</code> · <code>--ds-container-radius</code> · <code>--ds-overlay-radius</code> · <code>--ds-shadow-raised</code> · <code>--ds-shadow-overlay</code></p>
+          <div class="dsx-columns">
+            <div class="dsx-cell">
+              <h3 class="dsx-sub">간격</h3>
+              <ul class="dsx-bars">
+                <li><code>space-1</code><span class="dsx-bar" style="--w: var(--ds-space-1)"></span><span class="ds-num">4</span></li>
+                <li><code>space-2</code><span class="dsx-bar" style="--w: var(--ds-space-2)"></span><span class="ds-num">8</span></li>
+                <li><code>space-3</code><span class="dsx-bar" style="--w: var(--ds-space-3)"></span><span class="ds-num">12</span></li>
+                <li><code>space-4</code><span class="dsx-bar" style="--w: var(--ds-space-4)"></span><span class="ds-num">16</span></li>
+                <li><code>space-5</code><span class="dsx-bar" style="--w: var(--ds-space-5)"></span><span class="ds-num">20</span></li>
+                <li><code>space-6</code><span class="dsx-bar" style="--w: var(--ds-space-6)"></span><span class="ds-num">24</span></li>
+                <li><code>space-8</code><span class="dsx-bar" style="--w: var(--ds-space-8)"></span><span class="ds-num">32</span></li>
+                <li><code>space-10</code><span class="dsx-bar" style="--w: var(--ds-space-10)"></span><span class="ds-num">40</span></li>
+                <li><code>space-12</code><span class="dsx-bar" style="--w: var(--ds-space-12)"></span><span class="ds-num">48</span></li>
+                <li><code>space-16</code><span class="dsx-bar" style="--w: var(--ds-space-16)"></span><span class="ds-num">64</span></li>
+              </ul>
+            </div>
+            <div class="dsx-cell">
+              <h3 class="dsx-sub">모서리</h3>
+              <ul class="dsx-shapes">
+                <li><span class="dsx-shape" style="--r: var(--ds-control-radius)"></span><span><code>control</code> 6</span></li>
+                <li><span class="dsx-shape" style="--r: var(--ds-container-radius)"></span><span><code>container</code> 8</span></li>
+                <li><span class="dsx-shape" style="--r: var(--ds-overlay-radius)"></span><span><code>overlay</code> 12</span></li>
+                <li><span class="dsx-shape" style="--r: var(--ds-radius-pill)"></span><code>pill</code></li>
+              </ul>
+              <h3 class="dsx-sub">그림자</h3>
+              <ul class="dsx-shapes">
+                <li><span class="dsx-shape dsx-shape--raised"></span><code>shadow-raised</code></li>
+                <li><span class="dsx-shape dsx-shape--overlay"></span><code>shadow-overlay</code></li>
+              </ul>
+              <p class="dsx-note">화면에 붙은 카드·표는 테두리로 나누고, 떠 있는 메뉴·대화상자만 그림자를 써요.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 아이콘 -->
+        <section class="ds-section" id="icons" aria-labelledby="h-icons">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-icons">아이콘</h2></div>
+          <p class="ds-section__desc">선 아이콘이에요. <code>DS.icon('search')</code>로 넣고, 뜻이 있는 아이콘 옆에는 글자를 함께 둬요. 느낌표(<code>error</code>)는 오류에만 써요.</p>
+          <p class="dsx-api"><code>&lt;svg class="ds-icon"&gt;&lt;use href="#ds-i-이름"&gt;</code> · 크기 <code>.ds-icon--sm</code> · <code>.ds-icon--lg</code></p>
+          <ul class="dsx-icons" id="icon-grid"></ul>
+        </section>
+
+        <!-- 버튼 -->
+        <section class="ds-section" id="buttons" aria-labelledby="h-buttons">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-buttons">버튼</h2></div>
+          <p class="ds-section__desc">강조 버튼은 영역마다 하나만 둬요. 표 안 버튼은 상태를 멈춰 보여 주는 견본이에요.</p>
+          <p class="dsx-api"><code>.ds-btn</code> + <code>--primary</code> · <code>--danger</code> · <code>--ghost</code> · <code>--sm</code> · <code>--lg</code> · <code>--icon</code> · 로딩 <code>DS.busy(btn, true)</code> · 분할 <code>.ds-split</code> + <code>aria-haspopup="menu"</code></p>
+          <div class="ds-table-wrap" role="region" aria-label="버튼 상태 표" tabindex="0">
+            <table class="ds-table dsx-matrix">
+              <thead><tr><th scope="col">변형</th><th scope="col">기본</th><th scope="col">마우스 올림</th><th scope="col">포커스</th><th scope="col">비활성</th><th scope="col">로딩</th></tr></thead>
+              <tbody>
+                <tr>
+                  <th scope="row"><code>--primary</code></th>
+                  <td><button class="ds-btn ds-btn--primary" type="button">변경 내용 저장</button></td>
+                  <td><button class="ds-btn ds-btn--primary is-hover" type="button" tabindex="-1">변경 내용 저장</button></td>
+                  <td><button class="ds-btn ds-btn--primary is-focus" type="button" tabindex="-1">변경 내용 저장</button></td>
+                  <td><button class="ds-btn ds-btn--primary" type="button" disabled>변경 내용 저장</button></td>
+                  <td><button class="ds-btn ds-btn--primary" type="button" aria-busy="true" aria-disabled="true" tabindex="-1"><span class="ds-spinner is-static" aria-hidden="true"></span>저장 중…</button></td>
+                </tr>
+                <tr>
+                  <th scope="row">보조</th>
+                  <td><button class="ds-btn" type="button">내보내기</button></td>
+                  <td><button class="ds-btn is-hover" type="button" tabindex="-1">내보내기</button></td>
+                  <td><button class="ds-btn is-focus" type="button" tabindex="-1">내보내기</button></td>
+                  <td><button class="ds-btn" type="button" disabled>내보내기</button></td>
+                  <td><button class="ds-btn" type="button" aria-busy="true" aria-disabled="true" tabindex="-1"><span class="ds-spinner is-static" aria-hidden="true"></span>내보내는 중…</button></td>
+                </tr>
+                <tr>
+                  <th scope="row"><code>--ghost</code></th>
+                  <td><button class="ds-btn ds-btn--ghost" type="button">필터 초기화</button></td>
+                  <td><button class="ds-btn ds-btn--ghost is-hover" type="button" tabindex="-1">필터 초기화</button></td>
+                  <td><button class="ds-btn ds-btn--ghost is-focus" type="button" tabindex="-1">필터 초기화</button></td>
+                  <td><button class="ds-btn ds-btn--ghost" type="button" disabled>필터 초기화</button></td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <th scope="row"><code>--danger</code></th>
+                  <td><button class="ds-btn ds-btn--danger" type="button">보고서 지우기</button></td>
+                  <td><button class="ds-btn ds-btn--danger is-hover" type="button" tabindex="-1">보고서 지우기</button></td>
+                  <td><button class="ds-btn ds-btn--danger is-focus" type="button" tabindex="-1">보고서 지우기</button></td>
+                  <td><button class="ds-btn ds-btn--danger" type="button" disabled>보고서 지우기</button></td>
+                  <td><button class="ds-btn ds-btn--danger" type="button" aria-busy="true" aria-disabled="true" tabindex="-1"><span class="ds-spinner is-static" aria-hidden="true"></span>지우는 중…</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="dsx-columns">
+            <div class="dsx-cell">
+              <h3 class="dsx-sub">크기</h3>
+              <div class="dsx-strip">
+                <span class="dsx-strip__item"><button class="ds-btn ds-btn--sm" type="button">행 추가</button><span class="dsx-state"><code>--sm</code></span></span>
+                <span class="dsx-strip__item"><button class="ds-btn" type="button">작업 추가</button><span class="dsx-state">기본</span></span>
+                <span class="dsx-strip__item"><button class="ds-btn ds-btn--lg" type="button">보고서 만들기</button><span class="dsx-state"><code>--lg</code></span></span>
+              </div>
+            </div>
+            <div class="dsx-cell">
+              <h3 class="dsx-sub">아이콘 버튼</h3>
+              <div class="dsx-row">
+                <button class="ds-btn ds-btn--icon" type="button" aria-label="작업 추가" data-ds-tip="작업 추가"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-plus"></use></svg></button>
+                <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" aria-label="고치기" data-ds-tip="고치기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg></button>
+                <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" aria-label="복사" data-ds-tip="복사"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-copy"></use></svg></button>
+                <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" aria-label="휴지통으로 옮기기" data-ds-tip="휴지통으로 옮기기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-trash"></use></svg></button>
+              </div>
+            </div>
+            <div class="dsx-cell">
+              <h3 class="dsx-sub">분할 버튼</h3>
+              <div class="ds-split">
+                <button class="ds-btn ds-btn--primary" type="button">보고서 내보내기</button>
+                <button class="ds-btn ds-btn--primary ds-btn--icon" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-export" aria-label="다른 형식으로 내보내기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-chevron-down"></use></svg></button>
+                <div class="ds-menu" id="menu-export" role="menu" aria-label="내보내기 형식" hidden>
+                  <button class="ds-menu__item" type="button" role="menuitem"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-download"></use></svg>PDF로 받기</button>
+                  <button class="ds-menu__item" type="button" role="menuitem"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-file"></use></svg>CSV로 받기</button>
+                  <hr class="ds-menu__sep">
+                  <button class="ds-menu__item" type="button" role="menuitem"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-copy"></use></svg>링크 복사</button>
+                </div>
+              </div>
+            </div>
+            <div class="dsx-cell">
+              <h3 class="dsx-sub">눌러 보기</h3>
+              <div class="dsx-row">
+                <button class="ds-btn ds-btn--primary" type="button" id="btn-save" data-busy-label="저장 중…">저장해 보기</button>
+                <span class="dsx-note" id="save-status"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 입력 -->
+        <section class="ds-section" id="inputs" aria-labelledby="h-inputs">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-inputs">입력</h2></div>
+          <p class="ds-section__desc">라벨은 늘 칸 위에 둬요. 자리 표시 글은 예시 값만 써요. 오류는 칸 바로 아래에 써요.</p>
+          <p class="dsx-api"><code>.ds-field</code> &gt; <code>.ds-field__label</code> · <code>.ds-input</code> · <code>.ds-select</code> · <code>.ds-textarea</code> · <code>.ds-search</code> · 도움말 <code>.ds-field__hint</code> · 오류 <code>aria-invalid="true"</code> + <code>.ds-field__error</code> · 필수 <code>aria-required="true"</code> + <code>.ds-field__req[aria-hidden]</code></p>
+          <div class="ds-form-grid">
+            <div class="dsx-cell"><span class="dsx-state">기본</span>
+              <div class="ds-field"><label class="ds-field__label" for="in-1">보고서 이름</label><input class="ds-input" id="in-1" placeholder="예: 3월 정산 보고서…" aria-describedby="in-1-hint"><p class="ds-field__hint" id="in-1-hint">목록에 보이는 이름이에요.</p></div>
+            </div>
+            <div class="dsx-cell"><span class="dsx-state">마우스 올림</span>
+              <div class="ds-field"><label class="ds-field__label" for="in-2">담당 부서</label><input class="ds-input is-hover" id="in-2" placeholder="예: 운영팀…"></div>
+            </div>
+            <div class="dsx-cell"><span class="dsx-state">포커스</span>
+              <div class="ds-field"><label class="ds-field__label" for="in-3">받는 곳</label><input class="ds-input is-focus" id="in-3" value="정산팀 공용 메일"></div>
+            </div>
+            <div class="dsx-cell"><span class="dsx-state">비활성</span>
+              <div class="ds-field"><label class="ds-field__label" for="in-4">보고서 번호</label><input class="ds-input" id="in-4" value="R-0312" disabled></div>
+            </div>
+            <div class="dsx-cell"><span class="dsx-state">읽기 전용</span>
+              <div class="ds-field"><label class="ds-field__label" for="in-5">만든 날</label><input class="ds-input" id="in-5" value="2026-11-17" readonly></div>
+            </div>
+            <div class="dsx-cell"><span class="dsx-state">오류</span>
+              <div class="ds-field"><label class="ds-field__label" for="in-6">요약</label><input class="ds-input" id="in-6" value="매달 1일에 정산팀이 받는 보고서이고 담당자가 바뀌면 다시 받는 사람을 고쳐야 해요" aria-invalid="true" aria-describedby="in-6-error"><p class="ds-field__error" id="in-6-error"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg>요약은 40자까지 쓸 수 있어요.</p></div>
+            </div>
+            <div class="dsx-cell"><span class="dsx-state">고르기 상자</span>
+              <div class="ds-field"><label class="ds-field__label" for="in-7">담당 팀</label><span class="ds-select"><select id="in-7"><option>운영팀</option><option>정산팀</option><option>상담팀</option></select></span></div>
+            </div>
+            <div class="dsx-cell"><span class="dsx-state">고르기 상자 · 비활성</span>
+              <div class="ds-field"><label class="ds-field__label" for="in-8">보관 기간</label><span class="ds-select"><select id="in-8" disabled><option>1년</option></select></span></div>
+            </div>
+            <div class="dsx-cell"><span class="dsx-state">검색</span>
+              <div class="ds-field"><label class="ds-field__label" for="in-9">작업 찾기</label><span class="ds-search"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-search"></use></svg><input class="ds-input" id="in-9" type="search" placeholder="예: 정산…"></span></div>
+            </div>
+          </div>
+          <div class="ds-field"><label class="ds-field__label" for="in-10">메모</label><textarea class="ds-textarea" id="in-10" placeholder="예: 다음 주 회의에서 다시 봐요…"></textarea></div>
+
+          <form class="dsx-try" id="team-form" novalidate>
+            <h3 class="dsx-sub">눌러 보기 — 빈 칸으로 보내면 오류가 보여요</h3>
+            <div class="dsx-row dsx-row--end">
+              <div class="ds-field"><label class="ds-field__label" for="team-name">팀 이름<span class="ds-field__req" aria-hidden="true">필수</span></label><input class="ds-input" id="team-name" autocomplete="off" placeholder="예: 정산팀…" aria-required="true"><p class="ds-field__error" id="team-name-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg>팀 이름을 입력해 주세요.</p></div>
+              <button class="ds-btn ds-btn--primary" type="submit">팀 추가</button>
+            </div>
+            <div class="ds-chips" id="team-list" role="group" aria-label="추가한 팀"></div>
+          </form>
+        </section>
+
+        <!-- 선택 -->
+        <section class="ds-section" id="choices" aria-labelledby="h-choices">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-choices">선택</h2></div>
+          <p class="ds-section__desc">라벨까지 눌러도 골라져요. 스위치는 바로 적용되는 설정에만 써요.</p>
+          <p class="dsx-api"><code>label.ds-check</code> · <code>label.ds-switch</code> &gt; <code>.ds-switch__input[role="switch"]</code> + <code>.ds-switch__track</code> · 묶음 <code>.ds-segmented[role="radiogroup"][data-url-key]</code> &gt; <code>[role="radio"][data-value]</code></p>
+          <div class="dsx-columns">
+            <fieldset class="ds-fieldset">
+              <legend>체크박스 — 알림 받을 곳</legend>
+              <div class="ds-options">
+                <label class="ds-check"><input type="checkbox" id="ch-all"><span>모든 곳(일부 고름)</span></label>
+                <label class="ds-check"><input type="checkbox" checked><span>메일</span></label>
+                <label class="ds-check"><input type="checkbox"><span>문자</span></label>
+                <label class="ds-check is-focus"><input type="checkbox" tabindex="-1"><span>앱 알림(포커스)</span></label>
+                <label class="ds-check"><input type="checkbox" disabled><span>전화(비활성)</span></label>
+                <label class="ds-check"><input type="checkbox" checked disabled><span>보안 알림(늘 받음)</span></label>
+              </div>
+            </fieldset>
+            <fieldset class="ds-fieldset">
+              <legend>라디오 — 알림 주기</legend>
+              <div class="ds-options">
+                <label class="ds-check"><input type="radio" name="freq" checked><span>바로 받기</span></label>
+                <label class="ds-check"><input type="radio" name="freq"><span>모아서 받기</span></label>
+                <label class="ds-check"><input type="radio" name="freq"><span>받지 않기</span></label>
+                <label class="ds-check"><input type="radio" name="freq" disabled><span>주말만 받기(비활성)</span></label>
+              </div>
+              <div class="ds-options">
+                <label class="ds-check"><input type="checkbox" aria-invalid="true" aria-describedby="agree-error"><span>개인 정보 처리에 동의해요</span></label>
+                <p class="ds-field__error" id="agree-error"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg>동의해야 다음으로 넘어갈 수 있어요.</p>
+              </div>
+            </fieldset>
+            <div class="ds-fieldset">
+              <p class="ds-text-label">스위치 — 바로 적용</p>
+              <div class="ds-options">
+                <label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch"><span class="ds-switch__track" aria-hidden="true"></span><span>주말 알림</span></label>
+                <label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" checked><span class="ds-switch__track" aria-hidden="true"></span><span>자동 배정</span></label>
+                <label class="ds-switch is-hover"><input class="ds-switch__input" type="checkbox" role="switch" tabindex="-1"><span class="ds-switch__track" aria-hidden="true"></span><span>소리(마우스 올림)</span></label>
+                <label class="ds-switch is-focus"><input class="ds-switch__input" type="checkbox" role="switch" checked tabindex="-1"><span class="ds-switch__track" aria-hidden="true"></span><span>메일 요약(포커스)</span></label>
+                <label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" disabled><span class="ds-switch__track" aria-hidden="true"></span><span>관리자 승인(비활성)</span></label>
+              </div>
+            </div>
+            <div class="ds-fieldset">
+              <p class="ds-text-label" id="view-label">묶음 버튼 — 보기 방식</p>
+              <div class="ds-segmented" role="radiogroup" aria-labelledby="view-label" data-url-key="view">
+                <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="table"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-grid"></use></svg>표</button>
+                <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="list"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-menu"></use></svg>목록</button>
+                <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="board"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-columns"></use></svg>보드</button>
+              </div>
+              <p class="dsx-note">화살표 키로 옮겨요. 고른 값은 주소의 <code>?view=</code>에 남아요.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 표 -->
+        <section class="ds-section" id="table" aria-labelledby="h-table">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-table">표</h2></div>
+          <p class="ds-section__desc">머리를 누르면 정렬하고, 칩을 누르면 걸러요. 정렬·필터는 주소에 남아요. 좁은 폭에서는 행을 쌓아요.</p>
+          <p class="dsx-api"><code>.ds-table-wrap</code>(+ <code>--scroll</code> 긴 표 · <code>--page</code> 페이지 스크롤) &gt; <code>table.ds-table</code>(+ <code>--stack</code> · <code>data-ds-sort-client</code> · <code>data-url-key</code>) · 정렬 <code>th &gt; button.ds-sort[data-key]</code> · 고르기 <code>td.ds-table__select &gt; label.ds-hit &gt; input</code> · 숫자 <code>.ds-num</code></p>
+          <div class="ds-toolbar">
+            <div class="ds-chips" role="group" aria-labelledby="flt-label">
+              <span class="dsx-toolbar-label" id="flt-label">상태</span>
+              <button class="ds-chip" type="button" aria-pressed="false" data-status="doing"><svg class="ds-icon ds-icon--sm ds-chip__check" aria-hidden="true"><use href="#ds-i-check"></use></svg>진행 중</button>
+              <button class="ds-chip" type="button" aria-pressed="false" data-status="hold"><svg class="ds-icon ds-icon--sm ds-chip__check" aria-hidden="true"><use href="#ds-i-check"></use></svg>보류</button>
+              <button class="ds-chip" type="button" aria-pressed="false" data-status="done"><svg class="ds-icon ds-icon--sm ds-chip__check" aria-hidden="true"><use href="#ds-i-check"></use></svg>완료</button>
+              <button class="ds-chip" type="button" aria-pressed="false" data-status="rejected"><svg class="ds-icon ds-icon--sm ds-chip__check" aria-hidden="true"><use href="#ds-i-check"></use></svg>반려</button>
+            </div>
+            <span class="ds-toolbar__spacer"></span>
+            <span class="dsx-note" id="sel-count" hidden></span>
+            <button class="ds-btn ds-btn--sm" type="button" id="btn-export" aria-disabled="true" data-ds-tip="내보낼 작업을 먼저 골라 주세요">
+              <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-download"></use></svg>고른 작업 내보내기
+            </button>
+          </div>
+          <div class="ds-table-wrap ds-table-wrap--scroll" id="task-wrap" role="region" aria-label="작업 목록 표" tabindex="0">
+            <table class="ds-table ds-table--stack" id="tasks" data-ds-sort-client data-url-key="sort">
+              <caption class="ds-sr-only">작업 목록</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="ds-table__select"><label class="ds-hit"><input type="checkbox" id="sel-all" aria-label="보이는 작업 모두 고르기"></label></th>
+                  <th scope="col"><button class="ds-sort" type="button" data-key="name">작업 이름</button></th>
+                  <th scope="col"><button class="ds-sort" type="button" data-key="team">담당 팀</button></th>
+                  <th scope="col"><button class="ds-sort" type="button" data-key="status">상태</button></th>
+                  <th scope="col" class="ds-num"><button class="ds-sort" type="button" data-key="count">건수</button></th>
+                  <th scope="col"><button class="ds-sort" type="button" data-key="due">마감일</button></th>
+                  <th scope="col" class="ds-table__actions"><span class="ds-sr-only">행 동작</span></th>
+                </tr>
+              </thead>
+              <tbody id="task-body">
+                <tr data-status="doing">
+                  <td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="3월 정산 보고서 고르기"></label></td>
+                  <td class="ds-table__primary" data-label="작업 이름">3월 정산 보고서</td>
+                  <td data-label="담당 팀">정산팀</td>
+                  <td data-label="상태" data-value="1"><span class="ds-badge ds-badge--info">진행 중</span></td>
+                  <td class="ds-num" data-label="건수">1,284</td>
+                  <td data-label="마감일" data-value="2026-11-20"><time datetime="2026-11-20">11월 20일</time></td>
+                  <td class="ds-table__actions"><button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm" type="button" aria-label="3월 정산 보고서 고치기" data-ds-tip="고치기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg></button></td>
+                </tr>
+                <tr data-status="hold">
+                  <td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="고객 문의 분류 고르기"></label></td>
+                  <td class="ds-table__primary" data-label="작업 이름">고객 문의 분류</td>
+                  <td data-label="담당 팀">상담팀</td>
+                  <td data-label="상태" data-value="2"><span class="ds-badge ds-badge--warning">보류</span></td>
+                  <td class="ds-num" data-label="건수">312</td>
+                  <td data-label="마감일" data-value="2026-11-18"><time datetime="2026-11-18">11월 18일</time></td>
+                  <td class="ds-table__actions"><button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm" type="button" aria-label="고객 문의 분류 고치기" data-ds-tip="고치기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg></button></td>
+                </tr>
+                <tr data-status="done">
+                  <td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="새 채널 연결 고르기"></label></td>
+                  <td class="ds-table__primary" data-label="작업 이름">새 채널 연결</td>
+                  <td data-label="담당 팀">운영팀</td>
+                  <td data-label="상태" data-value="3"><span class="ds-badge ds-badge--success">완료</span></td>
+                  <td class="ds-num" data-label="건수">48</td>
+                  <td data-label="마감일" data-value="2026-11-12"><time datetime="2026-11-12">11월 12일</time></td>
+                  <td class="ds-table__actions"><button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm" type="button" aria-label="새 채널 연결 고치기" data-ds-tip="고치기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg></button></td>
+                </tr>
+                <tr data-status="doing">
+                  <td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="주간 운영 점검 고르기"></label></td>
+                  <td class="ds-table__primary" data-label="작업 이름">주간 운영 점검</td>
+                  <td data-label="담당 팀">운영팀</td>
+                  <td data-label="상태" data-value="1"><span class="ds-badge ds-badge--info">진행 중</span></td>
+                  <td class="ds-num" data-label="건수">96</td>
+                  <td data-label="마감일" data-value="2026-11-21"><time datetime="2026-11-21">11월 21일</time></td>
+                  <td class="ds-table__actions"><button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm" type="button" aria-label="주간 운영 점검 고치기" data-ds-tip="고치기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg></button></td>
+                </tr>
+                <tr data-status="done">
+                  <td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="환불 요청 검토 고르기"></label></td>
+                  <td class="ds-table__primary" data-label="작업 이름">환불 요청 검토</td>
+                  <td data-label="담당 팀">정산팀</td>
+                  <td data-label="상태" data-value="3"><span class="ds-badge ds-badge--success">완료</span></td>
+                  <td class="ds-num" data-label="건수">27</td>
+                  <td data-label="마감일" data-value="2026-11-10"><time datetime="2026-11-10">11월 10일</time></td>
+                  <td class="ds-table__actions"><button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm" type="button" aria-label="환불 요청 검토 고치기" data-ds-tip="고치기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg></button></td>
+                </tr>
+                <tr data-status="doing">
+                  <td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="상담 품질 평가 고르기"></label></td>
+                  <td class="ds-table__primary" data-label="작업 이름">상담 품질 평가</td>
+                  <td data-label="담당 팀">상담팀</td>
+                  <td data-label="상태" data-value="1"><span class="ds-badge ds-badge--info">진행 중</span></td>
+                  <td class="ds-num" data-label="건수">540</td>
+                  <td data-label="마감일" data-value="2026-11-24"><time datetime="2026-11-24">11월 24일</time></td>
+                  <td class="ds-table__actions"><button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm" type="button" aria-label="상담 품질 평가 고치기" data-ds-tip="고치기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="dsx-note" id="task-summary">작업 6개</p>
+        </section>
+
+        <!-- 탭 -->
+        <section class="ds-section" id="tabs" aria-labelledby="h-tabs">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-tabs">탭</h2></div>
+          <p class="ds-section__desc">고른 탭은 막대와 글자색으로 보여요. 화살표 키로 옮기고, 고른 탭은 주소의 <code>?tab=</code>에 남아요.</p>
+          <p class="dsx-api"><code>.ds-tabs[role="tablist"][data-url-key]</code> &gt; <code>.ds-tab[role="tab"][aria-controls]</code> · <code>.ds-tabpanel[role="tabpanel"]</code></p>
+          <div>
+            <div class="ds-tabs" role="tablist" aria-label="작업 상태" data-url-key="tab">
+              <button class="ds-tab" type="button" role="tab" id="tab-all" aria-controls="tp-all" aria-selected="true" data-value="all">전체<span class="ds-count">6</span></button>
+              <button class="ds-tab" type="button" role="tab" id="tab-doing" aria-controls="tp-doing" aria-selected="false" data-value="doing">진행 중<span class="ds-count">3</span></button>
+              <button class="ds-tab" type="button" role="tab" id="tab-hold" aria-controls="tp-hold" aria-selected="false" data-value="hold">보류<span class="ds-count">1</span></button>
+              <button class="ds-tab" type="button" role="tab" id="tab-done" aria-controls="tp-done" aria-selected="false" data-value="done">완료<span class="ds-count">2</span></button>
+            </div>
+            <div class="ds-tabpanel" role="tabpanel" id="tp-all" aria-labelledby="tab-all" tabindex="0"><p>모든 작업 6개를 보여 줘요.</p></div>
+            <div class="ds-tabpanel" role="tabpanel" id="tp-doing" aria-labelledby="tab-doing" tabindex="0" hidden><p>진행 중인 작업 3개예요.</p></div>
+            <div class="ds-tabpanel" role="tabpanel" id="tp-hold" aria-labelledby="tab-hold" tabindex="0" hidden><p>보류한 작업 1개예요. 담당 팀의 답을 기다리고 있어요.</p></div>
+            <div class="ds-tabpanel" role="tabpanel" id="tp-done" aria-labelledby="tab-done" tabindex="0" hidden><p>끝난 작업 2개예요.</p></div>
+          </div>
+          <div class="dsx-strip" aria-hidden="true">
+            <span class="dsx-strip__item"><span class="ds-tab">보류</span><span class="dsx-state">기본</span></span>
+            <span class="dsx-strip__item"><span class="ds-tab is-hover">보류</span><span class="dsx-state">마우스 올림</span></span>
+            <span class="dsx-strip__item"><span class="ds-tab is-focus">보류</span><span class="dsx-state">포커스</span></span>
+            <span class="dsx-strip__item"><span class="ds-tab is-selected">보류</span><span class="dsx-state">고름</span></span>
+          </div>
+        </section>
+
+        <!-- 배지·칩 -->
+        <section class="ds-section" id="badges" aria-labelledby="h-badges">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-badges">배지·칩</h2></div>
+          <p class="ds-section__desc">배지는 상태를 글자로 보여 주고 누르지 않아요. 칩은 눌러서 켜고 끄는 필터예요.</p>
+          <p class="dsx-api"><code>.ds-badge</code>(+ <code>--accent</code> · <code>--info</code> · <code>--success</code> · <code>--warning</code> · <code>--danger</code>) · <code>.ds-count</code> · 칩 <code>button.ds-chip[aria-pressed]</code>(켜고 끄면 <code>ds:toggle</code>) · 빼기 <code>.ds-chip--input</code> + <code>.ds-chip__remove</code></p>
+          <div class="dsx-columns">
+            <div class="dsx-cell">
+              <h3 class="dsx-sub">배지</h3>
+              <div class="dsx-row">
+                <span class="ds-badge">초안</span>
+                <span class="ds-badge ds-badge--accent">새 글</span>
+                <span class="ds-badge ds-badge--info"><span class="ds-badge__dot"></span>검토 중</span>
+                <span class="ds-badge ds-badge--success"><span class="ds-badge__dot"></span>완료</span>
+                <span class="ds-badge ds-badge--warning"><span class="ds-badge__dot"></span>기한 임박</span>
+                <span class="ds-badge ds-badge--danger"><span class="ds-badge__dot"></span>반려</span>
+              </div>
+              <h3 class="dsx-sub">개수</h3>
+              <div class="dsx-row">
+                <span class="ds-count">3</span>
+                <span class="ds-count ds-count--accent">12</span>
+                <span class="ds-count">99+</span>
+              </div>
+            </div>
+            <div class="dsx-cell">
+              <h3 class="dsx-sub">칩</h3>
+              <div class="dsx-strip">
+                <span class="dsx-strip__item"><button class="ds-chip" type="button" aria-pressed="false"><svg class="ds-icon ds-icon--sm ds-chip__check" aria-hidden="true"><use href="#ds-i-check"></use></svg>메일</button><span class="dsx-state">꺼짐</span></span>
+                <span class="dsx-strip__item"><button class="ds-chip" type="button" aria-pressed="true"><svg class="ds-icon ds-icon--sm ds-chip__check" aria-hidden="true"><use href="#ds-i-check"></use></svg>문자</button><span class="dsx-state">켜짐</span></span>
+                <span class="dsx-strip__item"><span class="ds-chip is-hover" aria-hidden="true">전화</span><span class="dsx-state">마우스 올림</span></span>
+                <span class="dsx-strip__item"><span class="ds-chip is-focus" aria-hidden="true">앱 알림</span><span class="dsx-state">포커스</span></span>
+                <span class="dsx-strip__item"><button class="ds-chip" type="button" aria-pressed="false" disabled>팩스</button><span class="dsx-state">비활성</span></span>
+              </div>
+              <h3 class="dsx-sub">켜진 필터 빼기</h3>
+              <div class="ds-chips" id="input-chips">
+                <span class="ds-chip ds-chip--input">담당: 운영팀<button class="ds-chip__remove" type="button" aria-label="담당 운영팀 필터 빼기"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-close"></use></svg></button></span>
+                <span class="ds-chip ds-chip--input">마감: 이번 주<button class="ds-chip__remove" type="button" aria-label="마감 이번 주 필터 빼기"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-close"></use></svg></button></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 알림 배너 -->
+        <section class="ds-section" id="banners" aria-labelledby="h-banners">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-banners">알림 배너</h2></div>
+          <p class="ds-section__desc">실패와 오래 걸린 일의 결과는 닫을 때까지 남는 배너로 알려요. 배너는 스크롤 영역 밖, 페이지 머리 아래에 둬요.</p>
+          <p class="dsx-api"><code>.ds-banner-slot</code> · <code>.ds-banner</code>(+ <code>--success</code> · <code>--warning</code> · <code>--danger</code>) · <code>DS.banner.show({ tone, title, text, actions, focusNext, replaces })</code> · 닫기 <code>[data-ds-dismiss]</code></p>
+          <div class="dsx-stack">
+            <div class="ds-banner" data-ds-banner data-focus-next="#btn-banner-demo">
+              <svg class="ds-icon ds-banner__icon" aria-hidden="true"><use href="#ds-i-info"></use></svg>
+              <div class="ds-banner__body"><p class="ds-banner__title">새 칸이 생겼어요</p><p class="ds-banner__text">작업마다 마감일을 적을 수 있어요.</p></div>
+              <button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm ds-banner__close" type="button" data-ds-dismiss aria-label="알림 닫기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg></button>
+            </div>
+            <div class="ds-banner ds-banner--success" data-ds-banner data-focus-next="#btn-banner-demo">
+              <svg class="ds-icon ds-banner__icon" aria-hidden="true"><use href="#ds-i-success"></use></svg>
+              <div class="ds-banner__body"><p class="ds-banner__title">보고서를 보냈어요</p><p class="ds-banner__text">받는 곳 3곳에 메일로 보냈어요.</p></div>
+              <button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm ds-banner__close" type="button" data-ds-dismiss aria-label="알림 닫기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg></button>
+            </div>
+            <div class="ds-banner ds-banner--warning" data-ds-banner>
+              <svg class="ds-icon ds-banner__icon" aria-hidden="true"><use href="#ds-i-info"></use></svg>
+              <div class="ds-banner__body"><p class="ds-banner__title">저장하지 않은 변경이 있어요</p><p class="ds-banner__text">이 화면을 떠나면 고친 내용이 사라져요.</p>
+                <div class="ds-banner__actions"><button class="ds-btn ds-btn--sm ds-btn--primary" type="button">지금 저장</button></div></div>
+            </div>
+            <div class="ds-banner ds-banner--danger" data-ds-banner>
+              <svg class="ds-icon ds-banner__icon" aria-hidden="true"><use href="#ds-i-error"></use></svg>
+              <div class="ds-banner__body"><p class="ds-banner__title">파일을 올리지 못했어요</p><p class="ds-banner__text">파일이 20MB보다 커요. 20MB 아래로 줄여서 다시 올려 주세요.</p>
+                <div class="ds-banner__actions"><button class="ds-btn ds-btn--sm" type="button">다른 파일 고르기</button></div></div>
+            </div>
+          </div>
+          <div class="dsx-row">
+            <button class="ds-btn" type="button" id="btn-banner-demo">배너 띄워 보기</button>
+            <span class="dsx-note">페이지 머리 아래에 배너가 떠요. 닫으면 포커스가 이 버튼으로 돌아와요.</span>
+          </div>
+        </section>
+
+        <!-- 빈 상태·로딩 -->
+        <section class="ds-section" id="states" aria-labelledby="h-states">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-states">빈 상태·로딩</h2></div>
+          <p class="ds-section__desc">로딩 표시는 0.3초 뒤에 보이고, 한번 보이면 0.4초는 남아요. 스켈레톤은 실제 모양대로 그려요.</p>
+          <p class="dsx-api"><code>.ds-empty</code>(+ <code>--center</code>) · <code>.ds-skeleton</code>(+ <code>--short</code> · <code>--medium</code> · <code>--title</code> · <code>--value</code> · <code>--circle</code>) · <code>.ds-spinner</code> · <code>.ds-progress</code> · <code>.ds-steps</code> · 견본은 <code>.is-static</code> 으로 멈춘다</p>
+          <div class="ds-grid">
+            <div class="ds-card">
+              <div class="ds-empty">
+                <svg class="ds-icon ds-empty__icon" aria-hidden="true"><use href="#ds-i-inbox"></use></svg>
+                <p class="ds-empty__title">아직 작업이 없어요</p>
+                <p class="ds-empty__text">작업을 추가하면 여기에 모여요.</p>
+                <div class="ds-empty__actions"><button class="ds-btn ds-btn--primary" type="button"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-plus"></use></svg>작업 추가</button></div>
+              </div>
+            </div>
+            <div class="ds-card" aria-hidden="true">
+              <span class="ds-skeleton ds-skeleton--short is-static"></span>
+              <span class="ds-skeleton ds-skeleton--value is-static"></span>
+              <div class="dsx-skeleton-row"><span class="ds-skeleton ds-skeleton--circle is-static"></span><span class="dsx-skeleton-lines"><span class="ds-skeleton is-static"></span><span class="ds-skeleton ds-skeleton--medium is-static"></span></span></div>
+              <div class="dsx-skeleton-row"><span class="ds-skeleton ds-skeleton--circle is-static"></span><span class="dsx-skeleton-lines"><span class="ds-skeleton is-static"></span><span class="ds-skeleton ds-skeleton--short is-static"></span></span></div>
+            </div>
+            <div class="ds-card">
+              <div class="ds-progress">
+                <div class="ds-progress__label"><span id="up-label">파일 올리는 중</span><span class="ds-progress__value">42%</span></div>
+                <div class="ds-progress__track" role="progressbar" aria-labelledby="up-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="42"><div class="ds-progress__bar" style="--ds-progress: 42%"></div></div>
+              </div>
+              <div class="dsx-row"><button class="ds-btn ds-btn--sm" type="button">올리기 멈추기</button><span class="ds-loading"><span class="ds-spinner is-static" aria-hidden="true"></span>남은 시간 계산 중</span></div>
+              <ol class="ds-steps" aria-label="예약 단계">
+                <li class="ds-steps__item is-done"><span class="ds-steps__mark"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-check"></use></svg></span>정보 입력<span class="ds-sr-only">(끝남)</span></li>
+                <li class="ds-steps__item" aria-current="step"><span class="ds-steps__mark">2</span>시간 고르기</li>
+                <li class="ds-steps__item"><span class="ds-steps__mark">3</span>확인</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <!-- 대화상자 -->
+        <section class="ds-section" id="dialog" aria-labelledby="h-dialog">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-dialog">대화상자</h2></div>
+          <p class="ds-section__desc">되돌리기 어려운 일을 확인할 때만 써요. 열면 "닫기"에 포커스가 가고, Tab은 안에서만 돌고, Esc로 닫혀요.</p>
+          <p class="dsx-api"><code>dialog.ds-dialog</code>(+ <code>--sm</code>) · 열기 <code>[data-ds-dialog="id"]</code> · 닫기 <code>[data-ds-close]</code> · 첫 포커스 <code>[data-ds-initial-focus]</code></p>
+          <div class="dsx-row">
+            <button class="ds-btn ds-btn--danger" type="button" data-ds-dialog="dlg-delete">보고서 지우기…</button>
+            <span class="dsx-note" id="delete-status"></span>
+          </div>
+        </section>
+
+        <!-- 페이지 나누기 -->
+        <section class="ds-section" id="pagination" aria-labelledby="h-pagination">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-pagination">페이지 나누기</h2></div>
+          <p class="ds-section__desc">지금 쪽은 주소의 <code>?page=</code>에 남아요. 아주 좁은 폭에서는 앞·뒤 버튼과 쪽 수만 보여요.</p>
+          <p class="dsx-api"><code>nav.ds-pagination</code> &gt; <code>.ds-pagination__list</code> &gt; <code>a.ds-pagination__page[aria-current="page"]</code> · 줄임 <code>.ds-pagination__compact</code> · 앞뒤 <code>.ds-pagination__edge</code></p>
+          <nav class="ds-pagination" aria-label="작업 목록 쪽">
+            <p class="ds-pagination__summary" id="pg-summary">248개 중 41–60</p>
+            <ul class="ds-pagination__list" id="pg-list"></ul>
+          </nav>
+          <div class="dsx-strip" aria-hidden="true">
+            <span class="dsx-strip__item"><span class="ds-pagination__page">4</span><span class="dsx-state">기본</span></span>
+            <span class="dsx-strip__item"><span class="ds-pagination__page is-hover">4</span><span class="dsx-state">마우스 올림</span></span>
+            <span class="dsx-strip__item"><span class="ds-pagination__page is-focus">4</span><span class="dsx-state">포커스</span></span>
+            <span class="dsx-strip__item"><span class="ds-pagination__page is-current">4</span><span class="dsx-state">지금 쪽</span></span>
+            <span class="dsx-strip__item"><button class="ds-pagination__page" type="button" disabled tabindex="-1"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-chevron-left"></use></svg>이전</button><span class="dsx-state">비활성</span></span>
+          </div>
+        </section>
+
+        <!-- 툴팁·메뉴 -->
+        <section class="ds-section" id="overlays" aria-labelledby="h-overlays">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-overlays">툴팁·메뉴</h2></div>
+          <p class="ds-section__desc">툴팁은 마우스를 올리거나 키보드로 옮기면 떠요. 툴팁 위로 마우스를 옮겨도 남고, Esc로 닫혀요. 메뉴는 화살표 키로 옮기고 Esc로 닫아요.</p>
+          <p class="dsx-api">툴팁 <code>[data-ds-tip="글"]</code> · 메뉴 <code>button[aria-haspopup="menu"][aria-controls]</code> + <code>.ds-menu[role="menu"]</code> &gt; <code>.ds-menu__item[role="menuitem"]</code></p>
+          <div class="dsx-columns">
+            <div class="dsx-cell">
+              <h3 class="dsx-sub">툴팁</h3>
+              <div class="dsx-row">
+                <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" aria-label="내려받기" data-ds-tip="내려받기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-download"></use></svg></button>
+                <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" aria-label="올리기" data-ds-tip="올리기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-upload"></use></svg></button>
+                <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" aria-label="도움말" data-ds-tip="도움말 열기 — 새 창으로 열지 않아요"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-help"></use></svg></button>
+              </div>
+              <div class="dsx-row" aria-hidden="true"><span class="ds-tooltip dsx-static">내려받기</span><span class="dsx-state">툴팁 모습</span></div>
+            </div>
+            <div class="dsx-cell">
+              <h3 class="dsx-sub">메뉴</h3>
+              <div class="ds-menu-anchor">
+                <button class="ds-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-row"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-more"></use></svg>더 보기</button>
+                <div class="ds-menu ds-menu--start" id="menu-row" role="menu" aria-label="작업 동작" hidden>
+                  <button class="ds-menu__item" type="button" role="menuitem"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg>고치기</button>
+                  <button class="ds-menu__item" type="button" role="menuitem"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-copy"></use></svg>복사본 만들기</button>
+                  <hr class="ds-menu__sep">
+                  <button class="ds-menu__item ds-menu__item--danger" type="button" role="menuitem"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-trash"></use></svg>휴지통으로 옮기기</button>
+                </div>
+              </div>
+              <div class="ds-menu dsx-static" aria-hidden="true">
+                <span class="ds-menu__item"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg>고치기</span>
+                <span class="ds-menu__item is-hover"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-copy"></use></svg>복사본 만들기(마우스 올림)</span>
+                <hr class="ds-menu__sep">
+                <span class="ds-menu__item ds-menu__item--danger"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-trash"></use></svg>휴지통으로 옮기기</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 카드·목록 -->
+        <section class="ds-section" id="cards" aria-labelledby="h-cards">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-cards">카드·목록</h2></div>
+          <p class="ds-section__desc">카드는 테두리로 나누고 카드 안에 카드를 넣지 않아요. 목록 행 사이는 구분선이에요.</p>
+          <p class="dsx-api"><code>.ds-grid</code> &gt; <code>.ds-card</code>(+ <code>--flush</code>) · <code>.ds-stat</code> · <code>.ds-list</code> &gt; <code>.ds-list__row</code> · <code>.ds-dl</code> · <code>.ds-avatar</code></p>
+          <div class="ds-grid" id="stats">
+            <div class="ds-card ds-stat"><p class="ds-stat__label">오늘 들어온 문의</p><p class="ds-stat__value">128<span class="ds-stat__unit">건</span></p><p class="ds-stat__delta ds-stat__delta--bad"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-arrow-up"></use></svg>지난주 같은 요일보다 12% 늘었어요</p></div>
+            <div class="ds-card ds-stat"><p class="ds-stat__label">답을 기다리는 문의</p><p class="ds-stat__value">14<span class="ds-stat__unit">건</span></p><p class="ds-stat__delta ds-stat__delta--good"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-arrow-down"></use></svg>어제보다 3건 줄었어요</p></div>
+            <div class="ds-card ds-stat"><p class="ds-stat__label">평균 첫 답 시간</p><p class="ds-stat__value">6<span class="ds-stat__unit">분</span></p><p class="ds-stat__delta">어제와 같아요</p></div>
+          </div>
+          <div class="ds-grid">
+            <div class="ds-card ds-card--flush">
+              <div class="ds-card__head"><h3 class="ds-card__title">최근 알림</h3><span class="ds-count ds-count--accent">2</span></div>
+              <div class="ds-list">
+                <div class="ds-list__row is-unread"><span class="ds-avatar" aria-hidden="true">정산</span><div class="ds-list__main"><span class="ds-list__title">3월 정산 보고서가 올라왔어요</span><span class="ds-list__meta">정산팀 · 읽지 않음</span></div><time class="ds-list__aside" datetime="2026-11-17T15:20">15:20</time></div>
+                <div class="ds-list__row is-unread"><span class="ds-avatar" aria-hidden="true">상담</span><div class="ds-list__main"><span class="ds-list__title">고객 문의 분류를 보류했어요</span><span class="ds-list__meta">상담팀 · 읽지 않음</span></div><time class="ds-list__aside" datetime="2026-11-17T11:05">11:05</time></div>
+                <div class="ds-list__row"><span class="ds-avatar" aria-hidden="true">운영</span><div class="ds-list__main"><span class="ds-list__title">새 채널 연결을 끝냈어요</span><span class="ds-list__meta">운영팀</span></div><time class="ds-list__aside" datetime="2026-11-16T17:40">어제</time></div>
+              </div>
+            </div>
+            <div class="ds-card">
+              <div class="ds-card__head"><h3 class="ds-card__title">작업 정보</h3><span class="ds-badge ds-badge--info">진행 중</span></div>
+              <dl class="ds-dl">
+                <dt>담당 팀</dt><dd>정산팀</dd>
+                <dt>건수</dt><dd class="ds-num">1,284건</dd>
+                <dt>마감일</dt><dd><time datetime="2026-11-20">2026년 11월 20일</time></dd>
+                <dt>만든 날</dt><dd><time datetime="2026-11-03">2026년 11월 3일</time></dd>
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <!-- 앱 틀 -->
+        <section class="ds-section" id="frame" aria-labelledby="h-frame">
+          <div class="ds-section__head"><h2 class="ds-section__title" id="h-frame">앱 틀</h2></div>
+          <p class="ds-section__desc">이 화면도 앱 틀로 만들었어요. 창 폭이 1024픽셀보다 좁으면 옆 메뉴가 서랍이 돼요. 옆 패널은 1280픽셀부터 본문 옆에 붙어요.</p>
+          <p class="dsx-api"><code>.ds-app</code> &gt; <code>.ds-app__top</code> · <code>__nav</code> · <code>__main</code> · <code>__panel[data-url-key]</code> · 서랍 <code>[data-ds-nav-toggle]</code> · 패널 <code>[data-ds-panel="id"]</code> · <code>DS.panel.open(panel)</code></p>
+          <div class="ds-table-wrap" role="region" aria-label="앱 틀 영역 표" tabindex="0">
+            <table class="ds-table dsx-matrix">
+              <thead><tr><th scope="col">영역</th><th scope="col">클래스</th><th scope="col">1280 이상</th><th scope="col">1024–1279</th><th scope="col">1023 이하</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">머리줄</th><td><code>ds-app__top</code></td><td>위에 붙음</td><td>위에 붙음</td><td>위에 붙음 · 메뉴 버튼 표시</td></tr>
+                <tr><th scope="row">옆 메뉴</th><td><code>ds-app__nav</code></td><td>왼쪽 240</td><td>왼쪽 240</td><td>서랍</td></tr>
+                <tr><th scope="row">본문</th><td><code>ds-app__main</code></td><td>최대 1280</td><td>남은 폭</td><td>전체 폭</td></tr>
+                <tr><th scope="row">옆 패널</th><td><code>ds-app__panel</code></td><td>오른쪽 360에 붙음</td><td>오른쪽에서 덮음</td><td>전체 폭으로 덮음</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="dsx-row">
+            <button class="ds-btn" type="button" id="btn-panel" data-ds-panel="panel" aria-controls="panel" aria-expanded="false">옆 패널 열기</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <aside class="ds-app__panel ds-panel" id="panel" aria-labelledby="panel-title" data-url-key="panel" data-url-value="task" hidden>
+      <div class="ds-panel__head">
+        <h2 class="ds-panel__title" id="panel-title" tabindex="-1">3월 정산 보고서</h2>
+        <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" id="btn-panel-close" data-ds-panel-close aria-label="옆 패널 닫기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg></button>
+      </div>
+      <div class="ds-panel__body">
+        <dl class="ds-dl">
+          <dt>상태</dt><dd><span class="ds-badge ds-badge--info">진행 중</span></dd>
+          <dt>담당 팀</dt><dd>정산팀</dd>
+          <dt>마감일</dt><dd><time datetime="2026-11-20">11월 20일</time></dd>
+        </dl>
+        <p class="ds-text-body-reading">한 건을 자세히 볼 때 여는 패널이에요. 넓은 창에서는 목록을 가리지 않고, 좁은 창에서는 목록 위를 덮어요. 여러 칸을 고치는 편집도 대화상자 대신 여기서 해요.</p>
+      </div>
+    </aside>
+  </div>
+
+  <dialog class="ds-dialog ds-dialog--sm" id="dlg-delete" aria-labelledby="dlg-delete-title" aria-describedby="dlg-delete-desc">
+    <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-delete-title">보고서 3개를 지울까요?</h2></div>
+    <div class="ds-dialog__body"><p id="dlg-delete-desc">지운 보고서는 휴지통에 30일 동안 남아요. 30일이 지나면 되살릴 수 없어요.</p></div>
+    <div class="ds-dialog__foot">
+      <button class="ds-btn" type="button" data-ds-close data-ds-initial-focus>닫기</button>
+      <button class="ds-btn ds-btn--danger" type="button" data-ds-close="delete">보고서 3개 지우기</button>
+    </div>
+  </dialog>
+</body>
+</html>

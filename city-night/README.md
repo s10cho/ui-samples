@@ -1,7 +1,7 @@
 # 강을 낀 작은 도시 — 3D 야경 첫 화면
 
 강을 사이에 둔 가상의 작은 도시 한 블록을 3D로 보여 주는 정적 웹 페이지다. 명소 5곳(전망 타워·아치 다리·시계탑 기차역·시장 골목·공원 분수)이 있고, 해 질 녘과 밤을 바꿔 볼 수 있다.
-실제 도시·건물을 본뜨지 않았다. 서버 코드와 빌드 단계 없이 파일만 올리면 동작한다.
+실제 도시·건물을 본뜨지 않았다. 서버 코드 없이 정적 파일로 동작한다. 화면 틀은 3D 공용 뼈대(`shared/scene3d/`)를 쓰고, 배포할 때 이 폴더와 합쳐 조립한다.
 
 - 화면 설계서: `docs/ui/city-night.md`
 - 자체 점검 스크린샷: `docs/ui/review/city-night/20261117/self-*.png`
@@ -9,19 +9,21 @@
 
 ## 실행
 
-두 가지 방법 모두 동작한다.
+이 폴더에는 이 화면만의 파일(장면·문구·토큰·고유 스타일)만 있다. 화면 틀(부팅·배너·시점 버튼·포스터 배치 스크립트, 공통 스타일, 도구)은
+저장소의 `shared/scene3d/` 에 있고, 조립할 때 이 폴더와 합쳐진다(`docs/platform.md`). 저장소 루트에서 조립한 뒤 `_site/city-night/` 를 연다.
+
+```bash
+node tools/build-site.mjs --only city-night   # _site/city-night/ — 공용 뼈대 복사 → 이 폴더 복사 → dist/app.bundle.js 생성
+python3 -m http.server 8000 --directory _site
+```
 
 | 여는 방법 | 쓰는 스크립트 | 차이 |
 |---|---|---|
-| `index.html` 더블클릭(`file://`) | `dist/app.bundle.js` — 한 파일로 묶은 일반 스크립트 | 브라우저가 파일에서는 ES 모듈과 웹 글꼴을 막는다. 그래서 묶음 스크립트를 쓰고, 글자는 시스템 한글 글꼴로 보인다(콘솔에 글꼴 차단 메시지가 남는다) |
+| `_site/city-night/index.html` 더블클릭(`file://`) | `dist/app.bundle.js` — 조립할 때 만든 한 파일 묶음(일반 스크립트) | 브라우저가 파일에서는 ES 모듈과 웹 글꼴을 막는다. 그래서 묶음 스크립트를 쓰고, 글자는 시스템 한글 글꼴로 보인다(콘솔에 글꼴 차단 메시지가 남는다) |
 | 정적 서버(http·https) | `js/main.js` — ES 모듈. 3D 파일은 필요할 때 받는다 | 느린 연결 안내·Pretendard 글꼴까지 설계서대로 동작한다 |
 
-```bash
-python3 -m http.server 8000
-```
-
-서버로 열 때는 브라우저에서 그 서버 주소(포트 8000)를 연다. 파일을 고친 뒤에는 강력 새로고침(캐시 무시)을 한다.
-정적 호스팅(GitHub Pages·Netlify·사내 nginx 등)에는 폴더를 그대로 올린다.
+서버로 열 때는 브라우저에서 그 서버 주소(포트 8000)의 `/city-night/` 를 연다. 파일을 고친 뒤에는 다시 조립하고 강력 새로고침(캐시 무시)을 한다.
+조립된 `_site/city-night/` 폴더는 혼자 완결된다. 정적 호스팅에는 그 폴더를 그대로 올린다.
 화면 스크립트를 받지 못했거나 6초 안에 시작하지 않으면, 동작하지 않는 버튼을 숨기고 명소 설명을 모두 펼친다.
 
 ## 상태별 화면 띄우기
@@ -50,24 +52,25 @@ python3 -m http.server 8000
 |---|---|
 | `index.html` | 화면 골격. 명소 설명이 HTML 에 들어 있어 스크립트가 꺼져도 읽힌다 |
 | `css/tokens.css` | 디자인 토큰(설계서 4-1절). 화면 코드는 이 변수만 쓴다 |
-| `css/style.css` | 배치·컴포넌트·상태 스타일 |
+| `css/style.css` | 이 화면만의 스타일(장면 바탕색 등). 공통 배치·컴포넌트·상태는 공용 뼈대 `css/shell.css`·`css/shell-landmarks.css` |
 | `js/tokens.js` | 3D 장면 색·빛·시점·움직임 주기·예산 값, 폭 경계 |
-| `js/main.js` | 부팅·선택·토글·배너·상태 처리, 포스터 배치 |
+| `js/main.js` | 화면 설정 — 장면 갈래 토글 값·문구·처음 시점 맞춤. 부팅·선택·토글·배너·상태 처리·포스터 배치는 공용 뼈대 `js/shell/` |
 | `js/framing.js` | 처음 시점 맞춤 계산 — 3D와 포스터가 같은 식을 쓴다(three.js 없이 돈다) |
 | `js/scene/scene.js` | 3D 장면(강·땅·건물·명소·차·배·카메라·표지). 건물·창문·가로등·나무·차·전구는 `InstancedMesh` 로 그린다 |
 | `assets/poster-*.webp` | 포스터 6장(해 질 녘·밤 × 좁은·중간·넓은). 3D 준비 전과 실패 때 보인다 |
 | `vendor/three/` | Three.js 0.187.0 중 쓰는 클래스 27개만 묶은 파일(MIT) |
-| `vendor/pretendard/` | Pretendard 1.3.9(SIL OFL). 화면 글자 전용 파일(글자 281개) + 다이나믹 서브셋(빠진 글자 대비) |
-| `dist/app.bundle.js` | 파일로 열 때(`file://`) 쓰는 한 파일 묶음. 생성물 — 직접 고치지 않는다 |
-| `tools/` | vendor 파일과 `dist/app.bundle.js` 를 다시 만드는 스크립트 |
+| `vendor/pretendard/` | Pretendard 1.3.9(SIL OFL). 화면 글자 전용 파일(글자 281개). 다이나믹 서브셋(빠진 글자 대비)은 조립 때 `shared/common/` 에서 들어온다 |
+| `sample.config.json` | 조립 설정 — 공용 뼈대 이름(`scene3d`), 조립 뒤 실행할 명령, 자동 검수 상태 목록 |
+| 공용 뼈대(조립 때 들어온다) | `css/shell.css`·`css/shell-landmarks.css`·`js/shell/`·`tools/` — 저장소의 `shared/scene3d/`. 이 폴더에는 없다 |
+| `dist/app.bundle.js`(조립 때 생긴다) | 파일로 열 때(`file://`) 쓰는 한 파일 묶음. 생성물이라 저장소에 넣지 않는다 |
 
 ## vendor 파일 다시 만들기
 
 | 언제 | 실행 |
 |---|---|
-| `js/` 에서 `'three'` 의 새 이름을 가져왔을 때 | `node tools/build-three.mjs` 뒤 `node tools/build-app.mjs` |
-| `js/` 아래 코드를 고쳤을 때 | `node tools/build-app.mjs` — 안 하면 파일로 열 때(`file://`) 옛 코드가 돈다 |
-| 화면 문구를 바꿔 새 글자가 생겼을 때 | `pip install fonttools brotli` 뒤 `python3 tools/subset-font.py <PretendardVariable.woff2 원본>`(`pyftsubset` 이 PATH 에 있어야 한다) |
+| `js/` 에서 `'three'` 의 새 이름을 가져왔을 때 | 저장소 루트에서 `node shared/scene3d/tools/build-three.mjs city-night` 뒤 다시 조립 |
+| `js/` 아래 코드나 공용 뼈대를 고쳤을 때 | 다시 조립한다(`node tools/build-site.mjs --only city-night`). `dist/app.bundle.js` 도 이때 다시 만든다 |
+| 화면 문구를 바꿔 새 글자가 생겼을 때 | `pip install fonttools brotli` 뒤 저장소 루트에서 `python3 shared/scene3d/tools/subset-font.py <PretendardVariable.woff2 원본> city-night` — 공용 뼈대의 문구도 같이 모은다. HTML·JS 주석 속 글자는 모으지 않는다(`pyftsubset` 이 PATH 에 있어야 한다) |
 | 장면 모양·시점·색을 바꿨을 때 | `?poster=dusk&size=wide`·`?poster=night&size=wide` 를 2400×1400 창에서, `size=medium` 을 2000×1120, `size=narrow` 를 900×1170 창에서 찍어 `assets/poster-<시간대>-<size>.webp` 로 바꾼다. 캔버스 크기는 `js/tokens.js` 의 `POSTER` 와 같아야 한다(다르면 배치하지 않고 가득 채우기로 둔다) |
 
 - 포스터는 전송량 예산 때문에 목표 용량으로 줄였다: `cwebp -size <바이트> -pass 6 -m 6 -sharp_yuv`. 넓은 48,000 · 중간 40,000 · 좁은 20,000 바이트 목표.

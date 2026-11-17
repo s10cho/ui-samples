@@ -1,0 +1,272 @@
+/*
+ * 고객 상세와 편집 — 이 화면만 쓰는 배치(ce-). 부품은 kit(css/components.css)에서 오고 값은 토큰 변수만 쓴다.
+ * 숨김(hidden)으로 켜고 끄는 요소에는 display 를 주지 않는다. 맨 아래 [hidden] 줄이 이기게 둔다.
+ */
+
+:root {
+  /* 오른쪽 열(변경 기록)의 최소 폭. kit 에 열 폭 토큰이 없어 카드 격자 한 칸 최소 폭(256)을 그대로 쓴다 */
+  --customer-edit-side-min: var(--ds-size-card-min);
+}
+
+/* ---------- 머리줄 ---------- */
+
+@media (max-width: 479px) {
+  .ce-theme-text {
+    display: none;
+  }
+}
+
+/* ---------- 페이지 머리 ---------- */
+
+.ce-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  min-width: 0;
+}
+
+.ce-title .ds-page__title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ce-perm-note {
+  flex: 1 1 100%;
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.ce-perm-note .ds-icon {
+  margin-inline-end: var(--ds-space-1);
+  vertical-align: -0.125em;
+}
+
+/* ---------- 두 열 배치 — 창 폭이 아니라 본문 폭으로 나눈다(글자 200% 에서 1열로 돌아간다) ---------- */
+
+.ce-layout {
+  container-type: inline-size;
+}
+
+.ce-layout__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-gap-section);
+}
+
+.ce-main,
+.ce-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-gap-section);
+  min-width: 0;
+}
+
+/* 묶음 사이는 구분선 + 넓은 간격(SPC-04). 카드 상자로 감싸지 않는다 */
+.ce-block + .ce-block,
+.ce-side {
+  padding-block-start: var(--ds-gap-section);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.ce-block,
+.ce-group {
+  scroll-margin-top: calc(var(--ds-size-topbar) + var(--ds-space-4));
+}
+
+@container (min-width: 56rem) {
+  .ce-layout__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(var(--customer-edit-side-min), 1fr);
+    gap: 0 var(--ds-space-8);
+    align-items: start;
+  }
+
+  .ce-side {
+    align-self: stretch;
+    padding-block-start: 0;
+    padding-inline-start: var(--ds-space-6);
+    border-block-start: 0;
+    border-inline-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+  }
+}
+
+/* ---------- 보기 — 기본 정보 ---------- */
+
+/* 형식만 보고 뜻을 아는 값(전화·이메일·주소)은 라벨 없이 값만 조금 크게(PAT-DETAIL-02) */
+.ce-contact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+}
+
+.ce-contact a {
+  overflow-wrap: anywhere;
+}
+
+.ce-postcode {
+  margin-inline-end: var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ce-none {
+  color: var(--ds-color-fg-muted);
+}
+
+.ce-memo {
+  white-space: pre-line;
+}
+
+/* 묶음 안 빈 상태 — 묶음 제목(h2)보다 한 단계 낮춘다 */
+.ce-block .ds-empty__title {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.ce-block .ds-empty__actions {
+  margin-block-start: var(--ds-space-1);
+}
+
+.ce-meta {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+/* ---------- 최근 주문 ---------- */
+
+.ce-orders td:first-child {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 767px) {
+  /* 정렬 버튼이 없는 표라 쌓은 머리 띠가 비어 보인다. 화면에서만 숨기고 화면낭독기에는 남긴다 */
+  .ce-orders thead {
+    position: absolute;
+    width: var(--ds-size-hairline);
+    height: var(--ds-size-hairline);
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* 고르기 칸이 없어 왼쪽 들여쓰기를 줄인다 */
+  .ce-orders .ds-table--stack tr {
+    padding-inline-start: var(--ds-space-3);
+  }
+}
+
+/* ---------- 변경 기록 ---------- */
+
+.ce-history .ds-list__row {
+  align-items: flex-start;
+  padding-inline: 0;
+}
+
+.ce-history .ds-list__title {
+  font-weight: var(--ds-text-body-weight);
+}
+
+/* ---------- 편집 폼 ---------- */
+
+.ce-form {
+  gap: var(--ds-space-6);
+}
+
+.ce-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ce-group__title {
+  margin-block-end: var(--ds-space-3);
+  padding: 0;
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.ce-span {
+  grid-column: 1 / -1;
+}
+
+.ce-summary__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1) var(--ds-space-4);
+  margin-block-start: var(--ds-space-1);
+}
+
+.ce-summary__list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ds-target-min);
+  color: var(--ds-color-fg-danger);
+  font-weight: var(--ds-text-label-weight);
+}
+
+.ce-form__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  padding-block-start: var(--ds-space-4);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.ce-dirty {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+/* ---------- 불러오는 중 ---------- */
+
+.ce-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-gap-section);
+}
+
+.ce-skeleton__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+/* ---------- 없는 고객 · 바닥줄 ---------- */
+
+.ce-notfound {
+  padding-block: var(--ds-space-12);
+}
+
+.ce-notfound .ds-empty__title {
+  font-size: var(--ds-text-title-size);
+  line-height: var(--ds-text-title-leading);
+  font-weight: var(--ds-text-title-weight);
+  letter-spacing: var(--ds-text-title-tracking);
+}
+
+.ce-footnote {
+  padding-block-start: var(--ds-space-4);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.ce-noscript {
+  padding: var(--ds-space-6) var(--ds-gap-page-x);
+}
+
+/* hidden 속성이 위의 display 값보다 이기게 맨 끝에 둔다 */
+[hidden] {
+  display: none;
+}

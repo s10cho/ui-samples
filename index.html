@@ -40,6 +40,8 @@
       --card-min: 19rem;
       --target: 2.75rem;
       --fade: 300ms;
+      --ring: 3px;
+      --hairline: 1px;
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -59,8 +61,8 @@
     a { color: var(--c-accent); text-underline-offset: 0.2em; }
     a:hover { color: var(--c-accent-hover); }
     a:focus-visible, .btn:focus-visible {
-      outline: 3px solid var(--c-focus);
-      outline-offset: 3px;
+      outline: var(--ring) solid var(--c-focus);
+      outline-offset: var(--ring);
       border-radius: var(--radius);
     }
 
@@ -143,7 +145,7 @@
     .foot {
       margin-top: var(--space-8);
       padding-top: var(--space-5);
-      border-top: 1px solid var(--c-line);
+      border-top: var(--hairline) solid var(--c-line);
       color: var(--c-text-muted);
       font-size: var(--text-small);
     }

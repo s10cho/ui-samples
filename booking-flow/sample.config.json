@@ -1,0 +1,6 @@
+{
+  "kit": "app",
+  "build": [],
+  "states": ["", "?step=2", "?step=3", "?step=4", "?state=sold-out", "?state=submit-fail"],
+  "budgetKB": 150
+}

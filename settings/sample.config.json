@@ -1,0 +1,6 @@
+{
+  "kit": "app",
+  "build": [],
+  "states": ["", "?tab=security", "?state=loading", "?state=dirty", "?state=save-fail", "?tab=team&state=no-permission"],
+  "budgetKB": 150
+}

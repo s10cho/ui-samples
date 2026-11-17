@@ -1,0 +1,59 @@
+# PR 과 수동 실행에서 배포와 같은 점검만 돌린다. 배포는 하지 않는다.
+# 화면·보고서는 artifact(check-report)로 올리고, 요약은 실행 화면(Summary)에 붙는다.
+name: 자동 검수
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 같은 PR 에 새 커밋이 오면 앞의 점검은 끊는다.
+concurrency:
+  group: check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: 조립·점검
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: 개발 도구 설치
+        run: npm ci
+
+      - name: 목록이 samples.json 과 맞는지
+        run: node tools/build-gallery.mjs --check
+
+      - name: 사이트 조립
+        id: build
+        run: node tools/build-site.mjs
+
+      - name: 정적 점검
+        run: node tools/check-static.mjs
+
+      # 정적 점검이 실패해도 화면 점검까지 돌려 보고서를 한 번에 받는다.
+      - name: Chromium 설치
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: npx playwright install --with-deps --only-shell chromium
+
+      - name: 화면 점검
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: node tools/check-pages.mjs --jobs 2
+
+      - name: 점검 결과 올리기
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: check-report
+          path: _check/
+          retention-days: 14
+          if-no-files-found: ignore

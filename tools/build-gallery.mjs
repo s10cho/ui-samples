@@ -41,7 +41,9 @@ function card(s) {
     out.push(`              <div><dt>3D 판</dt><dd><a href="${s.pair}/">${esc(bySlug[s.pair].name)}</a></dd></div>`);
   }
   out.push(
-    `              <div><dt>검수</dt><dd><a href="${G}/blob/main/${s.slug}/${s.report}">독립 검수 ${esc(s.score)}점 · 합격</a></dd></div>`,
+    s.score
+      ? `              <div><dt>검수</dt><dd><a href="${G}/blob/main/${s.slug}/${s.report}">독립 검수 ${esc(s.score)}점 · 합격</a></dd></div>`
+      : '              <div><dt>검수</dt><dd>검수 중</dd></div>',
     '            </dl>',
     '            <div class="actions">',
     `              <a class="btn" href="${s.slug}/">샘플 열기</a>`,
@@ -56,7 +58,7 @@ function card(s) {
 
 const blocks = [];
 data.groups.forEach((g) => {
-  const items = data.samples.filter((s) => s.group === g.id);
+  const items = data.samples.filter((s) => s.group === g.id && !s.draft);
   if (!items.length) return;
   const id = `group-${g.id}`;
   blocks.push([
@@ -73,7 +75,7 @@ data.groups.forEach((g) => {
 });
 
 const counts = data.groups
-  .map((g) => [g.title, data.samples.filter((s) => s.group === g.id).length])
+  .map((g) => [g.title, data.samples.filter((s) => s.group === g.id && !s.draft).length])
   .filter(([, n]) => n > 0)
   .map(([t, n]) => `${t} ${n}개`)
   .join(', ');
@@ -96,7 +98,7 @@ const readmePath = join(root, 'README.md');
 const readme = readFileSync(readmePath, 'utf8');
 const A = '<!-- samples:start -->', B = '<!-- samples:end -->';
 if (readme.includes(A) && readme.includes(B)) {
-  const rows = data.samples.map((s) => `| \`${s.slug}/\` | ${data.site}${s.slug}/ | ${s.name}. ${s.desc[0]} | ${s.score} |`);
+  const rows = data.samples.filter((s) => !s.draft).map((s) => `| \`${s.slug}/\` | ${data.site}${s.slug}/ | ${s.name}. ${s.desc[0]} | ${s.score || '검수 중'} |`);
   const table = ['| 폴더 | 바로 보기 | 내용 | 검수 |', '|---|---|---|---|', ...rows].join('\n');
   const nextReadme = readme.slice(0, readme.indexOf(A) + A.length) + '\n' + table + '\n' + readme.slice(readme.indexOf(B));
   if (nextReadme !== readme) { changed.push('README.md'); if (!check) writeFileSync(readmePath, nextReadme); }

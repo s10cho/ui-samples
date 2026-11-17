@@ -23,19 +23,21 @@
 
 ## 실행
 
-두 방법 모두 같은 코드가 돈다.
+공용 뼈대(`shared/iso2d`)와 합쳐야 돈다. 저장소 루트에서 이 샘플을 조립한 뒤 `_site/` 를 연다(`docs/platform.md`).
+저장소의 이 폴더를 바로 열면 `js/iso2d.js`·`css/style.css` 가 없어 화면이 깨진다.
+
+```bash
+node tools/build-site.mjs --only ski-mountain-iso
+python3 -m http.server 8000 --directory _site
+```
 
 | 여는 방법 | 차이 |
 |---|---|
-| `index.html` 더블클릭(`file://`) | 브라우저가 파일에서는 웹 글꼴을 막는다. 그래서 글꼴 파일을 아예 요청하지 않고 시스템 한글 글꼴로 보인다(콘솔 오류가 없다) |
+| `_site/ski-mountain-iso/index.html` 더블클릭(`file://`) | 브라우저가 파일에서는 웹 글꼴을 막는다. 그래서 글꼴 파일을 아예 요청하지 않고 시스템 한글 글꼴로 보인다(콘솔 오류가 없다) |
 | 정적 서버(http·https) | Pretendard 글꼴까지 설계서대로 보인다 |
 
-```bash
-python3 -m http.server 8000
-```
-
-서버로 열 때는 브라우저에서 그 서버 주소(포트 8000)를 열고 `ski-mountain-iso/` 로 들어간다. 파일을 고친 뒤에는 강력 새로고침(캐시 무시)을 한다.
-정적 호스팅(GitHub Pages 등)에는 폴더를 그대로 올린다.
+서버로 열 때는 브라우저에서 그 서버 주소(포트 8000)를 열고 `ski-mountain-iso/` 로 들어간다. 파일을 고친 뒤에는 다시 조립하고 강력 새로고침(캐시 무시)을 한다.
+조립된 `_site/ski-mountain-iso/` 폴더는 혼자 완결된다. 정적 호스팅에는 그 폴더를 그대로 올린다.
 화면 스크립트를 받지 못하면 조작 버튼을 숨기고 명소 설명을 모두 펼친다. 목록은 그 설명으로 가는 링크가 된다. 그림은 HTML 안에 있어 그대로 보인다.
 
 ## 상태별 화면 띄우기
@@ -56,24 +58,29 @@ python3 -m http.server 8000
 
 ## 파일
 
-| 경로 | 하는 일 |
-|---|---|
-| `index.html` | 화면 골격 + 산 그림(SVG)과 눈송이 층(`iso-scene` 표시 사이). 명소 설명이 HTML 에 들어 있어 스크립트가 꺼져도 읽힌다 |
-| `css/tokens.css` | 디자인 토큰(설계서 4-1절). UI 토큰은 3D 판과 같고, 그림 색(`--iso-*`)과 눈 내림 색을 더했다 |
-| `css/style.css` | 배치·컴포넌트·상태 스타일(3D 판의 화면 틀) |
-| `css/scene.css` | 그림 면 클래스 → 그림 색 변수, 눈송이 층 |
-| `js/iso-geom.js` | 투영·면 밝기·산 높이 함수·리프트 의자·스키어 자세 계산. 빌드 스크립트와 화면 스크립트가 같이 쓴다 |
-| `js/app.js` | 보는 범위·선택·토글·끌기·확대·움직임·상태 처리 |
-| `vendor/pretendard/` | Pretendard 1.3.9(SIL OFL). 화면 글자 전용 파일 + 다이나믹 서브셋(빠진 글자가 있을 때만 붙는다) |
-| `tools/build-scene.mjs` | 산 그림과 눈송이 층을 계산해 `index.html` 에 넣는다(Node, 의존성 없음) |
-| `tools/subset-font.py` | 화면 글자 전용 글꼴을 만든다 |
+공용 뼈대 파일은 저장소의 `shared/iso2d/` 에 있고, 조립할 때 아래 경로로 들어온다. 샘플은 같은 이름의 파일을 두지 않는다(두면 공용 파일을 덮는다).
+
+| 경로 | 어디 | 하는 일 |
+|---|---|---|
+| `index.html` | 샘플 | 화면 골격 + 산 그림(SVG)과 눈송이 층(`iso-scene` 표시 사이). 명소 설명이 HTML 에 들어 있어 스크립트가 꺼져도 읽힌다 |
+| `css/tokens.css` | 샘플 | 디자인 토큰(설계서 4-1절). UI 토큰은 3D 판과 같고, 그림 색(`--iso-*`)과 눈 내림 색을 더했다 |
+| `css/style.css` | 공용 | 배치·컴포넌트·상태 스타일(2D 그림판 공통 화면 틀) |
+| `css/scene.css` | 샘플 | 그림 자리 바탕색, 그림 면 클래스 → 그림 색 변수, 눈송이 층 |
+| `js/iso2d.js` | 공용 | 면 계산(`IsoCore`)과 화면 틀(`Iso2d.start` — 보는 범위·선택·토글·끌기·확대·움직임·주소·live 영역) |
+| `js/iso-geom.js` | 샘플 | 투영·햇빛과 산 높이 함수·리프트 의자·스키어 자세 계산(면 계산은 공용 `js/iso2d.js`). 빌드 스크립트와 화면 스크립트가 같이 쓴다 |
+| `js/scene.js` | 샘플 | 문구·보는 범위·토글 설정과 리프트·스키어 움직임. 공용 화면 틀(`Iso2d.start`)에 넘긴다 |
+| `sample.config.json` | 샘플 | 조립 설정(공용 뼈대 `iso2d`, 조립 뒤 명령, 자동 검수 상태). 배포하지 않는다 |
+| `vendor/pretendard/` | 샘플 + 공용 | Pretendard 1.3.9(SIL OFL). 화면 글자 전용 파일(샘플) + 다이나믹 서브셋·라이선스(`shared/common`, 빠진 글자가 있을 때만 붙는다) |
+| `tools/build-scene.mjs` | 샘플 | 산 그림과 눈송이 층을 계산해 `index.html` 에 넣는다(Node, 의존성 없음) |
+| `tools/subset-font.py` | 공용 | 화면 글자 전용 글꼴을 만든다 |
+| `tools/strip-css-comments.mjs` | 공용 | 조립본 `css/*.css` 의 주석을 지운다(첫 방문 전송량). `sample.config.json` 의 `build` 가 부른다. 저장소의 css 는 그대로 둔다 |
 
 ## 다시 만들기
 
 | 언제 | 실행 |
 |---|---|
 | 그림 모양·자리·색 단계를 바꿨을 때(`js/iso-geom.js`·`tools/build-scene.mjs`) | `node tools/build-scene.mjs` |
-| 화면 문구를 바꿔 새 글자가 생겼을 때 | `pip install fonttools brotli` 뒤 `python3 tools/subset-font.py <PretendardVariable.woff2 원본>` |
+| 화면 문구를 바꿔 새 글자가 생겼을 때 | `pip install fonttools brotli` 뒤 이 폴더에서 `python3 ../shared/iso2d/tools/subset-font.py <PretendardVariable.woff2 원본>` |
 
 - 눈송이 바둑판 한 칸 크기(`tools/build-scene.mjs` 의 `FLAKES`)를 바꾸면 `css/tokens.css` 의 `--iso-flake-tile-*` 도 같은 값으로 바꾼다.
 - 글꼴을 다시 만들지 않아도 화면은 깨지지 않는다. 화면 스크립트가 page subset 에 없는 글자를 찾으면 다이나믹 서브셋을 붙이고 그 조각만 받는다.

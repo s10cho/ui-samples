@@ -1,0 +1,80 @@
+# main 에 올라오면 목록 확인 → 조립 → 자동 검수를 돌리고, 모두 통과해야 GitHub Pages 에 배포한다.
+# 점검이 하나라도 실패하면 Pages 묶음을 올리지 않으므로 배포 작업이 돌지 않는다.
+# 화면·보고서는 실패해도 artifact(check-report)로 남는다. 자세한 것은 docs/platform.md 의 "자동 검수".
+name: 배포
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 배포는 한 번에 하나만. 돌고 있는 배포는 끊지 않고, 뒤에 온 것은 기다린다.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: 조립·점검
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: 개발 도구 설치
+        run: npm ci
+
+      - name: 목록이 samples.json 과 맞는지
+        run: node tools/build-gallery.mjs --check
+
+      - name: 사이트 조립
+        id: build
+        run: node tools/build-site.mjs
+
+      - name: 정적 점검
+        run: node tools/check-static.mjs
+
+      # 정적 점검이 실패해도 화면 점검까지 돌려 보고서를 한 번에 받는다(배포는 어차피 막힌다).
+      - name: Chromium 설치
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: npx playwright install --with-deps --only-shell chromium
+
+      - name: 화면 점검
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: node tools/check-pages.mjs --jobs 2
+
+      - name: 점검 결과 올리기
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: check-report
+          path: _check/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Pages 묶음 올리기
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site/
+
+  deploy:
+    name: 배포
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages 에 배포
+        id: deployment
+        uses: actions/deploy-pages@v5

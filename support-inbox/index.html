@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>상담 인박스</title>
+  <meta name="description" content="고객 대화 목록과 대화창, 고객 정보를 한 화면에서 다루는 상담 인박스 견본이에요.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="data:,">
+  <script>
+    (function () {
+      var root = document.documentElement;
+      // 저장된 화면 밝기를 그리기 전에 적용한다. 저장값이 없으면 밝게 시작한다.
+      try {
+        var mode = new URLSearchParams(location.search).get('theme') || localStorage.getItem('ds-theme') || 'light';
+        if (mode === 'system') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
+      } catch (e) { /* 저장소를 못 읽으면 밝게 */ }
+      // 파일로 열면(file://) 브라우저가 웹 글꼴을 막는다. 그때는 시스템 한글 글꼴로 그린다.
+      if (location.protocol !== 'file:') {
+        [['preload', 'vendor/pretendard/PretendardVariable.page.woff2'], ['stylesheet', 'vendor/pretendard/pretendard-page-subset.css']].forEach(function (item) {
+          var link = document.createElement('link');
+          link.rel = item[0];
+          link.href = item[1];
+          if (item[0] === 'preload') { link.as = 'font'; link.type = 'font/woff2'; link.crossOrigin = 'anonymous'; }
+          document.head.appendChild(link);
+        });
+      }
+    })();
+  </script>
+  <noscript>
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  </noscript>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/page.css">
+  <script src="js/ds.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/page.js" defer></script>
+</head>
+<body>
+  <a class="ds-skip-link" href="#list" data-skip="list">대화 목록으로 건너뛰기</a>
+  <a class="ds-skip-link" href="#reply" data-skip="reply">답장 쓰기로 건너뛰기</a>
+  <div id="ds-live" class="ds-live" role="status"></div>
+  <div id="ds-live-alert" class="ds-live" role="alert"></div>
+
+  <div class="ds-app si-app" id="app">
+    <header class="ds-app__top ds-topbar si-topbar">
+      <button class="ds-btn ds-btn--ghost ds-btn--icon ds-topbar__menu" type="button" data-ds-nav-toggle aria-controls="nav" aria-expanded="false" aria-label="담당자별 보기 열기">
+        <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-menu"></use></svg>
+      </button>
+      <a class="ds-topbar__brand si-topbar__brand" href="../index.html">UI 샘플</a>
+      <span class="si-topbar__sep" aria-hidden="true">/</span>
+      <h1 class="si-topbar__title">상담 인박스</h1>
+      <span class="ds-topbar__spacer"></span>
+      <p class="si-topbar__note">가상의 샘플 데이터입니다</p>
+      <div class="ds-segmented" role="radiogroup" aria-label="화면 밝기" data-ds-theme-control>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="light" aria-label="밝게" data-ds-tip="밝게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-sun"></use></svg><span class="si-theme-text">밝게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="dark" aria-label="어둡게" data-ds-tip="어둡게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-moon"></use></svg><span class="si-theme-text">어둡게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="system" aria-label="시스템 설정 따르기" data-ds-tip="시스템 설정 따르기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-monitor"></use></svg><span class="si-theme-text">시스템</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="ds-app__nav ds-sidenav" id="nav" aria-label="담당자별 보기">
+      <div class="ds-sidenav__close">
+        <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" data-ds-nav-close aria-label="담당자별 보기 닫기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg>
+        </button>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-who">담당자</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-who">
+          <li><a class="ds-nav__link" href="?who=all" data-who="all"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-inbox"></use></svg><span>모든 대화</span><span class="ds-nav__count" data-count-who="all"></span></a></li>
+          <li><a class="ds-nav__link" href="?who=me" data-who="me"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-user"></use></svg><span>내 대화</span><span class="ds-nav__count" data-count-who="me"></span></a></li>
+          <li><a class="ds-nav__link" href="?who=none" data-who="none"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-clock"></use></svg><span>담당자 없음</span><span class="ds-nav__count" data-count-who="none"></span></a></li>
+        </ul>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-team">팀원</p>
+        <ul class="ds-nav__list" id="nav-team" aria-labelledby="nav-h-team"></ul>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-repo">이 저장소</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-repo">
+          <li><a class="ds-nav__link" href="../index.html"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-grid"></use></svg>샘플 목록</a></li>
+          <li><a class="ds-nav__link" href="../design-system/index.html"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-columns"></use></svg>부품 모음</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="ds-app__main si-main" id="main" tabindex="-1">
+      <div class="ds-banner-slot si-banners" id="banner-slot"></div>
+      <div class="si-inbox" id="inbox">
+        <div class="si-split" id="split" data-view="list">
+
+          <section class="si-listpane" id="list" aria-labelledby="list-title" tabindex="-1">
+            <div class="si-listpane__head">
+              <h2 class="si-listpane__title" id="list-title" tabindex="-1"><span id="view-name">모든 대화</span><span class="si-listpane__count ds-num" id="list-count"></span></h2>
+              <div class="ds-segmented si-status" role="radiogroup" aria-label="상태로 거르기" data-url-key="status">
+                <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="open">열림<span class="si-status__n ds-num" data-count-status="open"></span></button>
+                <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="pending">대기<span class="si-status__n ds-num" data-count-status="pending"></span></button>
+                <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="closed">종료<span class="si-status__n ds-num" data-count-status="closed"></span></button>
+                <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="all">전체<span class="si-status__n ds-num" data-count-status="all"></span></button>
+              </div>
+              <div class="ds-field ds-field--wide">
+                <label class="ds-field__label" for="q">대화 찾기</label>
+                <span class="ds-search">
+                  <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-search"></use></svg>
+                  <input class="ds-input" id="q" type="search" placeholder="예: 환불…" autocomplete="off" enterkeyhint="search">
+                </span>
+              </div>
+            </div>
+            <div class="si-listpane__body" id="list-body" aria-busy="false">
+              <ul class="si-rows" id="rows" aria-label="대화"></ul>
+              <div class="si-pane-empty" id="list-empty" hidden></div>
+            </div>
+          </section>
+
+          <section class="si-chat" id="chat" aria-label="대화">
+            <div class="si-chat__head" id="chat-head" hidden>
+              <a class="ds-btn ds-btn--ghost ds-btn--sm si-back" id="back" href="./">
+                <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-chevron-left"></use></svg>목록으로
+              </a>
+              <div class="si-chat__titles">
+                <h2 class="si-chat__title" id="chat-title" tabindex="-1"></h2>
+                <p class="si-chat__meta" id="chat-meta"></p>
+              </div>
+              <div class="si-chat__actions">
+                <button class="ds-btn ds-btn--sm" type="button" id="btn-take" hidden>
+                  <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-user"></use></svg>내가 맡기
+                </button>
+                <div class="ds-menu-anchor">
+                  <button class="ds-btn ds-btn--sm" type="button" id="btn-status" aria-haspopup="menu" aria-controls="menu-status" aria-expanded="false">
+                    상태 바꾸기<svg class="ds-icon" aria-hidden="true"><use href="#ds-i-chevron-down"></use></svg>
+                  </button>
+                  <div class="ds-menu" id="menu-status" role="menu" aria-label="상태 바꾸기" hidden>
+                    <button class="ds-menu__item" type="button" role="menuitemradio" aria-checked="false" data-status="open"><svg class="ds-icon si-menu-check" aria-hidden="true"><use href="#ds-i-check"></use></svg>열림</button>
+                    <button class="ds-menu__item" type="button" role="menuitemradio" aria-checked="false" data-status="pending"><svg class="ds-icon si-menu-check" aria-hidden="true"><use href="#ds-i-check"></use></svg>대기</button>
+                    <button class="ds-menu__item" type="button" role="menuitemradio" aria-checked="false" data-status="closed"><svg class="ds-icon si-menu-check" aria-hidden="true"><use href="#ds-i-check"></use></svg>종료</button>
+                  </div>
+                </div>
+                <button class="ds-btn ds-btn--sm" type="button" id="btn-info" data-ds-panel="panel" aria-controls="panel" aria-expanded="false">
+                  <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-user"></use></svg>고객 정보
+                </button>
+              </div>
+            </div>
+
+            <div class="si-logwrap" id="logwrap" hidden>
+              <div class="si-log" id="log" tabindex="0" role="region" aria-label="메시지">
+                <ol class="si-msgs" id="msgs"></ol>
+              </div>
+              <button class="ds-btn ds-btn--sm si-jump" type="button" id="jump" hidden>
+                <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-arrow-down"></use></svg><span id="jump-text"></span>
+              </button>
+            </div>
+
+            <form class="si-composer" id="composer" novalidate hidden>
+              <div class="si-composer__bar">
+                <label class="ds-field__label" for="reply">답장</label>
+                <span class="ds-toolbar__spacer"></span>
+                <div class="ds-menu-anchor">
+                  <button class="ds-btn ds-btn--ghost ds-btn--sm" type="button" id="btn-quick" aria-haspopup="menu" aria-controls="menu-quick" aria-expanded="false">
+                    <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-chat"></use></svg>빠른 답변<svg class="ds-icon" aria-hidden="true"><use href="#ds-i-chevron-up"></use></svg>
+                  </button>
+                  <div class="ds-menu si-quick" id="menu-quick" role="menu" aria-label="빠른 답변" hidden></div>
+                </div>
+              </div>
+              <textarea class="ds-textarea si-reply" id="reply" rows="2" placeholder="예: 확인해 볼게요…" aria-describedby="reply-hint"></textarea>
+              <div class="si-composer__foot">
+                <p class="si-composer__hint" id="reply-hint"></p>
+                <button class="ds-btn ds-btn--primary" type="submit" id="btn-send" aria-disabled="true" data-ds-tip="답장을 먼저 써 주세요">보내기</button>
+              </div>
+            </form>
+
+            <div class="si-closed" id="closed-note" hidden>
+              <p>종료한 대화예요. 다시 열면 답장을 쓸 수 있어요.</p>
+              <button class="ds-btn ds-btn--sm" type="button" id="btn-reopen">대화 다시 열기</button>
+            </div>
+
+            <div class="si-pane-empty si-pane-empty--chat" id="chat-empty" hidden></div>
+          </section>
+
+        </div>
+      </div>
+    </main>
+
+    <aside class="ds-app__panel ds-panel si-panel" id="panel" aria-labelledby="panel-title" data-url-key="info" data-url-value="open" hidden>
+      <div class="ds-panel__head">
+        <h2 class="ds-panel__title" id="panel-title" tabindex="-1">고객 정보</h2>
+        <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" id="btn-panel-close" data-ds-panel-close aria-label="고객 정보 닫기" data-ds-tip="고객 정보 닫기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg>
+        </button>
+      </div>
+      <div class="ds-panel__body" id="panel-body"></div>
+    </aside>
+  </div>
+</body>
+</html>

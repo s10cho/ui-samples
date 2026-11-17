@@ -1,0 +1,374 @@
+/*
+ * 주문 목록 — 샘플 고유 스타일. 클래스는 ot- 로 시작한다.
+ * 값은 --ds-* 토큰만 쓴다. 샘플 전용 토큰(--order-table-*)은 없다. 키프레임 이름만 order-table- 로 시작한다.
+ * 새로 만든 모양 두 가지(필터 서랍 ot-drawer, 열 고르기 ot-colmenu)는 kit 에 없는 부품이다.
+ */
+
+/* 머리줄 밝기 고르기 — 아주 좁은 폭에서는 아이콘만 */
+@media (max-width: 479px) {
+  .ot-theme-text {
+    display: none;
+  }
+}
+
+.ot-noscript {
+  color: var(--ds-color-fg-muted);
+}
+
+/* ───────── 찾기 줄 ───────── */
+
+.ot-find-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-width: 0;
+}
+
+.ot-find {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ds-space-3) var(--ds-space-4);
+}
+
+.ot-search-field {
+  flex: 1 1 var(--ds-size-card-min);
+  max-width: var(--ds-size-field-max);
+}
+
+.ot-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ds-space-3) var(--ds-space-4);
+  min-width: 0;
+}
+
+.ot-period-field {
+  min-width: var(--ds-size-menu-min);
+}
+
+.ot-custom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+}
+
+.ot-custom .ds-field {
+  min-width: var(--ds-size-menu-min);
+}
+
+.ot-status .ds-chips {
+  gap: var(--ds-space-1-5);
+}
+
+.ot-status .ds-chip .ds-count {
+  margin-inline-start: var(--ds-space-0-5);
+}
+
+/* 필터 버튼 — 서랍을 쓰는 좁은 폭에서만 보인다 */
+.ot-filter-open {
+  display: none;
+}
+
+/* 걸린 필터 줄 */
+.ot-active {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.ot-active__label {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.ot-active .ds-chip--input {
+  white-space: normal;
+}
+
+/* ───────── 결과 ───────── */
+
+.ot-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-width: 0;
+}
+
+.ot-resultbar {
+  row-gap: var(--ds-space-3);
+}
+
+.ot-count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ds-space-1) var(--ds-space-2);
+}
+
+.ot-count__title {
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.ot-count__title:focus {
+  outline: none;
+}
+
+.ot-count__title:focus-visible {
+  outline: var(--ds-size-focus-ring) solid var(--ds-color-line-focus);
+}
+
+.ot-count__meta {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+.ot-bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.ot-picked {
+  color: var(--ds-color-fg-accent);
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 열 고르기 — 체크박스 여러 개를 켜고 끄는 펼침 상자(kit 메뉴는 누르면 닫힌다) */
+.ot-colpick {
+  position: relative;
+  display: inline-flex;
+}
+
+.ot-colmenu {
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3);
+  min-width: var(--ds-size-menu-min);
+}
+
+.ot-colmenu .ds-fieldset > legend {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.ot-colmenu .ds-check {
+  white-space: nowrap;
+}
+
+.ot-colmenu__note {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+  white-space: nowrap;
+}
+
+/* ───────── 표 ───────── */
+
+.ot-table .ot-col-off {
+  display: none;
+}
+
+.ot-tnum {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 머리의 "이 쪽 모두" 글은 행을 카드로 쌓는 좁은 폭에서만 보인다 */
+.ot-selall {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  cursor: pointer;
+}
+
+.ot-table .ds-empty__title {
+  overflow-wrap: anywhere;
+}
+
+/* 넓은 폭 — 가로로 넘치면 표 틀 안에서 스크롤하고, 주문 번호 열은 왼쪽에 고정한다(CMP-TABLE-02) */
+@media (min-width: 768px) {
+  .ot-selall__text {
+    display: none;
+  }
+
+  .ot-table th,
+  .ot-table td {
+    white-space: nowrap;
+  }
+
+  .ot-table .ot-col-id {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: var(--ds-z-raise);
+    background: var(--ds-color-surface-default);
+  }
+
+  .ot-table thead th.ot-col-id {
+    z-index: var(--ds-z-sticky);
+    background: var(--ds-color-surface-subtle);
+  }
+
+  .ot-table .ds-table__empty > td {
+    white-space: normal;
+  }
+}
+
+/* 좁은 폭 — 표가 카드로 쌓인다(kit ds-table--stack). 주문 번호는 카드 제목 줄 */
+@media (max-width: 767px) {
+  .ot-table td.ot-col-id {
+    display: block;
+    padding-block-end: var(--ds-space-1);
+    font-size: var(--ds-text-title-sm-size);
+    line-height: var(--ds-text-title-sm-leading);
+  }
+
+  .ot-table--readonly.ds-table--stack tr {
+    padding-inline-start: var(--ds-space-3);
+  }
+
+  .ot-table .ds-table__skeleton .ot-col-id .ds-skeleton {
+    width: 45%;
+  }
+
+  /* 찾기 줄 — 검색어만 남기고 기간·배송 상태는 서랍으로 */
+  .ot-find {
+    flex-wrap: nowrap;
+  }
+
+  .ot-search-field {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+
+  .ot-find > .ot-more {
+    display: none;
+  }
+
+  .ot-filter-open {
+    display: inline-flex;
+    flex: none;
+  }
+
+  .ot-resultbar .ds-toolbar__spacer {
+    display: none;
+  }
+
+  .ot-count {
+    flex: 1 1 100%;
+  }
+}
+
+/* ───────── 필터 서랍(767 이하) — 오른쪽에서 덮는 대화상자 ───────── */
+
+.ot-drawer {
+  width: var(--ds-size-panel-overlay);
+  height: 100%;
+  max-height: 100%;
+  margin-block: 0;
+  margin-inline: auto 0;
+  border-block: 0;
+  border-inline-end: 0;
+  border-radius: 0;
+}
+
+.ot-drawer[open] {
+  animation: order-table-drawer-in var(--ds-motion-enter) var(--ds-easing-enter);
+}
+
+@keyframes order-table-drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+.ot-drawer .ds-dialog__head {
+  align-items: center;
+  border-block-end: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+  padding-block-end: var(--ds-space-3);
+}
+
+.ot-drawer .ds-dialog__title {
+  padding-block-start: 0;
+}
+
+.ot-drawer .ds-dialog__body {
+  flex: 1 1 auto;
+  padding-block-start: var(--ds-space-4);
+  font-size: var(--ds-text-body-size);
+  line-height: var(--ds-text-body-leading);
+}
+
+.ot-drawer .ds-dialog__foot {
+  justify-content: space-between;
+}
+
+.ot-drawer .ot-more {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--ds-space-5);
+}
+
+.ot-drawer .ot-period-field,
+.ot-drawer .ot-custom .ds-field {
+  max-width: none;
+}
+
+.ot-drawer .ot-custom {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* ───────── 확인 대화상자 본문 ───────── */
+
+.ot-dlg-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  margin: 0;
+  padding-inline-start: var(--ds-space-5);
+  color: var(--ds-color-fg-muted);
+}
+
+.ot-dlg-ids {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ───────── 바닥줄 ───────── */
+
+.ot-foot {
+  padding-block-start: var(--ds-space-4);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+/* 고대비(강제 색) — 고정 칸이 비치지 않게 바탕을 시스템 색으로 */
+@media (forced-colors: active) {
+  .ot-table .ot-col-id {
+    background: Canvas;
+  }
+}
+
+/* hidden 속성이 위의 display 값보다 늘 이기게 한다(kit 의 [hidden] 규칙보다 이 파일이 뒤에 온다) */
+#app [hidden],
+dialog [hidden] {
+  display: none;
+}

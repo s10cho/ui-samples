@@ -1,0 +1,856 @@
+/*
+ * 상담 인박스 — 샘플 고유 스타일. kit(tokens → base → components) 다음에 부른다.
+ * 값은 --ds-* 토큰만 쓴다. kit 에 없는 값만 아래 :root 에 --support-inbox-* 로 둔다(설계서 4절·10절 예외).
+ * 클래스는 si- 로 시작한다. 상태는 ARIA·data 속성으로 표시한다.
+ */
+:root {
+  --support-inbox-list-w: clamp(17rem, 38%, 22rem); /* 두 칸일 때 목록 칸 폭 */
+  --support-inbox-bubble-max: 32rem;                /* 말풍선 최대 폭(읽는 글 한 줄) */
+  --support-inbox-composer-max: 10rem;              /* 답장 입력창이 커지는 한계 */
+  --support-inbox-quick-w: 22rem;                   /* 빠른 답변 메뉴 폭 */
+  --support-inbox-quick-max: min(24rem, 60vh);      /* 빠른 답변 메뉴 최대 높이 */
+  --support-inbox-status-min: 3.5rem;               /* 상태 묶음 버튼 한 칸 최소 폭 */
+  --support-inbox-wrap-min: 12rem;                  /* 이 폭보다 좁으면 다음 줄로 내리는 글 묶음 */
+  --support-inbox-top: var(--ds-size-topbar);       /* 머리줄 실제 높이 — 좁은 폭에서 두 줄이 되면 page.js 가 잰 값으로 바꾼다 */
+}
+
+/* ───────── 앱 틀 — 문서 스크롤 대신 칸마다 스크롤한다(설계서 10절 예외) ───────── */
+
+.si-app {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+}
+
+.si-app > .ds-app__main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .si-app > .ds-app__nav {
+    position: static;
+    height: auto;
+    min-height: 0;
+  }
+}
+
+@media (min-width: 1280px) {
+  .si-app > .ds-app__panel {
+    position: static;
+    height: auto;
+    min-height: 0;
+  }
+}
+
+/* 덮는 패널은 머리줄 바로 아래에서 시작한다(좁은 폭에서 머리줄이 두 줄이 되어도 안내 줄을 가리지 않게) */
+@media (max-width: 1279px) {
+  .si-app > .ds-app__panel {
+    inset-block-start: var(--support-inbox-top);
+  }
+}
+
+/* 1280 이상인데 글자를 키워 자리가 모자라면 붙이지 않고 덮는다(kit 의 1279 이하 덮는 패널과 같은 모양) */
+@media (min-width: 1280px) {
+  .si-app--panel-over > .ds-app__panel {
+    position: fixed;
+    inset-block: var(--support-inbox-top) 0;
+    inset-inline-end: 0;
+    z-index: var(--ds-z-panel);
+    width: var(--ds-size-panel-overlay);
+    height: auto;
+    border-inline-start: var(--ds-size-hairline) solid var(--ds-color-line-default);
+    box-shadow: var(--ds-shadow-overlay);
+  }
+
+  .si-app--panel-over .ds-app__scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: var(--ds-z-scrim);
+    background: var(--ds-color-surface-overlay);
+  }
+}
+
+.si-app > .ds-app__panel .ds-panel__body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* 머리줄 */
+.si-topbar {
+  flex-wrap: wrap;
+  column-gap: var(--ds-space-2);
+  row-gap: 0;
+}
+
+.si-topbar__sep {
+  color: var(--ds-color-fg-muted);
+}
+
+.si-topbar__title {
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+}
+
+.si-topbar__note {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+}
+
+@media (max-width: 767px) {
+  .si-topbar__note {
+    order: 10;
+    flex-basis: 100%;
+    padding-block-end: var(--ds-space-1);
+  }
+}
+
+@media (max-width: 479px) {
+  .si-topbar__brand,
+  .si-topbar__sep,
+  .si-theme-text {
+    display: none;
+  }
+}
+
+/* 배너 자리 — 칸 스크롤 영역 밖, 본문 맨 위 */
+.si-banners {
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+/* ───────── 본문 두 칸 — 본문 폭이 40rem 이상이면 목록 | 대화, 좁으면 한 칸씩 ───────── */
+
+.si-inbox {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  container-type: inline-size;
+  container-name: si-inbox;
+}
+
+.si-split {
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.si-listpane,
+.si-chat {
+  display: flex;
+  grid-row: 1;
+  grid-column: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--ds-color-surface-default);
+}
+
+.si-split[data-view="list"] > .si-chat,
+.si-split[data-view="chat"] > .si-listpane {
+  display: none;
+}
+
+.si-listpane:focus {
+  outline: none;
+}
+
+@container si-inbox (min-width: 40rem) {
+  .si-split {
+    grid-template-columns: var(--support-inbox-list-w) minmax(0, 1fr);
+  }
+
+  .si-split[data-view] > .si-listpane,
+  .si-split[data-view] > .si-chat {
+    display: flex;
+  }
+
+  .si-split > .si-chat {
+    grid-column: 2;
+  }
+
+  .si-split > .si-listpane {
+    border-inline-end: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  }
+
+  .si-back {
+    display: none;
+  }
+}
+
+/* ───────── 목록 칸 ───────── */
+
+.si-listpane__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-4) var(--ds-space-3);
+  border-block-end: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.si-listpane__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+}
+
+.si-listpane__title:focus {
+  outline: none;
+}
+
+.si-listpane__title:focus-visible {
+  outline: var(--ds-size-focus-ring) solid var(--ds-color-line-focus);
+}
+
+.si-listpane__count {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  font-weight: var(--ds-font-weight-regular);
+}
+
+/* 상태 묶음 버튼 — 좁은 목록 칸에서도 한 줄에 4개가 들어가게 칸을 나눈다 */
+.si-status {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--support-inbox-status-min), 1fr));
+  align-self: stretch;
+}
+
+.si-status .ds-segmented__item {
+  gap: var(--ds-space-1);
+  padding-inline: var(--ds-space-1);
+}
+
+.si-status__n {
+  color: var(--ds-color-fg-muted);
+  font-weight: var(--ds-font-weight-regular);
+}
+
+.si-status__n:empty {
+  display: none;
+}
+
+.si-listpane__body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* 대화 행 — 세 줄(이름·시각 / 마지막 메시지 / 상태·채널·담당자·안 읽음). 행 사이는 옅은 구분선 */
+.si-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+  color: var(--ds-color-fg-default);
+  text-decoration: none;
+}
+
+.si-row:hover {
+  background: var(--ds-color-surface-subtle);
+}
+
+.si-row:focus-visible {
+  outline-offset: calc(-1 * var(--ds-size-focus-ring));
+}
+
+/* 고른 행 — 바탕 + 네 변 테두리(모양 신호) + aria-current */
+.si-row[aria-current="true"] {
+  background: var(--ds-color-fill-accent-subtle);
+  box-shadow: inset 0 0 0 var(--ds-size-hairline) var(--ds-color-fill-accent);
+}
+
+.si-row__top {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+.si-row__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-weight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.si-row__company {
+  margin-inline-start: var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+  font-weight: var(--ds-font-weight-regular);
+}
+
+.si-row__time {
+  flex: none;
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+}
+
+.si-row__preview {
+  overflow: hidden;
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.si-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+}
+
+.si-row__unread {
+  margin-inline-start: auto;
+}
+
+.si-row__fail {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  color: var(--ds-color-fg-danger);
+  font-weight: var(--ds-text-caption-strong-weight);
+}
+
+/* 안 읽음 — 굵은 이름 + 진한 미리보기 + 숫자(색만으로 알리지 않는다) */
+.si-row[data-unread] .si-row__name {
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.si-row[data-unread] .si-row__preview {
+  color: var(--ds-color-fg-default);
+}
+
+/* 스켈레톤 행 — 실제 행과 같은 세 줄 모양 */
+.si-row--skeleton {
+  gap: var(--ds-space-2);
+}
+
+.si-row--skeleton:hover {
+  background: transparent;
+}
+
+/* 칸 안 빈 상태·안내 */
+.si-pane-empty {
+  padding: var(--ds-space-8) var(--ds-space-4);
+}
+
+.si-pane-empty--chat {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.si-pane-empty[hidden] {
+  display: none;
+}
+
+/* ───────── 대화 칸 ───────── */
+
+.si-chat__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.si-chat__head[hidden],
+.si-logwrap[hidden],
+.si-composer[hidden],
+.si-closed[hidden] {
+  display: none;
+}
+
+.si-back {
+  flex: none;
+  margin-inline-start: calc(-1 * var(--ds-space-2));
+}
+
+.si-chat__titles {
+  display: flex;
+  flex: 1 1 var(--support-inbox-wrap-min);
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  min-width: 0;
+}
+
+.si-chat__title {
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+}
+
+.si-chat__title:focus {
+  outline: none;
+}
+
+.si-chat__title:focus-visible {
+  outline: var(--ds-size-focus-ring) solid var(--ds-color-line-focus);
+}
+
+.si-chat__company {
+  margin-inline-start: var(--ds-space-2);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-size);
+  font-weight: var(--ds-font-weight-regular);
+}
+
+.si-chat__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-3);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.si-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.si-chat__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.si-chat__actions .ds-btn[hidden] {
+  display: none;
+}
+
+/* 메뉴 — 고른 항목은 체크 표시 */
+.si-menu-check {
+  visibility: hidden;
+}
+
+[aria-checked="true"] > .si-menu-check {
+  visibility: visible;
+}
+
+/* 메시지 흐름 */
+.si-logwrap {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.si-log {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--ds-space-4);
+  scroll-padding-block: var(--ds-space-4);
+}
+
+.si-log:focus-visible {
+  outline-offset: calc(-1 * var(--ds-size-focus-ring));
+}
+
+.si-msgs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.si-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-1);
+  max-width: min(88%, var(--support-inbox-bubble-max));
+}
+
+.si-msg--start {
+  margin-block-start: var(--ds-space-3);
+}
+
+.si-msg--out {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.si-msg__who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+}
+
+.si-msg__name {
+  font-weight: var(--ds-text-caption-strong-weight);
+}
+
+.si-msg__time {
+  color: var(--ds-color-fg-muted);
+}
+
+/* 말풍선 — 고객은 옅은 회색 바탕, 상담원은 흰 바탕 + 테두리. 강조색은 쓰지 않는다 */
+.si-msg__bubble {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  max-width: 100%;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: var(--ds-size-hairline) solid transparent;
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-surface-subtle);
+  font-size: var(--ds-text-body-reading-size);
+  line-height: var(--ds-text-body-reading-leading);
+}
+
+.si-msg__text {
+  white-space: pre-wrap;
+}
+
+.si-msg--out .si-msg__bubble {
+  border-color: var(--ds-color-line-default);
+  background: var(--ds-color-surface-default);
+}
+
+.si-msg[data-send="pending"] .si-msg__bubble {
+  border-style: dashed;
+}
+
+.si-msg[data-send="failed"] .si-msg__bubble {
+  border-color: var(--ds-color-line-danger);
+}
+
+.si-msg__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+}
+
+.si-msg__status--fail {
+  color: var(--ds-color-fg-danger);
+  font-weight: var(--ds-text-caption-strong-weight);
+}
+
+.si-msg__fail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ds-space-2);
+}
+
+/* 첨부 — 이름과 크기만 보인다(내려받을 곳이 없는 샘플이라 누르지 않는다) */
+.si-file {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  max-width: 100%;
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-control-radius);
+  background: var(--ds-color-surface-default);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.si-file__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.si-file__size {
+  flex: none;
+  color: var(--ds-color-fg-muted);
+}
+
+/* 시스템 메시지 · 날짜 구분 · 새 메시지 구분 */
+.si-sys {
+  align-self: center;
+  margin-block: var(--ds-space-3) var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+  text-align: center;
+}
+
+.si-sys time {
+  margin-inline-start: var(--ds-space-1);
+}
+
+.si-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  margin-block: var(--ds-space-4) var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+  font-weight: var(--ds-text-caption-strong-weight);
+}
+
+.si-divider::before,
+.si-divider::after {
+  content: "";
+  flex: 1 1 auto;
+  height: var(--ds-size-hairline);
+  background: var(--ds-color-line-subtle);
+}
+
+.si-divider--new {
+  color: var(--ds-color-fg-accent);
+}
+
+.si-divider--new::before,
+.si-divider--new::after {
+  background: var(--ds-color-line-strong);
+}
+
+/* 새 메시지 보기 — 위를 보고 있을 때만 메시지 흐름 아래쪽에 뜬다 */
+.si-jump {
+  position: absolute;
+  inset-block-end: var(--ds-space-3);
+  inset-inline-start: 50%;
+  border-radius: var(--ds-radius-pill);
+  box-shadow: var(--ds-shadow-raised);
+  transform: translateX(-50%);
+}
+
+.si-jump[hidden] {
+  display: none;
+}
+
+/* 답장 입력 */
+.si-composer {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4) var(--ds-space-4);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.si-composer__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.si-reply {
+  min-height: calc(var(--ds-control-height-lg) * 1.5);
+  max-height: var(--support-inbox-composer-max);
+  resize: none;
+}
+
+.si-composer__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ds-space-2) var(--ds-space-3);
+}
+
+.si-composer__hint {
+  margin-inline-end: auto;
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+}
+
+/* 터치 화면에서는 단축키 안내를 숨긴다(조작이 될 때만 안내한다) */
+@media (pointer: coarse) {
+  .si-composer__hint {
+    visibility: hidden;
+  }
+}
+
+/* 빠른 답변 — 입력창 위로 연다. 항목은 제목 + 글 두 줄 */
+.si-quick {
+  inset-block-start: auto;
+  inset-block-end: calc(100% + var(--ds-space-1));
+  width: min(var(--support-inbox-quick-w), calc(100vw - 2 * var(--ds-space-4)));
+  max-height: var(--support-inbox-quick-max);
+  overflow-y: auto;
+}
+
+.si-quick .ds-menu__item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-0-5);
+  padding-block: var(--ds-space-2);
+  white-space: normal;
+}
+
+.si-quick__title {
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.si-quick__text {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+/* 종료한 대화 — 입력창 대신 안내 한 줄 */
+.si-closed {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+  background: var(--ds-color-surface-canvas);
+  color: var(--ds-color-fg-muted);
+}
+
+.si-closed p {
+  flex: 1 1 var(--support-inbox-wrap-min);
+}
+
+/* 말풍선 스켈레톤 — 대화 칸 전체를 실제 배치(제목 + 말풍선)대로 채운다 */
+.si-pane-empty--skel {
+  display: flex;
+  flex: 1 1 auto;
+  padding: var(--ds-space-4);
+}
+
+.si-skel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.si-skel-msg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  width: min(60%, var(--support-inbox-bubble-max));
+  margin-block-start: var(--ds-space-4);
+}
+
+.si-skel-msg--out {
+  align-self: flex-end;
+}
+
+.si-skel-msg .ds-skeleton:last-child {
+  height: var(--ds-space-10);
+  border-radius: var(--ds-container-radius);
+}
+
+/* ───────── 고객 정보 패널 ───────── */
+
+.si-cust {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.si-cust__names {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.si-cust__name {
+  font-size: var(--ds-text-title-sm-size);
+  line-height: var(--ds-text-title-sm-leading);
+  font-weight: var(--ds-text-title-sm-weight);
+}
+
+.si-cust__company {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+.si-panel .ds-dl > dd {
+  overflow-wrap: anywhere;
+}
+
+.si-panel__sub {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-block-end: var(--ds-space-2);
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.si-hist {
+  display: flex;
+  flex-direction: column;
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.si-hist > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-1) var(--ds-space-3);
+  padding-block: var(--ds-space-2);
+  border-block-end: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.si-hist time {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+}
+
+.si-muted {
+  color: var(--ds-color-fg-muted);
+}
+
+/* ───────── 고대비(강제 색) — 고른 행은 바탕·그림자가 사라지므로 시스템 색 테두리로 남긴다 ───────── */
+
+@media (forced-colors: active) {
+  .si-row[aria-current="true"] {
+    outline: var(--ds-size-border-strong) solid Highlight;
+    outline-offset: calc(-1 * var(--ds-size-border-strong));
+  }
+
+  .si-msg__bubble,
+  .si-file {
+    border-color: CanvasText;
+  }
+
+  .si-divider::before,
+  .si-divider::after {
+    background: CanvasText;
+  }
+}

@@ -4,19 +4,23 @@
  *
  *   node tools/build-scene.mjs
  *
- * - 좌표 계산은 js/iso-geom.js 를 그대로 쓴다. 화면 스크립트(js/app.js)와 같은 식이라 움직임이 그림과 맞는다.
+ * - 좌표 계산은 js/iso-geom.js 를 그대로 쓴다. 화면 스크립트(js/scene.js)와 같은 식이라 움직임이 그림과 맞는다.
  * - index.html 의 <!-- iso-scene:start --> 와 <!-- iso-scene:end --> 사이를 통째로 바꾼다.
  * - 높이 함수·슬로프 길·나무 자리는 3D 판(ski-mountain)과 같은 식·같은 씨앗 난수로 만든다. 그래서 두 판의 배치가 같다.
  * - 땅은 보는 방향에 맞춘 격자를 뒤에서 앞으로 한 줄씩 그린다. 줄마다 땅 → 다진 눈 → 그 줄에 서 있는 것 순서다.
  * - 의존성 없음. Node 18 이상.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const context = vm.createContext({});
+// 면 계산(IsoCore)은 공용 뼈대의 js/iso2d.js 를 먼저 넣는다 — 저장소에서는 ../shared/iso2d/js/, 조립된 폴더에서는 js/ 에 있다
+const corePath = [join(ROOT, 'js/iso2d.js'), join(ROOT, '../shared/iso2d/js/iso2d.js')].find((p) => existsSync(p));
+if (!corePath) throw new Error('js/iso2d.js 를 찾지 못했다 — shared/iso2d/js/iso2d.js 가 있어야 한다');
+vm.runInContext(readFileSync(corePath, 'utf8'), context);
 vm.runInContext(readFileSync(join(ROOT, 'js/iso-geom.js'), 'utf8'), context);
 const G = context.IsoGeom;
 const { TAU, SCALE, PEAK, PLAZA, LODGE, LIFT, LIFT_GEOM, RUNS, SUMMIT_Y } = G;

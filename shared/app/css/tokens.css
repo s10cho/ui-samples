@@ -1,0 +1,336 @@
+/*
+ * 디자인 토큰 — 업무 화면 kit(shared/app). 저장소 루트 DESIGN.md 의 값과 같다.
+ * 원본: ui-design-wiki tokens(2026-11-09 판)의 semantic 값. 2026-11-17 에 옮기며 이름을 이 저장소 관례에 맞췄다.
+ *
+ * - 기본은 밝은 UI · compact(업무 화면 밀도). <html data-theme="dark"> · data-density="comfortable" 로 바꾼다.
+ * - 부품·화면 코드는 이 파일의 변수만 쓴다. hex·px 를 새로 쓰지 않는다.
+ * - 기존 3D·2D 샘플과 이름이 같은 변수는 뜻과 값도 같다. 글자 스타일 값만 밀도에 따라 다르고,
+ *   기존 샘플 값은 comfortable 밀도 값과 같다(DESIGN.md「기존 샘플과의 관계」).
+ */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* 색 — 바탕(surface). 괄호 안은 ui-design-wiki 원시 단계 */
+  --ds-color-surface-canvas: #f8f9fa;   /* gray-2 — 옆 메뉴·페이지 바탕 */
+  --ds-color-surface-default: #ffffff;  /* white — 본문·패널·입력 */
+  --ds-color-surface-raised: #ffffff;   /* white — 메뉴·대화상자 */
+  --ds-color-surface-subtle: #f1f2f4;   /* gray-3 — 표 머리·행 마우스 올림 */
+  --ds-color-surface-hover: #eaecee;    /* gray-4 — 버튼 마우스 올림·스켈레톤 */
+  --ds-color-surface-selected: #e3e5e7; /* gray-5 — 현재 메뉴 */
+  --ds-color-surface-inverse: #1d2125;  /* gray-12 — 툴팁 */
+  --ds-color-surface-overlay: rgb(0 0 0 / 0.45); /* 대화상자 뒤 가림막 */
+
+  /* 색 — 글자·아이콘(fg) */
+  --ds-color-fg-default: #1d2125;   /* gray-12 */
+  --ds-color-fg-muted: #5b5e62;     /* gray-11 */
+  --ds-color-fg-disabled: #b8bbbf;  /* gray-8 — 비활성(대비 기준 밖) */
+  --ds-color-fg-inverse: #fcfdfe;   /* gray-1 */
+  --ds-color-fg-accent: #115492;    /* accent-11 — 링크·고른 칩 글자 */
+  --ds-color-fg-on-accent: #ffffff;
+  --ds-color-fg-danger: #971a20;    /* red-11 */
+  --ds-color-fg-on-danger: #ffffff;
+  --ds-color-fg-success: #13632f;   /* green-11 */
+  --ds-color-fg-on-success: #ffffff;
+  --ds-color-fg-warning: #834b14;   /* amber-11 */
+  --ds-color-fg-on-warning: #1d2125;
+  --ds-color-fg-info: #135a78;      /* blue-11 */
+
+  /* 색 — 채움(fill) */
+  --ds-color-fill-accent: #1a6dbc;         /* accent-9 — 주 버튼·체크 */
+  --ds-color-fill-accent-hover: #145fa5;   /* accent-10 */
+  --ds-color-fill-accent-subtle: #e7f1fe;  /* accent-3 — 고른 행·칩 */
+  --ds-color-fill-danger: #c4202a;         /* red-9 */
+  --ds-color-fill-danger-hover: #ac1a23;   /* red-10 */
+  --ds-color-fill-danger-subtle: #feebe9;  /* red-3 */
+  --ds-color-fill-success: #1c803f;        /* green-9 */
+  --ds-color-fill-success-subtle: #def8e2; /* green-3 */
+  --ds-color-fill-warning: #f7ad30;        /* amber-9 — 어두운 글자를 올린다 */
+  --ds-color-fill-warning-subtle: #fdefd2; /* amber-3 */
+  --ds-color-fill-info-subtle: #e1f3fe;    /* blue-3 */
+
+  /* 색 — 선(line) */
+  --ds-color-line-subtle: #d9dcdf;   /* gray-6 — 행 구분선 */
+  --ds-color-line-default: #cdd0d3;  /* gray-7 — 카드·패널 테두리 */
+  --ds-color-line-strong: #b8bbbf;   /* gray-8 */
+  --ds-color-line-control: #83868b;  /* gray-9 — 입력 테두리·스위치 꺼짐 (3:1 이상) */
+  --ds-color-line-focus: #1a6dbc;    /* accent-9 — 포커스 링 */
+  --ds-color-line-danger: #c4202a;   /* red-9 — 오류 입력 테두리 */
+  --ds-color-line-on-accent: rgb(255 255 255 / 0.45); /* 강조색 채움 안 구분선(분할 버튼) */
+
+  /* 그림자 — 떠 있는 요소만. 반투명 테두리와 함께 쓴다 */
+  --ds-shadow-raised: 0 1px 2px 0 rgb(0 0 0 / 0.06), 0 2px 6px 0 rgb(0 0 0 / 0.04);
+  --ds-shadow-overlay: 0 4px 12px 0 rgb(0 0 0 / 0.08), 0 12px 32px -4px rgb(0 0 0 / 0.06);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* 어두운 UI 한 벌 — 밝은 값을 뒤집지 않고 어두운 전용 명도 단계를 쓴다(CLR-DARK-04).
+     더 떠 있는 면일수록 밝다: canvas < default < raised(CLR-DARK-06) */
+  --ds-color-surface-canvas: #111213;   /* gray-dark-1 */
+  --ds-color-surface-default: #17181a;  /* gray-dark-2 */
+  --ds-color-surface-raised: #1e1f21;   /* gray-dark-3 */
+  --ds-color-surface-subtle: #252729;   /* gray-dark-4 */
+  --ds-color-surface-hover: #2c2e30;    /* gray-dark-5 */
+  --ds-color-surface-selected: #35373a; /* gray-dark-6 */
+  --ds-color-surface-inverse: #eaedf1;  /* gray-dark-12 */
+  --ds-color-surface-overlay: rgb(0 0 0 / 0.6);
+
+  --ds-color-fg-default: #eaedf1;
+  --ds-color-fg-muted: #b7bbc0;
+  --ds-color-fg-disabled: #575a5d;
+  --ds-color-fg-inverse: #111213;
+  --ds-color-fg-accent: #91c2fa;
+  --ds-color-fg-on-accent: #111213;
+  --ds-color-fg-danger: #faa39c;
+  --ds-color-fg-on-danger: #111213;
+  --ds-color-fg-success: #89d298;
+  --ds-color-fg-on-success: #111213;
+  --ds-color-fg-warning: #f0be67;
+  --ds-color-fg-on-warning: #111213;
+  --ds-color-fg-info: #6dcaf8;
+
+  /* 채도를 낮춘 밝은 채움 + 어두운 글자(CLR-DARK-07·08) */
+  --ds-color-fill-accent: #64a9f3;
+  --ds-color-fill-accent-hover: #7fb9f9;
+  --ds-color-fill-accent-subtle: #0f243a;
+  --ds-color-fill-danger: #eb827b;
+  --ds-color-fill-danger-hover: #f7958d;
+  --ds-color-fill-danger-subtle: #371816;
+  --ds-color-fill-success: #62bb78;
+  --ds-color-fill-success-subtle: #0e2915;
+  --ds-color-fill-warning: #f5ae39;
+  --ds-color-fill-warning-subtle: #321e04;
+  --ds-color-fill-info-subtle: #052635;
+
+  --ds-color-line-subtle: #35373a;
+  --ds-color-line-default: #424447;
+  --ds-color-line-strong: #575a5d;
+  --ds-color-line-control: #7d8085;
+  --ds-color-line-focus: #64a9f3;
+  --ds-color-line-danger: #eb827b;
+  --ds-color-line-on-accent: rgb(17 18 19 / 0.45);
+
+  --ds-shadow-raised: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 2px 6px 0 rgb(0 0 0 / 0.3);
+  --ds-shadow-overlay: 0 4px 12px 0 rgb(0 0 0 / 0.5), 0 12px 32px -4px rgb(0 0 0 / 0.4);
+}
+
+:root {
+  /* 글꼴 — 화면 글자만 담은 Pretendard → 빠진 글자는 다이나믹 서브셋 조각 → 시스템 한글 글꼴(TYP-KO-03) */
+  --ds-font-family: "Pretendard Page", "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --ds-font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --ds-font-weight-regular: 400;
+  --ds-font-weight-medium: 500;
+  --ds-font-weight-semibold: 600;
+  --ds-font-weight-bold: 700;
+
+  /* 간격 — 4px 단위. 이름의 숫자 × 4px(기존 샘플과 같은 관례) */
+  --ds-space-0: 0;
+  --ds-space-0-5: 0.125rem; /* 2 — 아이콘·배지 안쪽 보정만 */
+  --ds-space-1: 0.25rem;    /* 4 */
+  --ds-space-1-5: 0.375rem; /* 6 — 아이콘·배지 안쪽 보정만 */
+  --ds-space-2: 0.5rem;     /* 8 */
+  --ds-space-3: 0.75rem;    /* 12 */
+  --ds-space-4: 1rem;       /* 16 */
+  --ds-space-5: 1.25rem;    /* 20 */
+  --ds-space-6: 1.5rem;     /* 24 */
+  --ds-space-8: 2rem;       /* 32 */
+  --ds-space-10: 2.5rem;    /* 40 */
+  --ds-space-12: 3rem;      /* 48 */
+  --ds-space-16: 4rem;      /* 64 */
+
+  /* 모서리 — 원시 단계. 부품은 아래 역할 토큰(control·container·overlay)을 쓴다 */
+  --ds-radius-xs: 0.25rem;  /* 4 */
+  --ds-radius-sm: 0.375rem; /* 6 */
+  --ds-radius-md: 0.5rem;   /* 8 */
+  --ds-radius-lg: 0.75rem;  /* 12 */
+  --ds-radius-xl: 1rem;     /* 16 */
+  --ds-radius-2xl: 1.5rem;  /* 24 */
+  --ds-radius-pill: 62.5rem;
+
+  /* 선 두께·포커스 링 */
+  --ds-size-hairline: 1px;
+  --ds-size-border-strong: 2px;
+  --ds-size-focus-ring: 2px;
+  --ds-size-focus-offset: 2px;
+
+  /* 크기 */
+  --ds-size-touch: 2.75rem;          /* 44 — 터치 화면 누르는 영역 최소 */
+  --ds-size-topbar: 3.5rem;          /* 56 — 머리줄 */
+  --ds-size-sidebar: 15rem;          /* 240 — 옆 메뉴 */
+  --ds-size-drawer: min(18rem, 85vw); /* 좁은 폭에서 서랍처럼 여는 옆 메뉴 */
+  --ds-size-panel: min(22.5rem, 42vw); /* 360 — 넓은 폭 옆 패널 */
+  --ds-size-content-max: 80rem;      /* 1280 — 본문 최대 너비 */
+  --ds-size-reading-max: 40rem;      /* 640 — 읽는 글 한 줄(약 80ch 이하) */
+  --ds-size-field-max: 30rem;        /* 480 — 입력 칸 최대 너비 */
+  --ds-size-dialog-sm: 25rem;        /* 400 */
+  --ds-size-dialog-md: 35rem;        /* 560 */
+  --ds-size-menu-min: 10rem;         /* 160 */
+  --ds-size-tooltip-max: 15rem;      /* 240 */
+  --ds-size-check: 1rem;             /* 16 — 체크박스·라디오 상자 */
+  --ds-size-switch-w: 2.25rem;       /* 36 */
+  --ds-size-switch-h: 1.25rem;       /* 20 */
+  --ds-size-switch-knob: 0.875rem;   /* 14 */
+  --ds-size-avatar: 2rem;            /* 32 */
+  --ds-size-progress: 0.5rem;        /* 8 — 진행 막대 두께 */
+  --ds-size-panel-overlay: min(100%, 22.5rem); /* 1279 이하에서 위에 덮는 옆 패널. 767 이하는 100% */
+  --ds-size-table-max: min(36rem, 70vh); /* 긴 표(ds-table-wrap--scroll)의 최대 높이 — 안에서 스크롤하고 머리가 붙는다 */
+  --ds-size-card-min: 16rem;         /* 256 — 카드 격자 한 칸 최소 */
+  --ds-size-dl-key: 7rem;            /* 112 — 설명 목록 이름 칸 */
+  --ds-size-step-mark: 1.5rem;       /* 24 — 진행 단계 번호 원 */
+  --ds-size-empty-icon: 2rem;        /* 32 — 빈 상태 그림 */
+
+  /* 투명도 */
+  --ds-opacity-disabled: 0.45;
+
+  /* 움직임 — JS 도 이 값을 읽는다(js/ds.js) */
+  --ds-motion-hover: 100ms;
+  --ds-motion-toggle: 100ms;       /* 체크·스위치 전환(CMP-SEL-10) */
+  --ds-motion-enter: 200ms;        /* 메뉴·대화상자 나타남 */
+  --ds-motion-exit: 150ms;         /* 사라짐은 나타남보다 짧게(CMP-OVL-11) */
+  --ds-motion-crossfade: 200ms;
+  --ds-motion-loading-delay: 300ms; /* 로딩 표시는 이만큼 기다린 뒤 보인다(CMP-FB-08) */
+  --ds-motion-loading-min: 400ms;   /* 한번 보이면 이만큼 남는다 */
+  --ds-motion-tooltip-delay: 400ms; /* 마우스 올림 뒤 툴팁이 뜨기까지 */
+  --ds-motion-spin: 800ms;          /* 회전 표시 한 바퀴 */
+  --ds-motion-skeleton: 1200ms;     /* 스켈레톤 옅어짐 한 번. 4번(4.8초)만 하고 멈춘다(MOT-14) */
+  --ds-easing-enter: cubic-bezier(0.2, 0, 0, 1);
+  --ds-easing-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ds-easing-move: cubic-bezier(0.42, 0, 0.58, 1);
+
+  /* 쌓임 순서 — 숫자를 직접 쓰지 않는다 */
+  --ds-z-base: 0;
+  --ds-z-raise: 1;
+  --ds-z-sticky: 2;     /* 머리줄·표 머리 */
+  --ds-z-scrim: 4;      /* 덮는 옆 패널 뒤 가림막 */
+  --ds-z-panel: 5;      /* 좁은 폭에서 위에 덮는 옆 패널 */
+  --ds-z-drawer: 6;     /* 좁은 폭 옆 메뉴 */
+  --ds-z-popover: 7;    /* 메뉴 */
+  --ds-z-tooltip: 9;
+  --ds-z-skip-link: 10;
+}
+
+/* 밀도 — compact(업무 화면 웹, 기본). 글자 크기는 rem 이라 브라우저 글자 크기 설정을 따른다 */
+:root,
+[data-density="compact"] {
+  --ds-text-display-size: 1.75rem;      /* 28 */
+  --ds-text-display-leading: 1.2857;    /* 36 */
+  --ds-text-display-tracking: -0.02em;
+  --ds-text-display-weight: var(--ds-font-weight-bold);
+  --ds-text-title-size: 1.25rem;        /* 20 */
+  --ds-text-title-leading: 1.4;         /* 28 */
+  --ds-text-title-tracking: -0.01em;
+  --ds-text-title-weight: var(--ds-font-weight-semibold);
+  --ds-text-title-sm-size: 1rem;        /* 16 */
+  --ds-text-title-sm-leading: 1.375;    /* 22 */
+  --ds-text-title-sm-weight: var(--ds-font-weight-semibold);
+  --ds-text-body-size: 0.875rem;        /* 14 */
+  --ds-text-body-leading: 1.4286;       /* 20 */
+  --ds-text-body-weight: var(--ds-font-weight-regular);
+  --ds-text-body-reading-size: 0.875rem;  /* 14 — 여러 줄 읽는 글 */
+  --ds-text-body-reading-leading: 1.5714; /* 22 */
+  --ds-text-body-sm-size: 0.8125rem;    /* 13 */
+  --ds-text-body-sm-leading: 1.3846;    /* 18 */
+  --ds-text-label-size: 0.875rem;       /* 14 */
+  --ds-text-label-leading: 1.4286;      /* 20 */
+  --ds-text-label-weight: var(--ds-font-weight-medium);
+  --ds-text-label-strong-weight: var(--ds-font-weight-semibold);
+  --ds-text-label-sm-size: 0.75rem;     /* 12 */
+  --ds-text-label-sm-leading: 1.3333;   /* 16 */
+  --ds-text-caption-size: 0.75rem;      /* 12 */
+  --ds-text-caption-leading: 1.3333;    /* 16 */
+  --ds-text-caption-weight: var(--ds-font-weight-regular);
+  --ds-text-caption-strong-weight: var(--ds-font-weight-semibold);
+  --ds-text-input-size: 0.875rem;       /* 입력 글자. 좁은 폭·터치에서는 16 으로 키운다(CMP-INPUT-07) */
+
+  --ds-control-height-sm: 1.75rem;  /* 28 */
+  --ds-control-height-md: 2rem;     /* 32 */
+  --ds-control-height-lg: 2.5rem;   /* 40 */
+  --ds-control-padding-x: var(--ds-space-3);
+  --ds-control-radius: var(--ds-radius-sm);
+  --ds-container-radius: var(--ds-radius-md);
+  --ds-overlay-radius: var(--ds-radius-lg);
+  --ds-row-height: 2.5rem;          /* 40 — 표·목록 행 */
+  --ds-target-min: 1.5rem;          /* 24 — 마우스 기준 누르는 영역 최소(WCAG 2.5.8) */
+  --ds-icon-size-sm: 0.875rem;      /* 14 */
+  --ds-icon-size-md: 1rem;          /* 16 */
+  --ds-icon-size-lg: 1.25rem;       /* 20 */
+  --ds-gap-stack: var(--ds-space-2);
+  --ds-gap-section: var(--ds-space-6);
+  --ds-gap-page-x: var(--ds-space-6);
+}
+
+/* 밀도 — comfortable(터치 위주 화면). 기존 3D·2D 샘플의 글자 값과 같다 */
+[data-density="comfortable"] {
+  --ds-text-display-size: 1.75rem;
+  --ds-text-display-leading: 1.357;
+  --ds-text-title-size: 1.25rem;
+  --ds-text-title-leading: 1.4;
+  --ds-text-title-sm-size: 1.0625rem;
+  --ds-text-title-sm-leading: 1.4118;
+  --ds-text-body-size: 1rem;
+  --ds-text-body-leading: 1.5;
+  --ds-text-body-reading-size: 1rem;
+  --ds-text-body-reading-leading: 1.625;
+  --ds-text-body-sm-size: 0.9375rem;
+  --ds-text-body-sm-leading: 1.4667;
+  --ds-text-label-size: 1rem;
+  --ds-text-label-leading: 1.375;
+  --ds-text-label-sm-size: 0.875rem;
+  --ds-text-label-sm-leading: 1.4286;
+  --ds-text-caption-size: 0.8125rem;
+  --ds-text-caption-leading: 1.385;
+  --ds-text-input-size: 1rem;
+
+  --ds-control-height-sm: 2.25rem;  /* 36 */
+  --ds-control-height-md: 3rem;     /* 48 */
+  --ds-control-height-lg: 3.5rem;   /* 56 */
+  --ds-control-padding-x: var(--ds-space-4);
+  --ds-control-radius: var(--ds-radius-lg);
+  --ds-container-radius: var(--ds-radius-xl);
+  --ds-overlay-radius: var(--ds-radius-2xl);
+  --ds-row-height: 3.5rem;
+  --ds-target-min: 3rem;
+  --ds-icon-size-sm: 1.25rem;
+  --ds-icon-size-md: 1.5rem;
+  --ds-icon-size-lg: 2rem;
+  --ds-gap-stack: var(--ds-space-3);
+  --ds-gap-section: var(--ds-space-8);
+  --ds-gap-page-x: var(--ds-space-5);
+}
+
+/* 터치 화면 — 누르는 영역을 44px 로 키운다(SPC-07). 입력 글자는 16px(CMP-INPUT-07).
+   행 높이는 44px 컨트롤 + 위아래 여백이 들어가는 56px 다 */
+@media (pointer: coarse) {
+  :root:not([data-density="comfortable"]) {
+    --ds-control-height-sm: 2.75rem;
+    --ds-control-height-md: 2.75rem;
+    --ds-control-height-lg: 2.75rem;
+    --ds-row-height: 3.5rem;
+    --ds-target-min: 2.75rem;
+    --ds-text-input-size: 1rem;
+  }
+}
+
+/* 좁은 폭 — 페이지 좌우 여백을 줄이고 입력 글자를 16px 로 */
+@media (max-width: 767px) {
+  :root {
+    --ds-gap-page-x: var(--ds-space-4);
+    --ds-text-input-size: 1rem;
+    --ds-size-panel-overlay: 100%;
+  }
+}
+
+/* 움직임 줄이기 — 위치·크기 움직임을 없앤다. 회전 표시·스켈레톤은 멈추고 글자로 알린다(CMP-OVL-12) */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ds-motion-hover: 0ms;
+    --ds-motion-toggle: 0ms;
+    --ds-motion-enter: 0ms;
+    --ds-motion-exit: 0ms;
+    --ds-motion-crossfade: 0ms;
+    --ds-motion-spin: 1600ms;
+    --ds-motion-skeleton: 0ms;
+  }
+}

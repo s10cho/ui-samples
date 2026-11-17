@@ -1,0 +1,14 @@
+{
+  "kit": "scene3d",
+  "build": [
+    "node tools/build-app.mjs",
+    "node tools/strip-kit.mjs"
+  ],
+  "states": [
+    "?motion=off",
+    "?motion=off&floor=2&room=pottery",
+    "?motion=off&view=stacked",
+    "?state=nowebgl",
+    "?state=lost"
+  ]
+}

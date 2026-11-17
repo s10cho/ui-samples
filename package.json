@@ -1,0 +1,19 @@
+{
+  "name": "ui-samples",
+  "private": true,
+  "description": "정적 웹 페이지로 만든 화면 샘플 모음. 이 파일은 조립·자동 검수 도구용이다 — 샘플이 배포하는 파일은 아무 패키지도 쓰지 않는다.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node tools/build-site.mjs",
+    "check:static": "node tools/check-static.mjs",
+    "check:pages": "node tools/check-pages.mjs",
+    "check": "npm run check:static && npm run check:pages"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "playwright": "1.65.1"
+  }
+}

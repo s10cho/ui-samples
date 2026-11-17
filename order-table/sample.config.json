@@ -1,0 +1,6 @@
+{
+  "kit": "app",
+  "build": [],
+  "states": ["", "?state=loading", "?state=empty", "?q=없는말", "?state=error", "?state=dialog"],
+  "budgetKB": 150
+}

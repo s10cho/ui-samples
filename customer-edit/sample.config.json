@@ -1,0 +1,6 @@
+{
+  "kit": "app",
+  "build": [],
+  "states": ["", "?mode=edit", "?state=invalid", "?state=loading", "?state=not-found", "?state=no-permission"],
+  "budgetKB": 150
+}

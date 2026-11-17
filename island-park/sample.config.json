@@ -1,0 +1,14 @@
+{
+  "kit": "scene3d",
+  "build": [
+    "node tools/build-app.mjs",
+    "node tools/strip-kit.mjs"
+  ],
+  "states": [
+    "?motion=off",
+    "?motion=off&select=ferris",
+    "?motion=off&time=night",
+    "?state=nowebgl",
+    "?state=lost"
+  ]
+}

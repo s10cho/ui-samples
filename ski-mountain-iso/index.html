@@ -9,7 +9,7 @@
   <script>
     document.documentElement.classList.add('js');
     // 파일을 더블클릭해 열면(file://) 브라우저가 웹 글꼴을 막고 콘솔에 오류를 남긴다. 그때는 시스템 한글 글꼴을 쓴다.
-    // 다이나믹 서브셋은 화면 글자가 page subset 에 다 들어 있지 않을 때만 js/app.js 가 붙인다.
+    // 다이나믹 서브셋은 화면 글자가 page subset 에 다 들어 있지 않을 때만 js/iso2d.js 가 붙인다.
     if (location.protocol !== 'file:') {
       [
         ['preload', 'vendor/pretendard/PretendardVariable.page.woff2'],
@@ -42,7 +42,7 @@
     <div class="panel-backdrop" aria-hidden="true"></div>
 
     <div class="topbar">
-      <h1 class="resort-name">겨울 산 스키장</h1>
+      <h1 class="topbar__title">겨울 산 스키장</h1>
       <a class="alt-link" href="../ski-mountain/index.html">3D로 보기</a>
     </div>
 
@@ -108,7 +108,7 @@
 
       <section class="landmarks" id="landmarks" tabindex="-1" aria-labelledby="landmarks-title">
         <h2 class="section-title" id="landmarks-title">명소</h2>
-        <!-- 스크립트가 없으면 설명으로 가는 링크다. js/app.js 가 켜지면 같은 내용의 버튼으로 바꾼다 -->
+        <!-- 스크립트가 없으면 설명으로 가는 링크다. js/iso2d.js 가 켜지면 같은 내용의 버튼으로 바꾼다 -->
         <ul class="landmark-list">
           <li><a class="landmark" href="#detail-lift" data-id="lift"><span class="landmark__name">리프트</span><span class="landmark__where">산 아래에서 정상까지</span><span class="landmark__current">보는 중</span></a></li>
           <li><a class="landmark" href="#detail-easy" data-id="easy"><span class="landmark__name">초급 슬로프</span><span class="landmark__where">남동쪽 완만한 비탈</span><span class="landmark__current">보는 중</span></a></li>
@@ -121,12 +121,12 @@
       <section class="detail" aria-label="명소 설명">
         <div class="detail__item is-current" data-detail="intro">
           <p class="detail__text">눈 덮인 산 하나에 리프트와 슬로프 둘, 쉬어 갈 산장이 모여 있어요.</p>
-          <p class="detail__hint hint-op hint--mouse-wide">끌어서 그림을 옮기고, 휠로 가까이 볼 수 있어요.</p>
-          <p class="detail__hint hint-op hint--mouse">끌어서 그림을 옮기고, 가까이 보기 버튼으로 다가갈 수 있어요.</p>
-          <p class="detail__hint hint-op hint--touch">옆으로 밀어 그림을 옮기고, 두 손가락으로 가까이 볼 수 있어요.</p>
-          <p class="detail__hint hint-op hint--touch-wide">밀어서 그림을 옮기고, 두 손가락으로 가까이 볼 수 있어요.</p>
-          <p class="detail__hint hint--pick">명소를 고르면 그곳으로 가까이 가요.</p>
-          <p class="detail__hint hint--pick-static">명소를 고르면 아래에 펼친 설명으로 가요.</p>
+          <p class="detail__hint hint--wheel">끌어서 그림을 옮기고, 휠로 가까이 볼 수 있어요.</p>
+          <p class="detail__hint hint--buttons">끌어서 그림을 옮기고, 가까이 보기 버튼으로 다가갈 수 있어요.</p>
+          <p class="detail__hint hint--touch-narrow">옆으로 밀어 그림을 옮기고, 두 손가락으로 가까이 볼 수 있어요.</p>
+          <p class="detail__hint hint--touch-wide">밀어서 그림을 옮기고, 두 손가락으로 가까이 볼 수 있어요.</p>
+          <p class="detail__hint hint--select">명소를 고르면 그곳으로 가까이 가요.</p>
+          <p class="detail__hint hint--select-static">명소를 고르면 아래에 펼친 설명으로 가요.</p>
         </div>
         <article class="detail__item" data-detail="lift" aria-labelledby="detail-lift">
           <h3 class="detail__title" id="detail-lift">리프트</h3>
@@ -160,10 +160,12 @@
   </main>
 
   <!--
-    화면 스크립트 — 일반 스크립트 두 개. 서버로 열어도, 파일을 더블클릭해 열어도(file://) 같은 코드가 돈다.
+    화면 스크립트 — 일반 스크립트 세 개. 서버로 열어도, 파일을 더블클릭해 열어도(file://) 같은 코드가 돈다.
+    js/iso2d.js 는 공용 뼈대(shared/iso2d), js/iso-geom.js 와 js/scene.js 는 이 샘플의 것이다. 조립하면 한 폴더에 모인다.
     받지 못하면 조작 버튼을 숨기고 명소 설명을 모두 펼친다(그림은 HTML 안에 있어 그대로 보인다).
   -->
+  <script src="js/iso2d.js" onerror="document.documentElement.classList.remove('js')"></script>
   <script src="js/iso-geom.js" onerror="document.documentElement.classList.remove('js')"></script>
-  <script src="js/app.js" onerror="document.documentElement.classList.remove('js')"></script>
+  <script src="js/scene.js" onerror="document.documentElement.classList.remove('js')"></script>
 </body>
 </html>

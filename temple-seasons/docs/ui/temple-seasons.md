@@ -221,7 +221,7 @@ UI 색. 대비는 WCAG 2 공식으로 계산했다(2026-11-17). 중립색은 바
 
 | 항목 | 정한 것 | 이유 |
 |---|---|---|
-| 3D 라이브러리 | Three.js 0.187.0(MIT). 앱 코드가 쓰는 클래스만 한 파일로 묶어 `vendor/three/` 에 둔다(`tools/build-three.mjs`) | CDN 장애와 외부 요청을 없앤다 |
+| 3D 라이브러리 | Three.js 0.187.0(MIT). 앱 코드가 쓰는 클래스만 한 파일로 묶어 `vendor/three/` 에 둔다(공용 뼈대의 `shared/scene3d/tools/build-three.mjs`) | CDN 장애와 외부 요청을 없앤다 |
 | 모듈 불러오기 | importmap + ES 모듈. 빌드 도구 없음 | 정적 파일만으로 동작한다 |
 | 실행 조건 | 서버(http·https)와 파일 더블클릭(`file://`) 모두. 바탕 샘플과 같은 두 갈래 부팅과 6초 안전장치 | 열린 질문 1번 |
 | 그래픽 요구 | WebGL2 | Three.js 0.187 은 WebGL1 을 지원하지 않는다 |

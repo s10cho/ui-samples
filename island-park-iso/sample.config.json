@@ -1,0 +1,5 @@
+{
+  "kit": "iso2d",
+  "build": ["node tools/strip-css-comments.mjs"],
+  "states": ["?motion=off", "?motion=off&select=ferris", "?time=night", "?zoom=max", "?state=noscript"]
+}

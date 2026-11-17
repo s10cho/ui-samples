@@ -8,6 +8,7 @@
   --ds-color-bg-surface: #FFFFFF;
   --ds-color-bg-subtle: #EEF2F5;
   --ds-color-bg-muted: #E4EAEF;
+  --ds-color-bg-subtle-hover: var(--ds-color-bg-muted); /* 공용 화면 틀(shared/iso2d)이 목록 행 마우스 올림에 쓰는 이름 */
   --ds-color-bg-accent-subtle: #FBE9E4;
   --ds-color-text-primary: #1C2733;
   --ds-color-text-secondary: #56616E;

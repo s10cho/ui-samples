@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>주문 목록 — 업무 화면 샘플</title>
+  <meta name="description" content="주문을 정렬·필터·검색하고, 여러 건을 골라 한꺼번에 배송 처리하거나 취소하는 업무 화면 샘플이에요.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="data:,">
+  <script>
+    (function () {
+      var root = document.documentElement;
+      // 저장된 화면 밝기를 그리기 전에 적용한다. 저장값이 없으면 밝게 시작한다.
+      try {
+        var mode = new URLSearchParams(location.search).get('theme') || localStorage.getItem('ds-theme') || 'light';
+        if (mode === 'system') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
+      } catch (e) { /* 저장소를 못 읽으면 밝게 */ }
+      // 파일로 열면(file://) 브라우저가 웹 글꼴을 막는다. 그때는 시스템 한글 글꼴로 그린다.
+      if (location.protocol !== 'file:') {
+        [['preload', 'vendor/pretendard/PretendardVariable.page.woff2'], ['stylesheet', 'vendor/pretendard/pretendard-page-subset.css']].forEach(function (item) {
+          var link = document.createElement('link');
+          link.rel = item[0];
+          link.href = item[1];
+          if (item[0] === 'preload') { link.as = 'font'; link.type = 'font/woff2'; link.crossOrigin = 'anonymous'; }
+          document.head.appendChild(link);
+        });
+      }
+    })();
+  </script>
+  <noscript>
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  </noscript>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/page.css">
+  <script src="js/ds.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/page.js" defer></script>
+</head>
+<body>
+  <a class="ds-skip-link" href="#main">본문으로 건너뛰기</a>
+  <div id="ds-live" class="ds-live" role="status"></div>
+  <div id="ds-live-alert" class="ds-live" role="alert"></div>
+
+  <div class="ds-app" id="app">
+    <header class="ds-app__top ds-topbar">
+      <button class="ds-btn ds-btn--ghost ds-btn--icon ds-topbar__menu" type="button" data-ds-nav-toggle aria-controls="nav" aria-expanded="false" aria-label="메뉴 열기">
+        <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-menu"></use></svg>
+      </button>
+      <a class="ds-topbar__brand" href="../index.html">UI 샘플</a>
+      <span class="ds-topbar__spacer"></span>
+      <div class="ds-segmented" role="radiogroup" aria-label="화면 밝기" data-ds-theme-control>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="light" aria-label="밝게" data-ds-tip="밝게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-sun"></use></svg><span class="ot-theme-text">밝게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="dark" aria-label="어둡게" data-ds-tip="어둡게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-moon"></use></svg><span class="ot-theme-text">어둡게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="system" aria-label="시스템 설정 따르기" data-ds-tip="시스템 설정 따르기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-monitor"></use></svg><span class="ot-theme-text">시스템</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="ds-app__nav ds-sidenav" id="nav" aria-label="메뉴">
+      <div class="ds-sidenav__close">
+        <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" data-ds-nav-close aria-label="메뉴 닫기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg>
+        </button>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-sales">판매</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-sales">
+          <li><a class="ds-nav__link" href="index.html" aria-current="page"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-inbox"></use></svg>주문 목록</a></li>
+        </ul>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-repo">이 저장소</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-repo">
+          <li><a class="ds-nav__link" href="../index.html"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-grid"></use></svg>샘플 목록</a></li>
+          <li><a class="ds-nav__link" href="../design-system/index.html"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-columns"></use></svg>부품 모음</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="ds-app__main" id="main" tabindex="-1">
+      <div class="ds-page">
+        <header class="ds-page__head">
+          <div class="ds-page__titles">
+            <h1 class="ds-page__title">주문 목록</h1>
+            <p class="ds-page__desc">주문을 찾아 여러 건을 한꺼번에 배송 처리하거나 취소해요.</p>
+          </div>
+        </header>
+
+        <div class="ds-banner-slot" id="banner-slot"></div>
+
+        <noscript><p class="ot-noscript">이 화면은 자바스크립트가 켜져 있어야 주문을 보여 줘요.</p></noscript>
+
+        <!-- 찾기 — 검색어 · 기간 · 배송 상태. 767 이하에서는 기간·배송 상태를 서랍으로 옮긴다 -->
+        <section class="ot-find-wrap" aria-label="주문 찾기 조건">
+          <form class="ot-find" id="filters" role="search" aria-label="주문 찾기" novalidate>
+            <div class="ds-field ot-search-field">
+              <label class="ds-field__label" for="q">주문 번호·고객 찾기</label>
+              <span class="ds-search">
+                <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-search"></use></svg>
+                <input class="ds-input" id="q" name="q" type="search" autocomplete="off" enterkeyhint="search" spellcheck="false">
+              </span>
+            </div>
+
+            <div class="ot-more" id="filter-more">
+              <div class="ds-field ot-period-field">
+                <label class="ds-field__label" for="period">기간</label>
+                <span class="ds-select">
+                  <select id="period" name="period" data-ds-initial-focus>
+                    <option value="all">전체 기간</option>
+                    <option value="today">오늘</option>
+                    <option value="7d">최근 7일</option>
+                    <option value="30d">최근 30일</option>
+                    <option value="month">이번 달</option>
+                    <option value="custom">직접 고르기</option>
+                  </select>
+                </span>
+              </div>
+              <div class="ot-custom" id="custom-range" hidden>
+                <div class="ds-field">
+                  <label class="ds-field__label" for="from">시작일</label>
+                  <input class="ds-input" id="from" name="from" type="date" min="2026-01-01" max="2026-12-31">
+                </div>
+                <div class="ds-field">
+                  <label class="ds-field__label" for="to">종료일</label>
+                  <input class="ds-input" id="to" name="to" type="date" min="2026-01-01" max="2026-12-31" aria-describedby="to-error">
+                  <p class="ds-field__error" id="to-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg>종료일이 시작일보다 빨라요. 날짜를 다시 골라 주세요.</p>
+                </div>
+              </div>
+              <fieldset class="ds-fieldset ot-status">
+                <legend>배송 상태</legend>
+                <div class="ds-chips">
+                  <button class="ds-chip" type="button" aria-pressed="false" data-status="ready"><svg class="ds-icon ds-icon--sm ds-chip__check" aria-hidden="true"><use href="#ds-i-check"></use></svg>배송준비<span class="ds-count" aria-hidden="true" data-count></span><span class="ds-sr-only" data-count-sr></span></button>
+                  <button class="ds-chip" type="button" aria-pressed="false" data-status="shipping"><svg class="ds-icon ds-icon--sm ds-chip__check" aria-hidden="true"><use href="#ds-i-check"></use></svg>배송중<span class="ds-count" aria-hidden="true" data-count></span><span class="ds-sr-only" data-count-sr></span></button>
+                  <button class="ds-chip" type="button" aria-pressed="false" data-status="done"><svg class="ds-icon ds-icon--sm ds-chip__check" aria-hidden="true"><use href="#ds-i-check"></use></svg>배송완료<span class="ds-count" aria-hidden="true" data-count></span><span class="ds-sr-only" data-count-sr></span></button>
+                  <button class="ds-chip" type="button" aria-pressed="false" data-status="canceled"><svg class="ds-icon ds-icon--sm ds-chip__check" aria-hidden="true"><use href="#ds-i-check"></use></svg>취소완료<span class="ds-count" aria-hidden="true" data-count></span><span class="ds-sr-only" data-count-sr></span></button>
+                </div>
+              </fieldset>
+            </div>
+
+            <button class="ds-btn ot-filter-open" type="button" id="btn-filters" aria-haspopup="dialog" aria-controls="filter-drawer">
+              <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-filter"></use></svg>필터<span class="ds-count ds-count--accent" id="filter-n" aria-hidden="true" hidden></span><span class="ds-sr-only" id="filter-n-sr"></span>
+            </button>
+          </form>
+
+          <div class="ot-active" id="active" hidden>
+            <span class="ot-active__label" id="active-label">걸린 필터</span>
+            <div class="ds-chips" role="group" aria-labelledby="active-label" id="active-list"></div>
+            <button class="ds-btn ds-btn--ghost ds-btn--sm" type="button" id="btn-clear-all">모두 지우기</button>
+          </div>
+        </section>
+
+        <!-- 결과 — 건수 · 일괄 작업 · 표 · 쪽 -->
+        <section class="ot-results" id="results" aria-labelledby="results-title">
+          <div class="ds-toolbar ot-resultbar">
+            <div class="ot-count">
+              <h2 class="ot-count__title" id="results-title" tabindex="-1">주문</h2>
+              <span class="ot-count__meta" id="count-meta"></span>
+            </div>
+            <span class="ds-toolbar__spacer"></span>
+            <div class="ot-bulk" id="bulk" role="group" aria-label="고른 주문 처리">
+              <span class="ot-picked" id="picked" hidden></span>
+              <button class="ds-btn ds-btn--ghost" type="button" id="btn-unselect" hidden>고르기 풀기</button>
+              <button class="ds-btn ds-btn--primary" type="button" id="btn-ship" aria-disabled="true" data-ds-tip="주문을 먼저 골라 주세요" data-busy-label="처리 중…">배송 처리…</button>
+              <button class="ds-btn" type="button" id="btn-cancel" aria-disabled="true" data-ds-tip="주문을 먼저 골라 주세요" data-busy-label="처리 중…">주문 취소…</button>
+            </div>
+            <div class="ot-colpick" id="colpick">
+              <button class="ds-btn" type="button" id="btn-cols" aria-expanded="false" aria-controls="col-menu">
+                <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-sliders"></use></svg><span id="cols-label">열 고르기</span>
+              </button>
+              <div class="ds-menu ot-colmenu" id="col-menu" hidden>
+                <fieldset class="ds-fieldset">
+                  <legend>표에 보일 열</legend>
+                  <div class="ds-options">
+                    <label class="ds-check"><input type="checkbox" data-col="customer" checked><span>고객</span></label>
+                    <label class="ds-check"><input type="checkbox" data-col="date" checked><span>주문일</span></label>
+                    <label class="ds-check"><input type="checkbox" data-col="items" checked><span>상품 수</span></label>
+                    <label class="ds-check"><input type="checkbox" data-col="amount" checked><span>금액</span></label>
+                    <label class="ds-check"><input type="checkbox" data-col="pay" checked><span>결제</span></label>
+                    <label class="ds-check"><input type="checkbox" data-col="ship" checked><span>배송 상태</span></label>
+                  </div>
+                </fieldset>
+                <p class="ot-colmenu__note">주문 번호는 늘 보여요.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="ds-table-wrap ds-table-wrap--scroll" id="table-wrap" role="region" aria-label="주문 목록 표" tabindex="0">
+            <table class="ds-table ds-table--stack ot-table" id="orders" data-url-key="sort">
+              <caption class="ds-sr-only">주문 목록</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="ds-table__select" id="th-select">
+                    <span class="ot-selall"><label class="ds-hit"><input type="checkbox" id="sel-page" aria-label="이 쪽 주문 모두 고르기"></label><label class="ot-selall__text" for="sel-page" aria-hidden="true">이 쪽 모두</label></span>
+                  </th>
+                  <th scope="col" class="ot-col-id"><button class="ds-sort" type="button" data-key="id">주문 번호</button></th>
+                  <th scope="col" data-col="customer"><button class="ds-sort" type="button" data-key="customer">고객</button></th>
+                  <th scope="col" data-col="date"><button class="ds-sort" type="button" data-key="date">주문일</button></th>
+                  <th scope="col" class="ds-num" data-col="items"><button class="ds-sort" type="button" data-key="items">상품 수</button></th>
+                  <th scope="col" class="ds-num" data-col="amount"><button class="ds-sort" type="button" data-key="amount">금액</button></th>
+                  <th scope="col" data-col="pay">결제</th>
+                  <th scope="col" data-col="ship">배송 상태</th>
+                </tr>
+              </thead>
+              <tbody id="order-body"></tbody>
+            </table>
+          </div>
+
+          <nav class="ds-pagination" id="pagination" aria-label="주문 목록 쪽" hidden>
+            <p class="ds-pagination__summary" id="pg-summary"></p>
+            <ul class="ds-pagination__list" id="pg-list"></ul>
+          </nav>
+        </section>
+
+        <footer class="ot-foot">
+          <p>가상의 샘플 데이터예요. 새로고침하면 처리한 내용이 처음으로 돌아가요.</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <dialog class="ds-dialog ds-dialog--sm" id="dlg-bulk" aria-labelledby="dlg-bulk-title" aria-describedby="dlg-bulk-body">
+    <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-bulk-title"></h2></div>
+    <div class="ds-dialog__body" id="dlg-bulk-body"></div>
+    <div class="ds-dialog__foot">
+      <button class="ds-btn" type="button" data-ds-close data-ds-initial-focus>닫기</button>
+      <button class="ds-btn ds-btn--primary" type="button" data-ds-close="run" id="dlg-bulk-run"></button>
+    </div>
+  </dialog>
+
+  <dialog class="ds-dialog ot-drawer" id="filter-drawer" aria-labelledby="drawer-title">
+    <div class="ds-dialog__head">
+      <h2 class="ds-dialog__title" id="drawer-title">필터</h2>
+      <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" data-ds-close aria-label="필터 닫기">
+        <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg>
+      </button>
+    </div>
+    <div class="ds-dialog__body" id="drawer-body"></div>
+    <div class="ds-dialog__foot">
+      <button class="ds-btn ds-btn--ghost" type="button" id="drawer-clear">모두 지우기</button>
+      <button class="ds-btn ds-btn--primary" type="button" data-ds-close id="drawer-done">결과 보기</button>
+    </div>
+  </dialog>
+</body>
+</html>

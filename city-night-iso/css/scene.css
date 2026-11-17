@@ -4,22 +4,15 @@
  * 면 클래스: m-<재질>-<밝기>. 밝기 t 윗면 · l 햇빛 쪽 · m 비스듬한 면 · d 그늘 면.
  */
 
-.iso {
-  position: absolute;
-  inset: 0;
-  z-index: var(--ds-z-base);
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  touch-action: pan-y;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
+/* 그림 자리 바탕 — 하늘색. 해 질 녘·밤 전환과 같은 시간으로 바뀐다(공용 화면 틀은 바탕을 정하지 않는다) */
+.scene {
+  background: var(--iso-sky);
+  transition: background-color var(--ds-motion-time-shift) var(--ds-easing-enter);
 }
 
-.iso.is-dragging {
-  cursor: grabbing;
+/* 고른 표지 — 밤하늘 위에서도 가장자리가 보이게 흰 테두리(3D 판과 같다) */
+.marker.is-current .marker__pill {
+  border-color: var(--ds-color-bg-surface);
 }
 
 /* 면 사이에 바탕색 실선이 비치지 않게 면과 같은 색으로 테두리를 그린다(굵기는 svg 의 stroke-width 속성) */

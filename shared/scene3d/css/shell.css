@@ -1,0 +1,571 @@
+/*
+ * 3D 장면 화면 틀 — 공통 스타일(모든 3D 샘플).
+ * 값은 샘플 css/tokens.css 의 변수만 쓴다. 이 파일은 shared/scene3d/ 에서 조립 때 복사된다. 샘플에서 고치지 말고 kit 에서 고친다.
+ * 불러오는 순서: tokens.css → shell.css → (명소형이면) shell-landmarks.css → 샘플 style.css. 뒤 파일이 같은 선택자를 덮는다.
+ * 폭 구간: 좁은 폭 600 미만 · 중간 폭 600~1023 · 넓은 폭 1024 이상
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--ds-font-family);
+  font-size: 100%;
+  color: var(--ds-color-text-primary);
+  background: var(--ds-color-bg-surface);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  word-break: normal;
+  overflow-wrap: break-word;
+  line-break: strict;
+}
+
+:lang(ko) {
+  word-break: keep-all;
+}
+
+body {
+  margin: 0;
+  font-size: var(--ds-text-body-size);
+  line-height: var(--ds-text-body-leading);
+}
+
+h1,
+h2,
+h3,
+p,
+ul {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---------- 포커스: 안쪽 링 + 바깥 링(색은 토큰) ---------- */
+
+:focus-visible {
+  outline: var(--ds-size-focus-ring) solid var(--ds-color-focus-outer);
+  outline-offset: var(--ds-size-focus-ring);
+  box-shadow: var(--ds-shadow-focus);
+}
+
+.sr-only {
+  position: absolute;
+  width: var(--ds-size-hairline);
+  height: var(--ds-size-hairline);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  top: var(--ds-space-3);
+  left: var(--ds-space-3);
+  z-index: var(--ds-z-skip-link);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-bg-surface);
+  box-shadow: var(--ds-shadow-float);
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-weight);
+  transform: translateY(calc(-100% - var(--ds-space-12))); /* 숨겼을 때 그림자도 화면 밖으로 */
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+/* ---------- 글자 스타일 ---------- */
+
+.screen-name {
+  font-size: var(--ds-text-display-size);
+  line-height: var(--ds-text-display-leading);
+  font-weight: var(--ds-text-display-weight);
+  letter-spacing: var(--ds-text-display-tracking);
+}
+
+.section-title {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+  color: var(--ds-color-text-secondary);
+}
+
+.detail__title {
+  font-size: var(--ds-text-title-size);
+  line-height: var(--ds-text-title-leading);
+  font-weight: var(--ds-text-title-weight);
+  letter-spacing: var(--ds-text-title-tracking);
+}
+
+.detail__text {
+  font-size: var(--ds-text-body-size);
+  line-height: var(--ds-text-body-leading);
+}
+
+.detail__hint {
+  font-size: var(--ds-text-body-size);
+  line-height: var(--ds-text-body-leading);
+  color: var(--ds-color-text-secondary);
+}
+
+.detail__where {
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+  color: var(--ds-color-text-secondary);
+}
+
+/* ---------- 페이지 골격 — 좁은 폭 기본 ---------- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.panel-backdrop {
+  display: none;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  min-height: var(--ds-size-topbar);
+  padding: 0 var(--ds-space-4);
+}
+
+/* ---------- 3D 장면 — 바탕색은 샘플 style.css 가 정한다 ---------- */
+
+.scene {
+  position: relative;
+  height: var(--ds-size-scene-height);
+  min-height: var(--ds-size-scene-min);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.scene__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: var(--ds-z-base);
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.scene__canvas:active {
+  cursor: grabbing;
+}
+
+.scene__poster img {
+  position: absolute;
+  inset: 0;
+  z-index: var(--ds-z-scene-poster);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity var(--ds-motion-crossfade) var(--ds-easing-exit);
+}
+
+.scene__poster.is-fading img {
+  opacity: 0;
+}
+
+/* 3D 첫 화면과 같은 배율·중심(js/framing.js 가 계산한 자리) */
+.scene__poster.is-placed img {
+  inset: auto;
+  top: var(--poster-top);
+  left: var(--poster-left);
+  width: var(--poster-width);
+  height: var(--poster-height);
+  max-width: none;
+  object-fit: fill;
+}
+
+/* 명소 표지 — 화면낭독기와 키보드는 목록을 쓴다(aria-hidden) */
+
+.scene__labels {
+  position: absolute;
+  inset: 0;
+  z-index: var(--ds-z-scene-labels);
+  pointer-events: none;
+}
+
+.marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--ds-size-touch);
+  min-height: var(--ds-size-touch);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--ds-motion-label-enter) var(--ds-easing-enter),
+    visibility 0s;
+}
+
+.marker.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity var(--ds-motion-label-exit) var(--ds-easing-exit),
+    visibility 0s linear var(--ds-motion-label-exit);
+}
+
+.marker.is-current {
+  z-index: var(--ds-z-raise);
+}
+
+.marker__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ds-space-1) var(--ds-space-3);
+  border: var(--ds-size-hairline) solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-color-bg-surface);
+  box-shadow: var(--ds-shadow-float);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+  font-weight: var(--ds-text-caption-strong-weight);
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .marker:hover .marker__pill {
+    background: var(--ds-color-bg-subtle);
+  }
+}
+
+/* 고른 표지: 강조색 채움. 가장자리를 표면색으로 둘러 장면 위에서도 모양이 보이게 한다 */
+.marker.is-current .marker__pill {
+  border-color: var(--ds-color-bg-surface);
+  background: var(--ds-color-accent);
+  color: var(--ds-color-text-on-accent);
+}
+
+/* 시점 버튼 · 장면 토글 */
+
+.scene__toggles {
+  position: absolute;
+  top: var(--ds-space-3);
+  right: var(--ds-space-3);
+  z-index: var(--ds-z-scene-ui);
+  max-width: calc(100% - var(--ds-space-3) * 2);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--ds-space-2);
+}
+
+.text-btn,
+.icon-btn,
+.btn {
+  border: var(--ds-size-hairline) solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-bg-surface);
+  cursor: pointer;
+}
+
+.text-btn,
+.icon-btn {
+  box-shadow: var(--ds-shadow-float);
+}
+
+.text-btn,
+.btn {
+  min-height: var(--ds-size-touch);
+  padding: 0 var(--ds-space-3);
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-weight);
+}
+
+.btn {
+  padding: 0 var(--ds-space-4);
+}
+
+.icon-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: var(--ds-size-touch);
+  height: var(--ds-size-touch);
+  padding: 0;
+}
+
+.icon-btn--plain {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media (hover: hover) {
+  .text-btn:hover,
+  .icon-btn:hover,
+  .btn:hover {
+    background: var(--ds-color-bg-subtle);
+  }
+}
+
+.text-btn:focus-visible,
+.icon-btn:focus-visible {
+  box-shadow: var(--ds-shadow-focus), var(--ds-shadow-float);
+}
+
+.icon-btn--plain:focus-visible {
+  box-shadow: var(--ds-shadow-focus);
+}
+
+.icon {
+  width: var(--ds-size-icon);
+  height: var(--ds-size-icon);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-btn[aria-disabled="true"] {
+  cursor: default;
+}
+
+.icon-btn[aria-disabled="true"] .icon {
+  opacity: var(--ds-opacity-disabled);
+}
+
+.tooltip {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--ds-space-2));
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-tooltip-bg);
+  color: var(--ds-color-tooltip-fg);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+  font-weight: var(--ds-text-caption-weight);
+  white-space: nowrap;
+  cursor: default;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--ds-motion-label-exit) var(--ds-easing-exit),
+    visibility 0s linear var(--ds-motion-label-exit);
+}
+
+/* 툴팁과 버튼 사이 틈을 메워 포인터를 툴팁 위로 옮겨도 닫히지 않게 한다(WCAG 1.4.13 Hoverable) */
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  height: var(--ds-space-2);
+}
+
+.icon-btn.is-tip .tooltip,
+.icon-btn:focus-visible .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--ds-motion-label-enter) var(--ds-easing-enter), visibility 0s;
+}
+
+@media (hover: hover) {
+  .icon-btn:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity var(--ds-motion-label-enter) var(--ds-easing-enter), visibility 0s;
+  }
+}
+
+/* Esc 로 닫은 툴팁은 포인터가 버튼 묶음을 떠나거나 포커스가 옮겨 갈 때까지 숨긴다 */
+.scene__controls.is-tip-dismissed .icon-btn .tooltip {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.scene__progress {
+  position: absolute;
+  left: var(--ds-space-3);
+  bottom: var(--ds-space-3);
+  z-index: var(--ds-z-scene-ui);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-bg-surface);
+  box-shadow: var(--ds-shadow-float);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+}
+
+/*
+ * live 영역(진행 문구 role=status · 배너 자리 aria-live)은 비어 있어도 렌더링해 둔다. display:none 은 쓰지 않는다.
+ * 영역과 내용이 한꺼번에 생기면 일부 화면낭독기가 읽지 않는다. 비었을 때는 화면에서만 숨긴다(.sr-only 와 같은 방식).
+ */
+.scene__progress:empty,
+.banner-region:empty {
+  position: absolute;
+  width: var(--ds-size-hairline);
+  height: var(--ds-size-hairline);
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  box-shadow: none;
+  pointer-events: none;
+}
+
+/* ---------- 정보 패널 ---------- */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6);
+  padding: var(--ds-space-4) var(--ds-space-4) var(--ds-space-8);
+}
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  border: var(--ds-size-hairline) solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-banner-bg);
+}
+
+.banner__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+}
+
+.banner__text {
+  font-size: var(--ds-text-body-size);
+  line-height: var(--ds-text-body-leading);
+}
+
+/* 닫기 버튼(44)의 세로 중심을 문구 첫 줄(16 × 1.5)의 중심에 맞춘다(js/shell/banner.js 가 붙이는 이름) */
+.banner__close {
+  flex: none;
+  margin-block: calc((var(--ds-text-body-size) * var(--ds-text-body-leading) - var(--ds-size-touch)) / 2);
+}
+
+.detail__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.js .detail__item:not(.is-current) {
+  display: none;
+}
+
+/*
+ * 조작 안내 — 실제로 되는 조작에 맞춘다. 휠 확대는 넓은 폭(1024 이상)에서만 된다(js/scene/scene.js).
+ * .hint--wheel: 마우스 + 넓은 폭, .hint--buttons: 마우스 + 좁은·중간 폭, .hint--touch: 터치
+ */
+.hint--wheel,
+.hint--buttons,
+.hint--touch {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
+  .hint--wheel {
+    display: block;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (max-width: 1023.98px) {
+  .hint--buttons {
+    display: block;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .hint--touch {
+    display: block;
+  }
+}
+
+/* ---------- 중간 폭 600~1023 ---------- */
+
+@media (min-width: 600px) {
+  .topbar {
+    padding: 0 var(--ds-space-6);
+  }
+
+  .panel {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: start;
+    gap: var(--ds-space-6) var(--ds-space-8);
+    padding: var(--ds-space-6) var(--ds-space-6) var(--ds-space-8);
+  }
+}
+
+/* ---------- 넓은 폭 1024 이상: 장면이 화면 전체, 패널은 왼쪽 위에 뜬다 ---------- */
+
+@media (min-width: 1024px) {
+  .scene {
+    grid-area: 1 / 1 / -1 / -1;
+    height: auto;
+    min-height: 0;
+  }
+
+  .scene__canvas {
+    touch-action: none;
+  }
+
+  .scene__toggles {
+    top: var(--ds-space-6);
+    right: var(--ds-space-6);
+    max-width: calc(100% - var(--ds-size-panel) - var(--ds-space-6) * 3);
+  }
+
+  .scene__progress {
+    left: calc(var(--ds-space-6) * 2 + var(--ds-size-panel));
+    bottom: var(--ds-space-6);
+  }
+}
+
+/* ---------- 가로 휴대폰(높이 480 미만): 장면 왼쪽 60%, 목록·설명 오른쪽 40% ---------- */
+
+@media (max-width: 1023.98px) and (max-height: 479.98px) and (orientation: landscape) {
+  .topbar {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 0 var(--ds-space-4);
+  }
+}
+
+/* ---------- 포스터 촬영 모드(?poster=…) — 장면만 보인다 ---------- */
+
+.is-poster .scene {
+  position: fixed;
+  inset: 0;
+  height: auto;
+  min-height: 0;
+}

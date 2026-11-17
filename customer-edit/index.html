@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>고객 상세</title>
+  <meta name="description" content="고객 정보와 메모·최근 주문·변경 기록을 보고, 같은 화면에서 고쳐 저장하는 업무 화면 샘플이에요.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="data:,">
+  <script>
+    (function () {
+      var root = document.documentElement;
+      // 저장된 화면 밝기를 그리기 전에 적용한다. 저장값이 없으면 밝게 시작한다.
+      try {
+        var mode = new URLSearchParams(location.search).get('theme') || localStorage.getItem('ds-theme') || 'light';
+        if (mode === 'system') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
+      } catch (e) { /* 저장소를 못 읽으면 밝게 */ }
+      // 파일로 열면(file://) 브라우저가 웹 글꼴을 막는다. 그때는 시스템 한글 글꼴로 그린다.
+      if (location.protocol !== 'file:') {
+        [['preload', 'vendor/pretendard/PretendardVariable.page.woff2'], ['stylesheet', 'vendor/pretendard/pretendard-page-subset.css']].forEach(function (item) {
+          var link = document.createElement('link');
+          link.rel = item[0];
+          link.href = item[1];
+          if (item[0] === 'preload') { link.as = 'font'; link.type = 'font/woff2'; link.crossOrigin = 'anonymous'; }
+          document.head.appendChild(link);
+        });
+      }
+    })();
+  </script>
+  <noscript>
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  </noscript>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/page.css">
+  <script src="js/ds.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/page.js" defer></script>
+</head>
+<body>
+  <a class="ds-skip-link" href="#main">본문으로 건너뛰기</a>
+  <div id="ds-live" class="ds-live" role="status"></div>
+  <div id="ds-live-alert" class="ds-live" role="alert"></div>
+
+  <div class="ds-app" id="app">
+    <header class="ds-app__top ds-topbar">
+      <button class="ds-btn ds-btn--ghost ds-btn--icon ds-topbar__menu" type="button" data-ds-nav-toggle aria-controls="nav" aria-expanded="false" aria-label="메뉴 열기">
+        <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-menu"></use></svg>
+      </button>
+      <a class="ds-topbar__brand" href="../index.html">UI 샘플</a>
+      <span class="ds-topbar__spacer"></span>
+      <div class="ds-segmented" role="radiogroup" aria-label="화면 밝기" data-ds-theme-control>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="light" aria-label="밝게" data-ds-tip="밝게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-sun"></use></svg><span class="ce-theme-text">밝게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="dark" aria-label="어둡게" data-ds-tip="어둡게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-moon"></use></svg><span class="ce-theme-text">어둡게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="system" aria-label="시스템 설정 따르기" data-ds-tip="시스템 설정 따르기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-monitor"></use></svg><span class="ce-theme-text">시스템</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="ds-app__nav ds-sidenav" id="nav" aria-label="고객 화면 메뉴">
+      <div class="ds-sidenav__close">
+        <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" data-ds-nav-close aria-label="메뉴 닫기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg>
+        </button>
+      </div>
+      <div class="ds-nav__group" id="nav-customer" hidden>
+        <p class="ds-nav__heading" id="nav-h-customer">이 고객</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-customer">
+          <li><a class="ds-nav__link" href="#info" data-view-href="#info" data-edit-href="#grp-contact">기본 정보</a></li>
+          <li><a class="ds-nav__link" href="#memo" data-view-href="#memo" data-edit-href="#grp-memo">메모</a></li>
+          <li><a class="ds-nav__link" href="#orders">최근 주문</a></li>
+          <li><a class="ds-nav__link" href="#history">변경 기록</a></li>
+        </ul>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-repo">이 저장소</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-repo">
+          <li><a class="ds-nav__link" href="../index.html">샘플 목록</a></li>
+          <li><a class="ds-nav__link" href="../design-system/index.html">부품 모음</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="ds-app__main" id="main" tabindex="-1">
+      <div class="ds-page">
+        <!-- 페이지 머리 — 고객 이름 + 등급, 마지막 수정, 주 행동 -->
+        <header class="ds-page__head" id="page-head" hidden>
+          <div class="ds-page__titles">
+            <div class="ce-title">
+              <h1 class="ds-page__title" id="page-title"></h1>
+              <span class="ds-badge" id="grade-badge"></span>
+            </div>
+            <p class="ds-page__desc" id="page-desc"></p>
+          </div>
+          <div class="ds-page__actions" id="head-actions">
+            <button class="ds-btn ds-btn--primary" type="button" id="btn-edit">
+              <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg>고객 정보 고치기
+            </button>
+          </div>
+          <p class="ce-perm-note" id="perm-note" hidden>
+            <svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-lock"></use></svg>
+            <span>고객 정보를 고치려면 팀 관리자에게 편집 권한을 요청해 주세요.</span>
+          </p>
+        </header>
+
+        <div class="ds-banner-slot" id="banner-slot"></div>
+
+        <!-- 내용 — 왼쪽 열(기본 정보·메모 또는 편집 폼, 최근 주문) + 오른쪽 열(변경 기록) -->
+        <div class="ce-layout" id="content" hidden>
+          <div class="ce-layout__grid">
+            <div class="ce-main">
+              <form class="ds-card ce-form" id="edit-form" novalidate hidden aria-labelledby="h-form">
+                <h2 class="ds-card__title" id="h-form">고객 정보 고치기</h2>
+
+                <div class="ds-banner ds-banner--danger ce-summary" id="err-summary" hidden>
+                  <svg class="ds-icon ds-banner__icon" aria-hidden="true"><use href="#ds-i-error"></use></svg>
+                  <div class="ds-banner__body">
+                    <p class="ds-banner__title" id="err-summary-title"></p>
+                    <ul class="ce-summary__list" id="err-list" aria-labelledby="err-summary-title"></ul>
+                  </div>
+                </div>
+
+                <fieldset class="ce-group" id="grp-contact">
+                  <legend class="ce-group__title">연락처</legend>
+                  <div class="ds-form-grid">
+                    <div class="ds-field ce-span">
+                      <label class="ds-field__label" for="f-name">고객 이름<span class="ds-field__req" aria-hidden="true">필수</span></label>
+                      <input class="ds-input" id="f-name" name="name" type="text" autocomplete="off" aria-required="true" data-describedby="">
+                      <p class="ds-field__error" id="f-name-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                    </div>
+                    <div class="ds-field">
+                      <label class="ds-field__label" for="f-phone">휴대 전화번호<span class="ds-field__req" aria-hidden="true">필수</span></label>
+                      <input class="ds-input ds-num" id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="off" aria-required="true" placeholder="예: 010-0000-0000…" data-describedby="f-phone-hint">
+                      <p class="ds-field__hint" id="f-phone-hint">하이픈은 넣어도 되고 빼도 돼요.</p>
+                      <p class="ds-field__error" id="f-phone-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                    </div>
+                    <div class="ds-field">
+                      <label class="ds-field__label" for="f-email">이메일</label>
+                      <input class="ds-input" id="f-email" name="email" type="email" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="예: name@example.com…" data-describedby="">
+                      <p class="ds-field__error" id="f-email-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="ce-group" id="grp-address">
+                  <legend class="ce-group__title">주소</legend>
+                  <div class="ds-form-grid">
+                    <div class="ds-field">
+                      <label class="ds-field__label" for="f-postcode">우편번호</label>
+                      <input class="ds-input ds-num" id="f-postcode" name="postcode" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 00000…" data-describedby="">
+                      <p class="ds-field__error" id="f-postcode-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                    </div>
+                    <div class="ds-field ce-span">
+                      <label class="ds-field__label" for="f-address1">기본 주소</label>
+                      <input class="ds-input" id="f-address1" name="address1" type="text" autocomplete="off" data-describedby="">
+                      <p class="ds-field__error" id="f-address1-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                    </div>
+                    <div class="ds-field ce-span">
+                      <label class="ds-field__label" for="f-address2">상세 주소</label>
+                      <input class="ds-input" id="f-address2" name="address2" type="text" autocomplete="off" placeholder="예: 3층…" data-describedby="">
+                      <p class="ds-field__error" id="f-address2-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="ce-group" id="grp-grade">
+                  <legend class="ce-group__title">등급</legend>
+                  <div class="ds-options ds-options--row">
+                    <label class="ds-check"><input type="radio" name="grade" value="basic"><span>일반</span></label>
+                    <label class="ds-check"><input type="radio" name="grade" value="good"><span>우수</span></label>
+                    <label class="ds-check"><input type="radio" name="grade" value="best"><span>최우수</span></label>
+                  </div>
+                </fieldset>
+
+                <div class="ce-group" id="grp-memo">
+                  <div class="ds-field ds-field--wide">
+                    <label class="ds-field__label" for="f-memo">메모</label>
+                    <textarea class="ds-textarea" id="f-memo" name="memo" rows="4" placeholder="예: 배송은 평일 오전에만 받아요…" data-describedby="f-memo-hint"></textarea>
+                    <p class="ds-field__hint ds-num" id="f-memo-hint"></p>
+                    <p class="ds-field__error" id="f-memo-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                  </div>
+                </div>
+
+                <div class="ce-form__foot">
+                  <button class="ds-btn ds-btn--primary" type="submit" id="btn-save" data-busy-label="저장 중…">변경 내용 저장</button>
+                  <button class="ds-btn" type="button" id="btn-close-edit">저장하지 않고 닫기</button>
+                  <p class="ce-dirty" id="dirty-note" hidden></p>
+                </div>
+              </form>
+
+              <section class="ds-section ce-block" id="info" aria-labelledby="h-info">
+                <h2 class="ds-section__title" id="h-info">기본 정보</h2>
+                <ul class="ce-contact">
+                  <li><span class="ds-sr-only">휴대 전화번호</span><a class="ds-num" id="v-phone"></a></li>
+                  <li><span class="ds-sr-only">이메일</span><a id="v-email"></a><span class="ce-none" id="v-email-none" hidden>이메일 없음</span></li>
+                  <li><span class="ds-sr-only">주소</span><span id="v-address"></span></li>
+                </ul>
+                <dl class="ds-dl">
+                  <dt>고객 번호</dt><dd class="ds-num" id="v-id"></dd>
+                  <dt>담당 팀</dt><dd id="v-team"></dd>
+                  <dt>등록일</dt><dd><time id="v-created"></time></dd>
+                </dl>
+              </section>
+
+              <section class="ds-section ce-block" id="memo" aria-labelledby="h-memo">
+                <h2 class="ds-section__title" id="h-memo">메모</h2>
+                <p class="ds-text-body-reading ce-memo" id="v-memo"></p>
+                <div class="ds-empty" id="memo-empty" hidden>
+                  <p class="ds-empty__title">아직 메모가 없어요</p>
+                  <p class="ds-empty__text">응대할 때 알아 둘 내용을 남기면 팀이 함께 봐요.</p>
+                  <div class="ds-empty__actions">
+                    <button class="ds-btn" type="button" id="btn-memo-write">
+                      <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg>메모 쓰기
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="ds-section ce-block" id="orders" aria-labelledby="h-orders">
+                <div class="ds-section__head">
+                  <h2 class="ds-section__title" id="h-orders">최근 주문</h2>
+                  <p class="ce-meta" id="orders-desc"></p>
+                </div>
+                <div class="ds-table-wrap ce-orders" id="orders-wrap" role="region" aria-labelledby="h-orders" tabindex="0">
+                  <table class="ds-table ds-table--stack">
+                    <caption class="ds-sr-only" id="orders-caption"></caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">주문 번호</th>
+                        <th scope="col">주문일</th>
+                        <th scope="col">상품</th>
+                        <th scope="col" class="ds-num">금액</th>
+                        <th scope="col">상태</th>
+                      </tr>
+                    </thead>
+                    <tbody id="orders-body"></tbody>
+                  </table>
+                </div>
+                <div class="ds-empty" id="orders-empty" hidden>
+                  <p class="ds-empty__title">아직 주문이 없어요</p>
+                  <p class="ds-empty__text">주문이 들어오면 최근 5건이 여기에 보여요.</p>
+                  <div class="ds-empty__actions">
+                    <a class="ds-btn" href="../order-table/index.html">주문 목록 열기</a>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="ce-side">
+              <section class="ds-section ce-block" id="history" aria-labelledby="h-history">
+                <h2 class="ds-section__title" id="h-history">변경 기록</h2>
+                <ol class="ds-list ce-history" id="history-list" aria-labelledby="h-history"></ol>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- 불러오는 중 — 실제 배치와 같은 모양 -->
+        <div class="ce-skeleton" id="skeleton" aria-hidden="true" hidden>
+          <div class="ce-skeleton__head">
+            <span class="ds-skeleton ds-skeleton--title"></span>
+            <span class="ds-skeleton ds-skeleton--medium"></span>
+          </div>
+          <div class="ce-layout">
+            <div class="ce-layout__grid">
+              <div class="ce-main">
+                <div class="ds-section ce-block">
+                  <span class="ds-skeleton ds-skeleton--short"></span>
+                  <span class="ds-skeleton ds-skeleton--medium"></span>
+                  <span class="ds-skeleton ds-skeleton--medium"></span>
+                  <span class="ds-skeleton"></span>
+                  <span class="ds-skeleton ds-skeleton--short"></span>
+                </div>
+                <div class="ds-section ce-block">
+                  <span class="ds-skeleton ds-skeleton--short"></span>
+                  <span class="ds-skeleton"></span>
+                  <span class="ds-skeleton ds-skeleton--medium"></span>
+                </div>
+                <div class="ds-section ce-block">
+                  <span class="ds-skeleton ds-skeleton--short"></span>
+                  <div class="ds-table-wrap">
+                    <table class="ds-table">
+                      <tbody>
+                        <tr class="ds-table__skeleton"><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
+                        <tr class="ds-table__skeleton"><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
+                        <tr class="ds-table__skeleton"><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
+                        <tr class="ds-table__skeleton"><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
+                        <tr class="ds-table__skeleton"><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="ce-side">
+                <div class="ds-section ce-block">
+                  <span class="ds-skeleton ds-skeleton--short"></span>
+                  <span class="ds-skeleton"></span>
+                  <span class="ds-skeleton ds-skeleton--medium"></span>
+                  <span class="ds-skeleton"></span>
+                  <span class="ds-skeleton ds-skeleton--medium"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 없는 고객 -->
+        <section class="ds-empty ds-empty--center ce-notfound" id="not-found" aria-labelledby="nf-title" hidden>
+          <svg class="ds-icon ds-empty__icon" aria-hidden="true"><use href="#ds-i-user"></use></svg>
+          <h1 class="ds-empty__title" id="nf-title">고객을 찾을 수 없어요</h1>
+          <p class="ds-empty__text" id="nf-text"></p>
+          <div class="ds-empty__actions">
+            <a class="ds-btn ds-btn--primary" href="index.html">예시 고객 열기</a>
+          </div>
+        </section>
+
+        <footer class="ce-footnote">
+          <p>이 화면의 고객·주문·팀은 가상의 샘플 데이터예요.</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <dialog class="ds-dialog ds-dialog--sm" id="dlg-discard" aria-labelledby="dlg-discard-title" aria-describedby="dlg-discard-desc">
+    <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-discard-title">고친 내용을 버릴까요?</h2></div>
+    <div class="ds-dialog__body"><p id="dlg-discard-desc"></p></div>
+    <div class="ds-dialog__foot">
+      <button class="ds-btn" type="button" data-ds-close data-ds-initial-focus>닫기</button>
+      <button class="ds-btn ds-btn--danger" type="button" data-ds-close="discard" id="btn-discard">고친 내용 버리기</button>
+    </div>
+  </dialog>
+
+  <noscript><p class="ce-noscript">이 화면은 스크립트를 켜야 보여요.</p></noscript>
+</body>
+</html>

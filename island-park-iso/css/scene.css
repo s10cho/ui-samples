@@ -4,22 +4,33 @@
  * 면 클래스: m-<재질>-<밝기>. 밝기 t 윗면 · l 햇빛 쪽 · m 비스듬한 면 · d 그늘 면.
  */
 
-.iso {
-  position: absolute;
-  inset: 0;
-  z-index: var(--ds-z-base);
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  touch-action: pan-y;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
+/* 그림 자리 바탕 — 바다색. 낮·밤 전환과 같은 시간으로 바뀐다(공용 화면 틀은 바탕을 정하지 않는다) */
+.scene {
+  background: var(--iso-sea-deep);
+  transition: background-color var(--ds-motion-time-shift) var(--ds-easing-enter);
 }
 
-.iso.is-dragging {
-  cursor: grabbing;
+/* ---------- 처음 화면을 그대로 두는 규칙(이 샘플만) ----------
+   공용 화면 틀(css/style.css)의 기본은 세 샘플에서 고친 모양이다. 아래 둘은 이 샘플의 처음 모양을 지킨다.
+   지우면 화면이나 접근성 트리가 바뀌므로 따로 검수한다 */
+
+/* 안내 배너 자리(aria-live)를 스크립트가 돌 때 렌더링하지 않는다. 공용 기본은 화면에서만 숨긴다 */
+.js .banner-region {
+  display: none;
+}
+
+/* 중간·넓은 폭 목록 행을 테두리로 나눈다. 공용 기본은 테두리 없이 옅은 바탕이다 */
+@media (min-width: 600px) {
+  .landmark {
+    border-color: var(--ds-color-border-subtle);
+    background: var(--ds-color-bg-surface);
+  }
+}
+
+@media (min-width: 600px) and (hover: hover) {
+  .landmark:hover {
+    background: var(--ds-color-bg-subtle);
+  }
 }
 
 /* 면 사이에 바다색 실선이 비치지 않게 면과 같은 색으로 테두리를 그린다(굵기는 svg 의 stroke-width 속성) */

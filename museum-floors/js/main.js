@@ -1,6 +1,9 @@
 /*
  * 화면 동작 — 설계서 5절(상태)·6절(상호작용)·6-1절(주소와 뒤로 가기)·7절(문구)
  *
+ * 장면 한살이·배너·진행 문구·시점 버튼·포스터 바꾸기는 공용 뼈대(js/shell/, 저장소의 shared/scene3d/)가 맡는다.
+ * 여기에는 이 화면만의 것 — 층·전시실 고르기와 방문 기록, 보는 방식·편의시설 토글, 빈 영역 계산 — 만 둔다.
+ *
  * 검수용 URL 파라미터(ui-review 가 상태별 화면을 띄울 때 쓴다):
  *   ?floor=2              층 하나를 고른 상태 (1 · 2 · 3 · 4)
  *   ?floor=2&room=pottery 전시실까지 고른 상태. room 만 줘도 그 전시실의 층으로 맞춘다
@@ -15,25 +18,18 @@
  */
 import { BREAKPOINT, POSTER } from './tokens.js';
 import { homeScale, posterPlacement } from './framing.js';
+import {
+  $, $$, root, isShown, remPx, readMotion, readDebug, SHELL_COPY, createAnnouncer, createProgress, createBanner,
+  firstShownControl, createViewControls, createPoster, createLifecycle,
+} from './shell/core.js';
 
-const root = document.documentElement;
 const params = new URLSearchParams(window.location.search);
-const debug = {
-  state: params.get('state'),
-  poster: params.get('poster'),
-  motion: params.get('motion'),
-  quality: ['high', 'low'].includes(params.get('quality')) ? params.get('quality') : undefined,
-  size: ['wide', 'medium', 'narrow'].includes(params.get('size')) ? params.get('size') : 'wide',
-};
-
-const $ = (selector, scope = document) => scope.querySelector(selector);
-const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+const debug = readDebug(params);
 
 const els = {
   scene: $('#scene'),
   labels: $('.scene__labels'),
   poster: $('.scene__poster'),
-  posterImg: $('.scene__poster img'),
   progress: $('.scene__progress'),
   toggles: $('.scene__toggles'),
   picker: $('.scene__floors'),
@@ -41,8 +37,6 @@ const els = {
   motionBtn: $('[data-action="motion"]'),
   viewBtn: $('[data-action="view"]'),
   facilitiesBtn: $('[data-action="facilities"]'),
-  zoomIn: $('[data-action="zoom-in"]'),
-  zoomOut: $('[data-action="zoom-out"]'),
   bannerRegion: $('.banner-region'),
   floorsHead: $('#floors'),
   announcer: $('[data-announcer]'),
@@ -56,38 +50,17 @@ const els = {
   details: $$('[data-detail]'),
 };
 
-const cssVar = (name) => getComputedStyle(root).getPropertyValue(name).trim();
-const ms = (name) => parseFloat(cssVar(name)) || 0;
-/** rem 토큰을 px 로 — 글자 확대를 따라간다 */
-const remPx = (name) => parseFloat(cssVar(name)) * parseFloat(getComputedStyle(root).fontSize);
-const MOTION = {
-  camera: ms('--ds-motion-camera'),
-  cameraStep: ms('--ds-motion-camera-step'),
-  floorShift: ms('--ds-motion-floor-shift'),
-  crossfade: ms('--ds-motion-crossfade'),
-  loadingDelay: ms('--ds-motion-loading-delay'),
-  loadingMin: ms('--ds-motion-loading-min'),
-  loadingSlow: ms('--ds-motion-loading-slow'),
-  contextRestore: ms('--ds-motion-context-restore'),
-  hintHold: ms('--ds-motion-hint-hold'),
-};
+const MOTION = readMotion({ floorShift: '--ds-motion-floor-shift' });
 
 const COPY = {
-  motionStop: '움직임 멈추기',
-  motionStart: '움직임 다시 켜기',
+  ...SHELL_COPY,
   toStacked: '쌓아 보기',
   toExploded: '펼쳐 보기',
   facilitiesHide: '편의시설 숨기기',
   facilitiesShow: '편의시설 보기',
   here: '지금 여기',
   progress: '건물을 그리는 중이에요',
-  slow: '연결이 느려 3D 장면 파일을 받는 데 시간이 걸려요. 목록은 지금 볼 수 있어요.',
-  slowAction: '3D 없이 보기',
   failed: '이 브라우저에서는 3D 장면을 그릴 수 없어요. 목록에서 층과 전시실을 고르면 설명을 볼 수 있어요.',
-  lost: '3D 장면이 멈췄어요. 다시 그리면 이어서 볼 수 있어요.',
-  lostAction: '다시 그리기',
-  closeBanner: '알림 닫기',
-  viewing: (name) => `${name} 보는 중`,
   altExploded:
     '4개 층을 위아래로 띄워 펼친 박물관 3D 장면. 1층 로비와 기념품 가게·어린이 체험실, 2층 옛 생활·도자기 전시실과 영상실, 3층 그림·기획 전시실, 4층 옥상 정원과 카페가 보여요.',
   altStacked: '4개 층을 쌓은 박물관 건물 3D 장면. 바깥벽과 창이 보이고, 지붕 위 4층에 옥상 정원과 카페가 있어요.',
@@ -104,7 +77,6 @@ const floorName = (id) => FLOORS.find((f) => f.id === id)?.name ?? '';
 
 const reducedQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 const wideQuery = window.matchMedia(`(min-width: ${BREAKPOINT.wide}px)`);
-const mediumQuery = window.matchMedia(`(min-width: ${BREAKPOINT.medium}px)`);
 
 /** 주소의 층·전시실을 검사한다. 전시실이 있으면 층은 그 전시실의 층으로 맞춘다(설계서 5절 "잘못된 주소") */
 function readSelection(search) {
@@ -126,45 +98,58 @@ const state = {
   motion: debug.motion !== 'off' && !reducedQuery.matches && !debug.poster,
 };
 
-let scene = null;
-let sceneModule = null;
-let abandoned = false;
-let lostTimer = 0;
-let lostTested = false;
-/** 장면·정보 패널·버튼 묶음 크기가 바뀌면(창 크기·글자 확대) 포스터 자리와 3D 맞춤을 다시 계산한다 */
-const layoutObserver = new ResizeObserver(() => {
-  placePoster();
-  scene?.relayout();
+const announce = createAnnouncer(els.announcer);
+const progress = createProgress(els.progress, { text: COPY.progress, delay: MOTION.loadingDelay, min: MOTION.loadingMin });
+
+/* ---------- 빈 영역 · 포스터 ---------- */
+
+/** 넓은 폭에서 정보 패널이 장면을 가리는 너비(px) */
+function insetLeft() {
+  if (!wideQuery.matches || debug.poster) return 0;
+  return Math.max(0, els.backdrop.getBoundingClientRect().right - els.scene.getBoundingClientRect().left);
+}
+
+/**
+ * 장면에서 버튼이 없는 빈 영역(장면 기준 px) — 설계서 3절 끝.
+ * 정보 패널(넓은 폭), 장면 토글 묶음의 실제 높이, 층 버튼·시점 버튼 묶음의 실제 폭·높이를 뺀다.
+ * 로딩 중에도 버튼 묶음은 자리를 차지한 채 숨어 있어(visibility) 포스터와 3D가 같은 영역을 쓴다.
+ */
+function freeRect() {
+  const s = els.scene.getBoundingClientRect();
+  const gap = remPx('--ds-space-3');
+  const box = (el) => {
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 ? r : null;
+  };
+  const inset = insetLeft();
+  const toggles = box(els.toggles);
+  const picker = box(els.picker);
+  const controls = box(els.controls);
+  return {
+    insetLeft: inset,
+    left: inset ? inset + remPx('--ds-space-6') : gap,
+    top: toggles ? toggles.bottom - s.top + gap : gap,
+    right: picker ? picker.left - s.left - gap : s.width - gap,
+    bottom: controls ? controls.top - s.top - gap : s.height - gap,
+  };
+}
+
+/** 포스터를 3D 첫 화면과 같은 배율·중심에 놓는다(js/framing.js). 포스터 밖은 같은 바탕색이다 */
+const poster = createPoster({
+  scene: els.scene,
+  poster: els.poster,
+  sizes: POSTER,
+  breakpoint: BREAKPOINT,
+  shooting: Boolean(debug.poster),
+  compute() {
+    const r = freeRect();
+    const rect = { cx: (r.left + r.right) / 2, cy: (r.top + r.bottom) / 2, width: Math.max(40, r.right - r.left), height: Math.max(40, r.bottom - r.top) };
+    return posterPlacement(rect, homeScale(rect));
+  },
+  isReady: () => state.mode === 'ready',
+  isReduced: () => state.reduced,
+  crossfade: MOTION.crossfade,
 });
-
-const wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
-const isShown = (el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
-
-function setMode(mode) {
-  state.mode = mode;
-  root.dataset.mode = mode;
-  syncSceneImage();
-  placePoster();
-}
-
-const setAriaHidden = (el, hidden) => {
-  if (hidden) el.setAttribute('aria-hidden', 'true');
-  else el.removeAttribute('aria-hidden');
-};
-
-/** 장면 그림을 접근성 트리에 하나만 둔다 — ready 에서는 캔버스, 그 밖에서는 포스터(바탕 샘플 공통 수정) */
-function syncSceneImage() {
-  const ready = state.mode === 'ready';
-  $$('.scene__canvas', els.scene).forEach((canvas) => setAriaHidden(canvas, !ready));
-  setAriaHidden(els.poster, ready);
-}
-
-/* ---------- 화면낭독기 알림 ---------- */
-
-function announce(text) {
-  els.announcer.textContent = '';
-  if (text) requestAnimationFrame(() => (els.announcer.textContent = text));
-}
 
 /* ---------- 층·전시실 고르기 ---------- */
 
@@ -193,7 +178,7 @@ function renderSelection() {
   if (active?.classList.contains('room') && !isShown(active)) {
     $(`.floor[data-floor="${active.dataset.floor}"]`)?.focus();
   }
-  if (scene && state.mode === 'ready') scene.setSelection(state.floor, state.room);
+  life.readyScene()?.setSelection(state.floor, state.room);
 }
 
 /**
@@ -296,12 +281,12 @@ function selectRoom(id) {
 function goUp() {
   if (state.room) navigate({ floor: state.floor, room: null });
   else if (state.floor) navigate({ floor: null, room: null });
-  else if (scene && state.mode === 'ready') scene.reset();
+  else life.readyScene()?.reset();
 }
 
 function resetView() {
   if (state.floor) navigate({ floor: null, room: null });
-  else if (scene && state.mode === 'ready') scene.reset();
+  else life.readyScene()?.reset();
 }
 
 window.addEventListener('popstate', (event) => {
@@ -319,274 +304,60 @@ window.addEventListener('popstate', (event) => {
 
 function renderMotion() {
   els.motionBtn.textContent = state.motion ? COPY.motionStop : COPY.motionStart;
-  scene?.setMotion(state.motion);
+  life.scene?.setMotion(state.motion);
 }
 
 function renderView(animate) {
   root.dataset.view = state.view;
   els.viewBtn.textContent = state.view === 'stacked' ? COPY.toExploded : COPY.toStacked;
-  if (scene && state.mode === 'ready') scene.setView(state.view, animate);
+  life.readyScene()?.setView(state.view, animate);
 }
 
 function renderFacilities() {
   root.dataset.facilities = state.facilities ? 'on' : 'off';
   els.facilitiesBtn.textContent = state.facilities ? COPY.facilitiesHide : COPY.facilitiesShow;
-  scene?.setFacilities(state.facilities);
+  life.scene?.setFacilities(state.facilities);
 }
 
 /** 보는 방식·편의시설은 기록을 쌓지 않고 지금 주소만 바꾼다 */
 const replaceUrl = () => writeHistory('replaceState', state, historyIndex());
 
-/* ---------- 포스터 ---------- */
+/* ---------- 배너 · 시점 버튼 · 장면 한살이(js/shell/) ---------- */
 
-/** 지금 폭 구간의 포스터 — <picture> 의 source 조건과 같다 */
-function posterSizeNow() {
-  if (wideQuery.matches) return 'wide';
-  return mediumQuery.matches ? 'medium' : 'narrow';
-}
+const banner = createBanner({
+  region: els.bannerRegion,
+  closeLabel: COPY.closeBanner,
+  // 장면 토글 가운데 보이는 첫 버튼으로, 없으면 목록 머리(tabindex="-1")로
+  focusTarget: () => firstShownControl(els.toggles) ?? els.floorsHead,
+  onShow() {
+    // 배너가 들어오면 패널 높이가 줄어든다(넓은 폭) 또는 아래 내용이 밀린다. 고른 곳이 있으면 그 설명이 다시 보이게 굴린다.
+    // 배너는 패널의 스크롤 영역 밖에 있어 함께 굴러가지 않는다
+    if (state.floor) revealDetail(true);
+    syncPanelEdge();
+  },
+  onHide: syncPanelEdge,
+});
 
-/** 넓은 폭에서 정보 패널이 장면을 가리는 너비(px) */
-function insetLeft() {
-  if (!wideQuery.matches || debug.poster) return 0;
-  return Math.max(0, els.backdrop.getBoundingClientRect().right - els.scene.getBoundingClientRect().left);
-}
+const controls = createViewControls({
+  controls: els.controls,
+  announce,
+  hintHold: MOTION.hintHold,
+  readyScene: () => life.readyScene(),
+  onReset: resetView,
+});
 
-/**
- * 장면에서 버튼이 없는 빈 영역(장면 기준 px) — 설계서 3절 끝.
- * 정보 패널(넓은 폭), 장면 토글 묶음의 실제 높이, 층 버튼·시점 버튼 묶음의 실제 폭·높이를 뺀다.
- * 로딩 중에도 버튼 묶음은 자리를 차지한 채 숨어 있어(visibility) 포스터와 3D가 같은 영역을 쓴다.
- */
-function freeRect() {
-  const s = els.scene.getBoundingClientRect();
-  const gap = remPx('--ds-space-3');
-  const box = (el) => {
-    const r = el.getBoundingClientRect();
-    return r.width > 0 && r.height > 0 ? r : null;
-  };
-  const inset = insetLeft();
-  const toggles = box(els.toggles);
-  const picker = box(els.picker);
-  const controls = box(els.controls);
-  return {
-    insetLeft: inset,
-    left: inset ? inset + remPx('--ds-space-6') : gap,
-    top: toggles ? toggles.bottom - s.top + gap : gap,
-    right: picker ? picker.left - s.left - gap : s.width - gap,
-    bottom: controls ? controls.top - s.top - gap : s.height - gap,
-  };
-}
-
-/** 포스터를 3D 첫 화면과 같은 배율·중심에 놓는다(js/framing.js). 포스터 밖은 같은 바탕색이다 */
-function placePoster() {
-  if (debug.poster) return;
-  const width = els.scene.clientWidth;
-  const height = els.scene.clientHeight;
-  if (!width || !height) return;
-  // 캐시된 옛 포스터처럼 원본 크기가 토큰과 다르면 배율이 틀리므로 배치하지 않는다
-  const size = posterSizeNow();
-  const img = els.posterImg;
-  if (img.naturalWidth && img.naturalWidth !== POSTER[size].width) {
-    els.poster.classList.remove('is-placed');
-    return;
-  }
-  const r = freeRect();
-  const rect = { cx: (r.left + r.right) / 2, cy: (r.top + r.bottom) / 2, width: Math.max(40, r.right - r.left), height: Math.max(40, r.bottom - r.top) };
-  const place = posterPlacement(rect, homeScale(rect));
-  els.poster.classList.add('is-placed');
-  Object.entries(place).forEach(([key, value]) => {
-    els.poster.style.setProperty(`--poster-${key}`, `${value.toFixed(1)}px`);
-  });
-}
-
-/* ---------- 시점 버튼 ---------- */
-
-/** 보이는 툴팁이 있으면 닫는다(WCAG 1.4.13 Dismissible). 닫았으면 true */
-function dismissTooltips() {
-  const open = $$('.tooltip', els.controls).some((tip) => getComputedStyle(tip).visibility === 'visible');
-  if (!open) return false;
-  els.controls.classList.add('is-tip-dismissed');
-  $$('.icon-btn.is-tip', els.controls).forEach((button) => button.classList.remove('is-tip'));
-  return true;
-}
-
-function setLimit(button, atLimit) {
-  const tip = $('.tooltip', button);
-  button.setAttribute('aria-disabled', atLimit ? 'true' : 'false');
-  tip.textContent = atLimit ? tip.dataset.limit : button.getAttribute('aria-label');
-  if (atLimit) button.setAttribute('aria-describedby', tip.id);
-  else button.removeAttribute('aria-describedby');
-}
-
-function onZoomLimits({ atMin, atMax }) {
-  setLimit(els.zoomIn, atMin);
-  setLimit(els.zoomOut, atMax);
-}
-
-function onControl(action) {
-  if (!scene || state.mode !== 'ready') return;
-  if (action === 'rotate-left') scene.rotateStep(1);
-  else if (action === 'rotate-right') scene.rotateStep(-1);
-  else if (action === 'zoom-in') scene.zoomStep(1);
-  else if (action === 'zoom-out') scene.zoomStep(-1);
-  else if (action === 'reset') resetView();
-}
-
-/* ---------- 배너 · 진행 문구 ---------- */
-
-function makeButton(className, label) {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = className;
-  button.textContent = label;
-  return button;
-}
-
-/**
- * 배너를 지우거나 바꾸기 직전에 부른다(바탕 샘플 공통 수정). 누른 버튼이 배너와 함께 사라지면 포커스가 body 로 떨어진다.
- * 포커스가 배너 안에 있었으면 장면 토글 가운데 보이는 첫 버튼으로, 없으면 목록 머리(tabindex="-1")로 옮긴다.
- */
-function moveFocusAfterBanner() {
-  if (!els.bannerRegion.contains(document.activeElement)) return;
-  const toggle = $$('button', els.toggles).find(isShown);
-  (toggle ?? els.floorsHead).focus();
-}
-
-function hideBanner() {
-  moveFocusAfterBanner();
-  els.bannerRegion.replaceChildren();
-  syncPanelEdge();
-}
-
-function showBanner({ text, action, onAction }) {
-  const banner = document.createElement('div');
-  banner.className = 'banner';
-  const body = document.createElement('div');
-  body.className = 'banner__body';
-  const message = document.createElement('p');
-  message.className = 'banner__text';
-  message.textContent = text;
-  body.append(message);
-  if (action) {
-    const actionButton = makeButton('btn', action);
-    actionButton.addEventListener('click', onAction);
-    body.append(actionButton);
-  }
-  const close = makeButton('icon-btn icon-btn--plain banner__close', '');
-  close.setAttribute('aria-label', COPY.closeBanner);
-  close.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
-  close.addEventListener('click', hideBanner);
-  banner.append(body, close);
-  moveFocusAfterBanner();
-  els.bannerRegion.replaceChildren(banner);
-  // 배너가 들어오면 패널 높이가 줄어든다(넓은 폭) 또는 아래 내용이 밀린다. 고른 곳이 있으면 그 설명이 다시 보이게 굴린다.
-  // 배너는 패널의 스크롤 영역 밖에 있어 함께 굴러가지 않는다
-  if (state.floor) revealDetail(true);
-  syncPanelEdge();
-}
-
-let progressTimer = 0;
-let progressShownAt = 0;
-
-function scheduleProgress() {
-  clearTimeout(progressTimer);
-  progressTimer = setTimeout(() => {
-    els.progress.textContent = COPY.progress;
-    progressShownAt = performance.now();
-  }, MOTION.loadingDelay);
-}
-
-async function clearProgress() {
-  clearTimeout(progressTimer);
-  if (progressShownAt) {
-    const remaining = MOTION.loadingMin - (performance.now() - progressShownAt);
-    if (remaining > 0) await wait(remaining);
-  }
-  els.progress.textContent = '';
-  progressShownAt = 0;
-}
-
-/* ---------- 포스터와 장면 교체 ---------- */
-
-function showPosterNow() {
-  els.poster.classList.remove('is-fading');
-  els.poster.hidden = false;
-}
-
-function revealScene() {
-  els.poster.classList.add('is-fading');
-  setTimeout(() => {
-    if (state.mode === 'ready') els.poster.hidden = true;
-  }, state.reduced ? 0 : MOTION.crossfade);
-}
-
-/* ---------- 3D 없음 · 장면 멈춤 ---------- */
-
-function enterFallback(message) {
-  setMode('fallback');
-  clearProgress();
-  showPosterNow();
-  if (message) showBanner({ text: message });
-  else hideBanner();
-}
-
-function skip3D() {
-  abandoned = true;
-  enterFallback(null);
-}
-
-function onSlow() {
-  if (state.mode !== 'loading') return;
-  clearProgress();
-  showBanner({ text: COPY.slow, action: COPY.slowAction, onAction: skip3D });
-}
-
-function onContextLost() {
-  setMode('lost');
-  showPosterNow();
-  clearTimeout(lostTimer);
-  lostTimer = setTimeout(() => {
-    showBanner({ text: COPY.lost, action: COPY.lostAction, onAction: redraw });
-  }, MOTION.contextRestore);
-}
-
-function onContextRestored() {
-  clearTimeout(lostTimer);
-  hideBanner();
-  setMode('ready');
-  revealScene();
-}
-
-async function redraw() {
-  hideBanner();
-  clearTimeout(lostTimer);
-  scene?.dispose();
-  scene = null;
-  setMode('loading');
-  scheduleProgress();
-  try {
-    await startScene();
-  } catch (error) {
-    console.error(error);
-    enterFallback(COPY.failed);
-  }
-}
-
-/* ---------- 장면 시작 ---------- */
-
-function supportsWebGL2() {
-  try {
-    const gl = document.createElement('canvas').getContext('webgl2');
-    gl?.getExtension('WEBGL_lose_context')?.loseContext();
-    return Boolean(gl);
-  } catch {
-    return false;
-  }
-}
-
-async function startScene() {
-  sceneModule = sceneModule || (await import('./scene/scene.js'));
-  if (abandoned) return;
-  const created = await sceneModule.createScene({
+const life = createLifecycle({
+  name: 'museumFloors',
+  state,
+  debug,
+  sceneEl: els.scene,
+  motion: MOTION,
+  copy: COPY,
+  banner,
+  progress,
+  poster,
+  loadScene: () => import('./scene/scene.js'),
+  sceneOptions: () => ({
     container: els.scene,
     labelLayer: els.labels,
     floors: FLOORS,
@@ -603,130 +374,86 @@ async function startScene() {
     avoid: [els.toggles, els.picker, els.controls],
     onSelectFloor: selectFloor,
     onSelectRoom: selectRoom,
-    onZoomLimits,
-    onContextLost,
-    onContextRestored,
-  });
-  if (abandoned) {
-    created.dispose();
-    return;
-  }
-  scene = created;
-  window.museumFloors = { scene, state };
-  await clearProgress();
-  hideBanner();
-  setMode('ready');
+    onZoomLimits: controls.onZoomLimits,
+  }),
   // 첫 프레임은 늘 처음 시점(펼쳐 보기, 고르기 전) — 포스터와 같다. 그 뒤에 주소의 보는 방식·고른 곳으로 옮겨 간다
-  scene.setView(state.view, true);
-  scene.setSelection(state.floor, state.room, true);
-  revealScene();
-  if (debug.poster) root.dataset.posterReady = 'true';
-  if (debug.state === 'lost' && !lostTested) {
-    lostTested = true;
-    setTimeout(() => scene?.loseContextForTest(), 800);
-  }
-}
+  onReady(scene) {
+    scene.setView(state.view, true);
+    scene.setSelection(state.floor, state.room, true);
+  },
+  // 모드에 따라 버튼 묶음이 숨거나 나타나면 빈 영역이 바뀐다
+  onMode: () => poster.place(),
+});
 
-async function boot() {
-  // index.html 의 안전장치가 "스크립트가 시작했다"를 알 수 있게 표시한다.
-  window.museumFloorsBooted = true;
-  root.classList.add('js');
-  setMode('loading');
-  if (debug.poster) root.classList.add('is-poster');
-  // 들어온 주소를 이 화면의 첫 기록으로 삼는다(주소에 섞인 잘못된 값은 고친다)
-  writeHistory('replaceState', state, 0);
-  renderSelection();
-  // 주소로 층·전시실을 골라 들어왔으면 넓은 폭 패널에서 그 설명이 보이게 한다
-  if (state.floor) revealDetail(true);
+/** 장면·정보 패널·버튼 묶음 크기가 바뀌면(창 크기·글자 확대) 포스터 자리와 3D 맞춤을 다시 계산한다 */
+const layoutObserver = new ResizeObserver(() => {
+  poster.place();
+  life.scene?.relayout();
+});
+
+/* ---------- 부팅 ---------- */
+
+life.begin();
+// 들어온 주소를 이 화면의 첫 기록으로 삼는다(주소에 섞인 잘못된 값은 고친다)
+writeHistory('replaceState', state, 0);
+renderSelection();
+// 주소로 층·전시실을 골라 들어왔으면 넓은 폭 패널에서 그 설명이 보이게 한다
+if (state.floor) revealDetail(true);
+renderMotion();
+renderView(false);
+renderFacilities();
+poster.place();
+poster.img.addEventListener('load', poster.place);
+els.panel.addEventListener('scroll', syncPanelEdge, { passive: true });
+wideQuery.addEventListener('change', syncPanelEdge);
+[els.scene, els.backdrop, els.toggles, els.picker, els.controls].forEach((el) => layoutObserver.observe(el));
+life.watchCanvas();
+
+els.floorButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const id = button.dataset.floor;
+    // 펼친 층을 다시 누르면 접는다(전시실을 골랐으면 층으로 돌아간다)
+    if (state.floor === id) navigate(state.room ? { floor: id, room: null } : { floor: null, room: null });
+    else selectFloor(id);
+  });
+});
+els.roomButtons.forEach((button) => button.addEventListener('click', () => selectRoom(button.dataset.room)));
+els.pickerButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const id = button.dataset.floor;
+    if (state.floor === id && state.room) navigate({ floor: id, room: null });
+    else selectFloor(id);
+  });
+});
+controls.bindClick();
+els.motionBtn.addEventListener('click', () => {
+  state.motion = !state.motion;
   renderMotion();
-  renderView(false);
+});
+els.viewBtn.addEventListener('click', () => {
+  state.view = state.view === 'stacked' ? 'exploded' : 'stacked';
+  renderView(true);
+  replaceUrl();
+});
+els.facilitiesBtn.addEventListener('click', () => {
+  state.facilities = !state.facilities;
   renderFacilities();
-  placePoster();
-  els.posterImg.addEventListener('load', placePoster);
-  els.panel.addEventListener('scroll', syncPanelEdge, { passive: true });
-  wideQuery.addEventListener('change', syncPanelEdge);
-  [els.scene, els.backdrop, els.toggles, els.picker, els.controls].forEach((el) => layoutObserver.observe(el));
-  new MutationObserver(syncSceneImage).observe(els.scene, { childList: true });
-
-  els.floorButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const id = button.dataset.floor;
-      // 펼친 층을 다시 누르면 접는다(전시실을 골랐으면 층으로 돌아간다)
-      if (state.floor === id) navigate(state.room ? { floor: id, room: null } : { floor: null, room: null });
-      else selectFloor(id);
-    });
-  });
-  els.roomButtons.forEach((button) => button.addEventListener('click', () => selectRoom(button.dataset.room)));
-  els.pickerButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const id = button.dataset.floor;
-      if (state.floor === id && state.room) navigate({ floor: id, room: null });
-      else selectFloor(id);
-    });
-  });
-  els.controls.addEventListener('click', (event) => {
-    if (event.target.closest('.tooltip')) return;
-    const button = event.target.closest('[data-action]');
-    if (!button) return;
-    if (button.getAttribute('aria-disabled') === 'true') {
-      // 터치에는 hover 툴팁이 없으므로, 한계에서 누르면 이유를 잠깐 보이고 알린다
-      const tip = $('.tooltip', button);
-      button.classList.add('is-tip');
-      announce(tip.textContent);
-      clearTimeout(button.tipTimer);
-      button.tipTimer = setTimeout(() => button.classList.remove('is-tip'), MOTION.hintHold);
-      return;
-    }
-    onControl(button.dataset.action);
-  });
-  els.motionBtn.addEventListener('click', () => {
-    state.motion = !state.motion;
+  replaceUrl();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape' || event.defaultPrevented) return;
+  // 보이는 툴팁이 있으면 툴팁만 닫는다. 없을 때만 한 단계 위로 간다
+  if (controls.dismissTooltips()) return;
+  goUp();
+});
+controls.bindDismissReset();
+reducedQuery.addEventListener('change', () => {
+  state.reduced = reducedQuery.matches;
+  life.scene?.setReduced(state.reduced);
+  if (state.reduced) {
+    state.motion = false;
     renderMotion();
-  });
-  els.viewBtn.addEventListener('click', () => {
-    state.view = state.view === 'stacked' ? 'exploded' : 'stacked';
-    renderView(true);
-    replaceUrl();
-  });
-  els.facilitiesBtn.addEventListener('click', () => {
-    state.facilities = !state.facilities;
-    renderFacilities();
-    replaceUrl();
-  });
-  document.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape' || event.defaultPrevented) return;
-    // 보이는 툴팁이 있으면 툴팁만 닫는다. 없을 때만 한 단계 위로 간다
-    if (dismissTooltips()) return;
-    goUp();
-  });
-  els.controls.addEventListener('pointerleave', () => els.controls.classList.remove('is-tip-dismissed'));
-  els.controls.addEventListener('focusin', () => els.controls.classList.remove('is-tip-dismissed'));
-  reducedQuery.addEventListener('change', () => {
-    state.reduced = reducedQuery.matches;
-    scene?.setReduced(state.reduced);
-    if (state.reduced) {
-      state.motion = false;
-      renderMotion();
-    }
-  });
-
-  if (debug.state === 'nowebgl' || !supportsWebGL2()) {
-    enterFallback(COPY.failed);
-    return;
   }
+});
 
-  scheduleProgress();
-  const slowTimer = setTimeout(onSlow, MOTION.loadingSlow);
-  try {
-    if (debug.state === 'slow') await wait(MOTION.loadingSlow + 30000);
-    if (abandoned) return;
-    await startScene();
-  } catch (error) {
-    console.error(error);
-    if (!abandoned) enterFallback(COPY.failed);
-  } finally {
-    clearTimeout(slowTimer);
-  }
-}
-
-boot();
+life.start();

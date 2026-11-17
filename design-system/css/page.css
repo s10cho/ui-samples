@@ -1,0 +1,305 @@
+/*
+ * 부품 모음 페이지 전용 꾸밈(dsx-). 부품은 kit(css/components.css)에서 오고, 여기에는 견본을 늘어놓는 틀만 둔다.
+ * 값은 css/tokens.css 변수만 쓴다.
+ */
+
+code {
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-text-body-sm-size);
+  overflow-wrap: anywhere;
+}
+
+/* 묶음 사이를 묶음 안 간격보다 넓게(SPC-04) */
+.ds-page > .ds-section + .ds-section {
+  padding-block-start: var(--ds-space-6);
+  border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+}
+
+.ds-section {
+  scroll-margin-top: calc(var(--ds-size-topbar) + var(--ds-space-4));
+}
+
+.dsx-sub {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.dsx-note {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+}
+
+/* 묶음마다 클래스·속성 이름 한 줄 */
+.dsx-api {
+  max-width: var(--ds-size-content-max);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-reading-leading);
+}
+
+.dsx-api code {
+  color: var(--ds-color-fg-default);
+}
+
+.dsx-state {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+}
+
+.dsx-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ds-size-card-min)), 1fr));
+  gap: var(--ds-space-6);
+  align-items: start;
+}
+
+.dsx-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+.dsx-cell > .ds-field {
+  width: 100%;
+}
+
+.dsx-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-3);
+}
+
+.dsx-row--end {
+  align-items: flex-end;
+}
+
+.dsx-row--end > .ds-field {
+  flex: 1 1 var(--ds-size-card-min);
+}
+
+.dsx-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+/* 상태를 멈춰 늘어놓은 띠 */
+.dsx-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--ds-space-3) var(--ds-space-5);
+}
+
+.dsx-strip__item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-1);
+}
+
+/* 툴팁·메뉴의 모습만 보여 주는 견본 — 화면 위에 뜨지 않고 제자리에 놓인다 */
+.ds-tooltip.dsx-static,
+.ds-menu.dsx-static {
+  position: static;
+  z-index: auto;
+}
+
+.ds-menu.dsx-static {
+  display: inline-flex;
+  margin-block-start: var(--ds-space-2);
+}
+
+/* 상태 비교 표 */
+.dsx-matrix tbody th {
+  font-weight: var(--ds-text-label-strong-weight);
+  white-space: nowrap;
+}
+
+.dsx-matrix td {
+  white-space: nowrap;
+}
+
+.dsx-matrix td:has(.ds-text-body-reading) {
+  white-space: normal;
+  min-width: var(--ds-size-card-min);
+}
+
+/* 색 견본 */
+.dsx-swatch-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+}
+
+.dsx-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--ds-size-card-min) - var(--ds-space-8))), 1fr));
+  gap: var(--ds-space-3) var(--ds-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dsx-swatch {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--ds-space-3);
+}
+
+.dsx-swatch__chip {
+  grid-row: span 2;
+  width: var(--ds-space-10);
+  height: var(--ds-space-10);
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-radius-sm);
+  background: var(--c);
+}
+
+.dsx-swatch__value {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-text-body-sm-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 간격 막대 */
+.dsx-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dsx-bars li {
+  display: grid;
+  grid-template-columns: var(--ds-size-dl-key) minmax(0, 1fr) var(--ds-space-8);
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.dsx-bar {
+  width: var(--w);
+  height: var(--ds-space-3);
+  border-radius: var(--ds-radius-xs);
+  background: var(--ds-color-fill-accent);
+}
+
+/* 모서리·그림자 견본 */
+.dsx-shapes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dsx-shapes li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+}
+
+.dsx-shape {
+  width: var(--ds-space-16);
+  height: var(--ds-space-12);
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--r, var(--ds-container-radius));
+  background: var(--ds-color-surface-subtle);
+}
+
+.dsx-shape--raised,
+.dsx-shape--overlay {
+  border-color: var(--ds-color-line-subtle);
+  background: var(--ds-color-surface-raised);
+}
+
+.dsx-shape--raised {
+  box-shadow: var(--ds-shadow-raised);
+}
+
+.dsx-shape--overlay {
+  box-shadow: var(--ds-shadow-overlay);
+}
+
+/* 아이콘 격자 */
+.dsx-icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ds-space-16) + var(--ds-space-10)), 1fr));
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dsx-icons li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-3) var(--ds-space-1);
+  border-radius: var(--ds-container-radius);
+  background: var(--ds-color-surface-canvas);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+  text-align: center;
+}
+
+.dsx-icons .ds-icon {
+  color: var(--ds-color-fg-default);
+}
+
+/* 눌러 보기 폼 */
+.dsx-try {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border: var(--ds-size-hairline) solid var(--ds-color-line-default);
+  border-radius: var(--ds-container-radius);
+}
+
+.dsx-toolbar-label {
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-body-sm-size);
+  line-height: var(--ds-control-height-sm);
+}
+
+.dsx-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.dsx-skeleton-lines {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+}
+
+.ds-card > .ds-skeleton + .ds-skeleton {
+  margin-block-start: calc(-1 * var(--ds-space-1));
+}
+
+/* 아주 좁은 폭 — 화면 밝기 고르기는 아이콘만(이름은 툴팁과 aria-label 로) */
+@media (max-width: 479px) {
+  .dsx-theme-text {
+    display: none;
+  }
+}

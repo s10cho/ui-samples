@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>계정 — 설정</title>
+  <meta name="description" content="계정·알림·보안·팀 설정을 탭으로 나눈 업무 화면 샘플이에요.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="data:,">
+  <script>
+    (function () {
+      var root = document.documentElement;
+      // 저장된 화면 밝기를 그리기 전에 적용한다. 저장값이 없으면 밝게 시작한다.
+      try {
+        var mode = new URLSearchParams(location.search).get('theme') || localStorage.getItem('ds-theme') || 'light';
+        if (mode === 'system') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
+      } catch (e) { /* 저장소를 못 읽으면 밝게 */ }
+      // 파일로 열면(file://) 브라우저가 웹 글꼴을 막는다. 그때는 시스템 한글 글꼴로 그린다.
+      if (location.protocol !== 'file:') {
+        [['preload', 'vendor/pretendard/PretendardVariable.page.woff2'], ['stylesheet', 'vendor/pretendard/pretendard-page-subset.css']].forEach(function (item) {
+          var link = document.createElement('link');
+          link.rel = item[0];
+          link.href = item[1];
+          if (item[0] === 'preload') { link.as = 'font'; link.type = 'font/woff2'; link.crossOrigin = 'anonymous'; }
+          document.head.appendChild(link);
+        });
+      }
+    })();
+  </script>
+  <noscript>
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+    <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  </noscript>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/page.css">
+  <script src="js/ds.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/page.js" defer></script>
+</head>
+<body>
+  <a class="ds-skip-link" href="#main">본문으로 건너뛰기</a>
+  <div id="ds-live" class="ds-live" role="status"></div>
+  <div id="ds-live-alert" class="ds-live" role="alert"></div>
+
+  <div class="ds-app" id="app">
+    <header class="ds-app__top ds-topbar">
+      <button class="ds-btn ds-btn--ghost ds-btn--icon ds-topbar__menu" type="button" data-ds-nav-toggle aria-controls="nav" aria-expanded="false" aria-label="메뉴 열기">
+        <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-menu"></use></svg>
+      </button>
+      <a class="ds-topbar__brand" href="../index.html">UI 샘플</a>
+      <span class="ds-topbar__spacer"></span>
+      <div class="ds-segmented" role="radiogroup" aria-label="화면 밝기" data-ds-theme-control>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="true" data-value="light" aria-label="밝게" data-ds-tip="밝게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-sun"></use></svg><span class="settings-theme-text">밝게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="dark" aria-label="어둡게" data-ds-tip="어둡게">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-moon"></use></svg><span class="settings-theme-text">어둡게</span>
+        </button>
+        <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="system" aria-label="시스템 설정 따르기" data-ds-tip="시스템 설정 따르기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-monitor"></use></svg><span class="settings-theme-text">시스템</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="ds-app__nav ds-sidenav" id="nav" aria-label="업무 화면">
+      <div class="ds-sidenav__close">
+        <button class="ds-btn ds-btn--ghost ds-btn--icon" type="button" data-ds-nav-close aria-label="메뉴 닫기">
+          <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg>
+        </button>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-work">업무</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-work">
+          <li><a class="ds-nav__link" href="../support-inbox/index.html">상담 인박스</a></li>
+          <li><a class="ds-nav__link" href="../order-table/index.html">주문 목록</a></li>
+          <li><a class="ds-nav__link" href="../customer-edit/index.html">고객 상세와 편집</a></li>
+          <li><a class="ds-nav__link" href="../ops-dashboard/index.html">운영 대시보드</a></li>
+          <li><a class="ds-nav__link" href="../booking-flow/index.html">예약 흐름</a></li>
+          <li><a class="ds-nav__link" href="index.html" aria-current="page">설정</a></li>
+        </ul>
+      </div>
+      <div class="ds-nav__group">
+        <p class="ds-nav__heading" id="nav-h-repo">이 저장소</p>
+        <ul class="ds-nav__list" aria-labelledby="nav-h-repo">
+          <li><a class="ds-nav__link" href="../index.html">샘플 목록</a></li>
+          <li><a class="ds-nav__link" href="../design-system/index.html">부품 모음</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="ds-app__main" id="main" tabindex="-1">
+      <div class="ds-page">
+        <header class="ds-page__head">
+          <div class="ds-page__titles">
+            <h1 class="ds-page__title">설정</h1>
+            <p class="ds-page__desc" id="page-desc">내 계정과 알림, 보안, 팀 설정을 바꿔요.</p>
+          </div>
+        </header>
+
+        <div class="ds-banner-slot" id="banner-slot"></div>
+
+        <div class="settings-body" id="settings-body">
+          <div class="ds-tabs" role="tablist" aria-label="설정 묶음" id="settings-tabs" data-url-key="tab">
+            <button class="ds-tab" type="button" role="tab" id="tab-account" aria-controls="tp-account" aria-selected="true" data-value="account">계정<span class="settings-tab-dot" aria-hidden="true" hidden></span><span class="ds-sr-only" data-dirty-sr hidden>(저장 안 한 변경 있음)</span></button>
+            <button class="ds-tab" type="button" role="tab" id="tab-notifications" aria-controls="tp-notifications" aria-selected="false" data-value="notifications">알림<span class="settings-tab-dot" aria-hidden="true" hidden></span><span class="ds-sr-only" data-dirty-sr hidden>(저장 안 한 변경 있음)</span></button>
+            <button class="ds-tab" type="button" role="tab" id="tab-security" aria-controls="tp-security" aria-selected="false" data-value="security">보안</button>
+            <button class="ds-tab" type="button" role="tab" id="tab-team" aria-controls="tp-team" aria-selected="false" data-value="team">팀</button>
+          </div>
+
+          <!-- 계정 -->
+          <div class="ds-tabpanel settings-panel" role="tabpanel" id="tp-account" aria-labelledby="tab-account">
+            <div class="settings-panel__body">
+              <section class="ds-section" aria-labelledby="h-profile">
+                <div class="ds-section__head"><h2 class="ds-section__title" id="h-profile">기본 정보</h2></div>
+                <p class="ds-section__desc">다른 구성원에게 보이는 이름과 연락받을 주소예요.</p>
+                <form class="ds-form settings-form" id="form-account" data-form="account" novalidate>
+                  <div class="ds-field">
+                    <label class="ds-field__label" for="acc-name">이름<span class="ds-field__req" aria-hidden="true">필수</span></label>
+                    <input class="ds-input" id="acc-name" name="name" autocomplete="name" aria-required="true" aria-describedby="acc-name-error">
+                    <p class="ds-field__error" id="acc-name-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                  </div>
+                  <div class="ds-field">
+                    <label class="ds-field__label" for="acc-email">이메일<span class="ds-field__req" aria-hidden="true">필수</span></label>
+                    <input class="ds-input" id="acc-email" name="email" type="email" autocomplete="email" spellcheck="false" aria-required="true" aria-describedby="acc-email-hint acc-email-error">
+                    <p class="ds-field__hint" id="acc-email-hint">바꾸면 새 주소로 확인 메일을 보내요.</p>
+                    <p class="ds-field__error" id="acc-email-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                  </div>
+                  <div class="ds-field">
+                    <label class="ds-field__label" for="acc-lang">언어</label>
+                    <span class="ds-select"><select id="acc-lang" name="lang" aria-describedby="acc-lang-hint">
+                      <option value="ko">한국어</option>
+                      <option value="en" lang="en">English</option>
+                    </select></span>
+                    <p class="ds-field__hint" id="acc-lang-hint">화면 언어는 다음 로그인부터 바뀌어요.</p>
+                  </div>
+                  <div class="ds-field">
+                    <label class="ds-field__label" for="acc-tz">시간대</label>
+                    <span class="ds-select"><select id="acc-tz" name="tz" aria-describedby="acc-tz-hint"></select></span>
+                    <p class="ds-field__hint" id="acc-tz-hint">알림과 로그인 기록의 시각을 이 시간대로 보여 줘요.</p>
+                  </div>
+                  <div class="ds-form-actions settings-actions">
+                    <button class="ds-btn ds-btn--primary" type="submit" data-save data-busy-label="저장 중…">계정 정보 저장</button>
+                    <button class="ds-btn ds-btn--ghost" type="button" data-reset hidden>변경 되돌리기</button>
+                    <p class="settings-status" data-status></p>
+                  </div>
+                </form>
+              </section>
+            </div>
+          </div>
+
+          <!-- 알림 -->
+          <div class="ds-tabpanel settings-panel" role="tabpanel" id="tp-notifications" aria-labelledby="tab-notifications" hidden>
+            <div class="settings-panel__body">
+              <section class="ds-section" aria-labelledby="h-channels">
+                <div class="ds-section__head"><h2 class="ds-section__title" id="h-channels">알림 받을 곳</h2></div>
+                <p class="ds-section__desc">스위치를 누르면 바로 적용돼요.</p>
+                <div class="ds-table-wrap" role="region" aria-label="알림 받을 곳 표" tabindex="0">
+                  <table class="ds-table ds-table--stack settings-table settings-matrix" id="notify-table">
+                    <caption class="ds-sr-only">알림 종류별로 받을 곳</caption>
+                    <thead>
+                      <tr><th scope="col">알림</th><th scope="col">메일</th><th scope="col">앱</th><th scope="col">문자</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row" class="ds-table__primary">새 상담 배정<span class="ds-table__sub">나에게 상담이 배정될 때</span></th>
+                        <td data-label="메일"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="assign.mail" aria-label="새 상담 배정 메일 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                        <td data-label="앱"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="assign.app" aria-label="새 상담 배정 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                        <td data-label="문자"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="assign.sms" aria-label="새 상담 배정 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="ds-table__primary">나를 언급한 메모<span class="ds-table__sub">누가 메모에서 나를 부를 때</span></th>
+                        <td data-label="메일"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="mention.mail" aria-label="나를 언급한 메모 메일 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                        <td data-label="앱"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="mention.app" aria-label="나를 언급한 메모 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                        <td data-label="문자"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="mention.sms" aria-label="나를 언급한 메모 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="ds-table__primary">매일 아침 요약<span class="ds-table__sub">오전 9시에 어제 상담을 모아서</span></th>
+                        <td data-label="메일"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="digest.mail" aria-label="매일 아침 요약 메일 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                        <td data-label="앱"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="digest.app" aria-label="매일 아침 요약 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                        <td data-label="문자"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="digest.sms" aria-label="매일 아침 요약 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="ds-table__primary">보안 알림<span class="ds-table__sub">새 기기 로그인, 비밀번호 변경</span></th>
+                        <td data-label="메일"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="security.mail" aria-label="보안 알림 메일 알림" aria-describedby="sec-mail-note" disabled><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-switch-note" id="sec-mail-note">늘 받음</span></label></td>
+                        <td data-label="앱"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="security.app" aria-label="보안 알림 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                        <td data-label="문자"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="security.sms" aria-label="보안 알림 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="ds-section" aria-labelledby="h-dnd">
+                <div class="ds-section__head"><h2 class="ds-section__title" id="h-dnd">방해 금지 시간</h2></div>
+                <p class="ds-section__desc">이 시간에는 앱과 문자로 알리지 않아요. 보안 알림은 시간과 상관없이 보내요.</p>
+                <form class="ds-form settings-form" id="form-dnd" data-form="dnd" novalidate>
+                  <label class="ds-check"><input type="checkbox" id="dnd-on" name="enabled"><span>방해 금지 시간 쓰기</span></label>
+                  <div class="settings-time-row">
+                    <div class="ds-field">
+                      <label class="ds-field__label" for="dnd-start">시작</label>
+                      <span class="ds-select"><select id="dnd-start" name="start" data-time></select></span>
+                    </div>
+                    <div class="ds-field">
+                      <label class="ds-field__label" for="dnd-end">끝</label>
+                      <span class="ds-select"><select id="dnd-end" name="end" data-time aria-describedby="dnd-end-error"></select></span>
+                      <p class="ds-field__error" id="dnd-end-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+                    </div>
+                  </div>
+                  <label class="ds-check"><input type="checkbox" id="dnd-weekend" name="weekend"><span>주말에는 하루 종일</span></label>
+                  <div class="ds-form-actions settings-actions">
+                    <button class="ds-btn ds-btn--primary" type="submit" data-save data-busy-label="저장 중…">방해 금지 시간 저장</button>
+                    <button class="ds-btn ds-btn--ghost" type="button" data-reset hidden>변경 되돌리기</button>
+                    <p class="settings-status" data-status></p>
+                  </div>
+                </form>
+              </section>
+            </div>
+          </div>
+
+          <!-- 보안 -->
+          <div class="ds-tabpanel settings-panel" role="tabpanel" id="tp-security" aria-labelledby="tab-security" hidden>
+            <div class="settings-panel__body">
+              <section class="ds-section" aria-labelledby="h-tfa">
+                <div class="ds-section__head">
+                  <div class="settings-title-row"><h2 class="ds-section__title" id="h-tfa">2단계 인증</h2><span class="ds-badge" id="tfa-badge">꺼짐</span></div>
+                </div>
+                <p class="ds-section__desc">로그인할 때 비밀번호와 함께 인증 앱의 숫자를 한 번 더 확인해요.</p>
+                <p class="settings-meta" id="tfa-meta" hidden></p>
+                <div class="settings-row"><button class="ds-btn ds-btn--primary" type="button" id="btn-tfa">2단계 인증 켜기…</button></div>
+              </section>
+
+              <section class="ds-section" aria-labelledby="h-logins">
+                <div class="ds-section__head"><h2 class="ds-section__title" id="h-logins">로그인 기록</h2></div>
+                <p class="ds-section__desc">최근 로그인 8번이에요. 모르는 기기가 있으면 다른 기기에서 모두 로그아웃해 주세요.</p>
+                <div class="ds-toolbar">
+                  <p class="settings-meta" id="session-count"></p>
+                  <span class="ds-toolbar__spacer"></span>
+                  <button class="ds-btn" type="button" id="btn-signout" data-ds-dialog="dlg-signout">다른 기기에서 모두 로그아웃…</button>
+                </div>
+                <div class="ds-table-wrap" role="region" aria-label="로그인 기록 표" tabindex="0">
+                  <table class="ds-table ds-table--stack settings-table" id="login-table">
+                    <caption class="ds-sr-only">최근 로그인 기록</caption>
+                    <thead>
+                      <tr><th scope="col">시각</th><th scope="col">기기</th><th scope="col">위치</th><th scope="col">결과</th><th scope="col">상태</th></tr>
+                    </thead>
+                    <tbody id="login-body"></tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- 팀 -->
+          <div class="ds-tabpanel settings-panel" role="tabpanel" id="tp-team" aria-labelledby="tab-team" hidden>
+            <div class="settings-panel__body">
+              <div class="ds-banner" id="team-notice" hidden>
+                <svg class="ds-icon ds-banner__icon" aria-hidden="true"><use href="#ds-i-lock"></use></svg>
+                <div class="ds-banner__body">
+                  <p class="ds-banner__title">팀 설정은 보기만 할 수 있어요</p>
+                  <p class="ds-banner__text" id="team-notice-text"></p>
+                </div>
+              </div>
+
+              <div class="settings-team" id="team-content">
+                <section class="ds-section" aria-labelledby="h-members">
+                  <div class="ds-section__head">
+                    <h2 class="ds-section__title" id="h-members" tabindex="-1">구성원 <span id="member-count">0</span>명</h2>
+                    <button class="ds-btn ds-btn--primary" type="button" id="btn-invite" data-ds-dialog="dlg-invite"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-plus"></use></svg>구성원 초대</button>
+                  </div>
+                  <p class="ds-section__desc" id="roles-desc">관리자는 구성원과 팀 설정을, 편집자는 상담과 보고서를 바꿀 수 있어요. 보기만은 읽기만 해요.<span id="roles-apply"> 역할을 고르면 바로 적용돼요.</span></p>
+                  <div class="ds-table-wrap" role="region" aria-label="구성원 표" tabindex="0">
+                    <table class="ds-table ds-table--stack settings-table" id="member-table">
+                      <caption class="ds-sr-only">팀 구성원</caption>
+                      <thead>
+                        <tr><th scope="col">구성원</th><th scope="col">역할</th><th scope="col">마지막 접속</th></tr>
+                      </thead>
+                      <tbody id="member-body"></tbody>
+                    </table>
+                  </div>
+                </section>
+
+                <section class="ds-section" aria-labelledby="h-danger" id="danger-zone">
+                  <div class="ds-section__head"><h2 class="ds-section__title" id="h-danger">위험 구역</h2></div>
+                  <div class="ds-card settings-danger">
+                    <div class="settings-danger__row">
+                      <div class="settings-danger__text">
+                        <h3 class="ds-card__title">팀 삭제</h3>
+                        <p>팀과 구성원 연결, 상담 기록을 한꺼번에 지워요.</p>
+                      </div>
+                      <button class="ds-btn ds-btn--danger" type="button" id="btn-delete" data-ds-dialog="dlg-delete">팀 삭제…</button>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div class="ds-empty" id="team-empty" hidden>
+                <svg class="ds-icon ds-empty__icon" aria-hidden="true"><use href="#ds-i-users"></use></svg>
+                <h2 class="ds-empty__title" id="team-empty-title" tabindex="-1">속한 팀이 없어요</h2>
+                <p class="ds-empty__text">팀을 만들면 구성원을 초대하고 역할을 나눌 수 있어요.</p>
+                <div class="ds-empty__actions"><button class="ds-btn ds-btn--primary" type="button" id="btn-new-team"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-plus"></use></svg>새 팀 만들기</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="settings-footnote">이 화면의 이름·이메일·기록은 모두 가상의 샘플 데이터예요.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- 저장 안 한 변경 -->
+  <dialog class="ds-dialog ds-dialog--sm" id="dlg-leave" aria-labelledby="dlg-leave-title" aria-describedby="dlg-leave-desc">
+    <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-leave-title">저장하지 않은 변경이 있어요</h2></div>
+    <div class="ds-dialog__body"><p id="dlg-leave-desc"></p></div>
+    <div class="ds-dialog__foot">
+      <button class="ds-btn" type="button" data-ds-close data-ds-initial-focus>닫기</button>
+      <button class="ds-btn" type="button" data-ds-close="discard" id="leave-discard">변경 버리고 이동</button>
+      <button class="ds-btn ds-btn--primary" type="button" data-ds-close="save" id="leave-save">저장하고 이동</button>
+    </div>
+  </dialog>
+
+  <!-- 2단계 인증 켜기 -->
+  <dialog class="ds-dialog" id="dlg-tfa-on" aria-labelledby="dlg-tfa-on-title">
+    <form class="settings-dialog-form" id="form-tfa" novalidate>
+      <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-tfa-on-title">2단계 인증 켜기</h2></div>
+      <div class="ds-dialog__body">
+        <p>인증 앱에 설정 키를 넣고, 앱에 보이는 숫자 6자리를 입력해 주세요.</p>
+        <dl class="ds-dl">
+          <dt>설정 키</dt><dd><code class="settings-key" id="tfa-key"></code></dd>
+        </dl>
+        <div class="ds-field">
+          <label class="ds-field__label" for="tfa-code">인증 번호</label>
+          <input class="ds-input settings-code" id="tfa-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="예: 482913…" aria-describedby="tfa-code-error" data-ds-initial-focus>
+          <p class="ds-field__error" id="tfa-code-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+        </div>
+      </div>
+      <div class="ds-dialog__foot">
+        <button class="ds-btn" type="button" data-ds-close>닫기</button>
+        <button class="ds-btn ds-btn--primary" type="submit" data-busy-label="켜는 중…">2단계 인증 켜기</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- 2단계 인증 끄기 -->
+  <dialog class="ds-dialog ds-dialog--sm" id="dlg-tfa-off" aria-labelledby="dlg-tfa-off-title" aria-describedby="dlg-tfa-off-desc">
+    <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-tfa-off-title">2단계 인증을 끌까요?</h2></div>
+    <div class="ds-dialog__body"><p id="dlg-tfa-off-desc">끄면 비밀번호만으로 로그인할 수 있어요. 비밀번호를 아는 사람은 누구나 들어올 수 있게 돼요.</p></div>
+    <div class="ds-dialog__foot">
+      <button class="ds-btn" type="button" data-ds-close data-ds-initial-focus>닫기</button>
+      <button class="ds-btn ds-btn--danger" type="button" id="btn-tfa-off" data-busy-label="끄는 중…">2단계 인증 끄기</button>
+    </div>
+  </dialog>
+
+  <!-- 다른 기기 로그아웃 -->
+  <dialog class="ds-dialog ds-dialog--sm" id="dlg-signout" aria-labelledby="dlg-signout-title" aria-describedby="dlg-signout-desc">
+    <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-signout-title">다른 기기에서 로그아웃할까요?</h2></div>
+    <div class="ds-dialog__body"><p id="dlg-signout-desc"></p></div>
+    <div class="ds-dialog__foot">
+      <button class="ds-btn" type="button" data-ds-close data-ds-initial-focus>닫기</button>
+      <button class="ds-btn ds-btn--primary" type="button" id="btn-signout-go" data-busy-label="로그아웃하는 중…">다른 기기에서 로그아웃</button>
+    </div>
+  </dialog>
+
+  <!-- 구성원 초대 -->
+  <dialog class="ds-dialog" id="dlg-invite" aria-labelledby="dlg-invite-title">
+    <form class="settings-dialog-form" id="form-invite" novalidate>
+      <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-invite-title">구성원 초대</h2></div>
+      <div class="ds-dialog__body">
+        <div class="ds-field ds-field--wide">
+          <label class="ds-field__label" for="invite-email">이메일<span class="ds-field__req" aria-hidden="true">필수</span></label>
+          <input class="ds-input" id="invite-email" name="email" type="email" autocomplete="off" spellcheck="false" placeholder="예: name@example.com…" aria-required="true" aria-describedby="invite-email-hint invite-email-error" data-ds-initial-focus>
+          <p class="ds-field__hint" id="invite-email-hint">초대 메일의 링크로 팀에 들어와요.</p>
+          <p class="ds-field__error" id="invite-email-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+        </div>
+        <div class="ds-field ds-field--wide">
+          <label class="ds-field__label" for="invite-role">역할</label>
+          <span class="ds-select"><select id="invite-role" name="role">
+            <option value="admin">관리자</option>
+            <option value="editor" selected>편집자</option>
+            <option value="viewer">보기만</option>
+          </select></span>
+        </div>
+      </div>
+      <div class="ds-dialog__foot">
+        <button class="ds-btn" type="button" data-ds-close>닫기</button>
+        <button class="ds-btn ds-btn--primary" type="submit" data-busy-label="보내는 중…">초대 보내기</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- 팀 삭제 -->
+  <dialog class="ds-dialog" id="dlg-delete" aria-labelledby="dlg-delete-title" aria-describedby="dlg-delete-desc">
+    <form class="settings-dialog-form" id="form-delete" novalidate>
+      <div class="ds-dialog__head"><h2 class="ds-dialog__title" id="dlg-delete-title">팀을 삭제할까요?</h2></div>
+      <div class="ds-dialog__body">
+        <div id="dlg-delete-desc">
+          <p>삭제한 팀은 되살릴 수 없어요.</p>
+          <ul class="settings-list">
+            <li>구성원 <span id="delete-count">0</span>명이 팀에서 빠져요.</li>
+            <li>팀 설정과 상담 기록이 지워져요.</li>
+          </ul>
+        </div>
+        <div class="ds-field ds-field--wide">
+          <label class="ds-field__label" for="delete-name">팀 이름 입력</label>
+          <input class="ds-input" id="delete-name" name="name" autocomplete="off" spellcheck="false" aria-describedby="delete-name-hint delete-name-error" data-ds-initial-focus>
+          <p class="ds-field__hint" id="delete-name-hint"></p>
+          <p class="ds-field__error" id="delete-name-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
+        </div>
+      </div>
+      <div class="ds-dialog__foot">
+        <button class="ds-btn" type="button" data-ds-close>닫기</button>
+        <button class="ds-btn ds-btn--danger" type="submit" id="btn-delete-go" aria-disabled="true" aria-describedby="delete-name-hint" data-busy-label="삭제하는 중…">팀 삭제</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

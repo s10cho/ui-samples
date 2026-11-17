@@ -1,7 +1,8 @@
 /*
  * 아이소메트릭 그림의 좌표 계산 — 설계서 3-1절(그림 구성)·3-2절(보는 범위)
  *
- * - tools/build-scene.mjs(정적 그림을 index.html 에 넣는다)와 js/app.js(움직임)가 같이 쓴다.
+ * - tools/build-scene.mjs(정적 그림을 index.html 에 넣는다)와 js/scene.js(움직임)가 같이 쓴다.
+ * - 면·원기둥·상자 계산은 공용 뼈대 js/iso2d.js 의 IsoCore 에 있다. 여기에는 투영·햇빛과 산 그림만 둔다.
  * - 산 높이 함수·슬로프 길·명소 자리·리프트·스키어는 3D 판(ski-mountain)의 js/scene/scene.js 와 같은 식·같은 값이다.
  *   세계 좌표: x 는 동쪽, z 는 남쪽, y 는 위쪽.
  * - 일반 스크립트다. 파일을 더블클릭해 열어도(file://) 돌도록 ES 모듈을 쓰지 않는다.
@@ -9,10 +10,9 @@
 (function (root) {
   'use strict';
 
-  const TAU = Math.PI * 2;
-  const DEG = Math.PI / 180;
-  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-  const lerp = (a, b, t) => a + (b - a) * t;
+  const C = root.IsoCore;
+  if (!C) return;
+  const { TAU, DEG, clamp, lerp, dot, cross, add, normalize, fmt, pointsAttr, ringPoints, seeded } = C;
   const smoothstep = (e0, e1, x) => {
     const t = clamp((x - e0) / (e1 - e0), 0, 1);
     return t * t * (3 - 2 * t);
@@ -22,21 +22,6 @@
     const h = clamp(0.5 + (0.5 * (a - b)) / k, 0, 1);
     return lerp(b, a, h) + k * h * (1 - h);
   };
-
-  function dot(a, b) {
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-  }
-  function cross(a, b) {
-    return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-  }
-  function add(a, b, k) {
-    const s = k === undefined ? 1 : k;
-    return [a[0] + b[0] * s, a[1] + b[1] * s, a[2] + b[2] * s];
-  }
-  function normalize(a) {
-    const l = Math.hypot(a[0], a[1], a[2]) || 1;
-    return [a[0] / l, a[1] / l, a[2] / l];
-  }
 
   /* ---------- 투영 — 원근 없음, 내려보는 각 30°, 남남동쪽(3D 처음 시점과 같은 방위 20°)에서 본다 ---------- */
 
@@ -65,141 +50,13 @@
     return [(p[0] * CA - p[2] * SA) * SCALE, (p[0] * SA + p[2] * CA) * SCALE * SE - p[1] * SCALE * CE];
   }
 
-  /** 앞뒤 순서 — 클수록 앞(나중에 그린다) */
-  function depthOf(p) {
-    return dot(p, VIEW);
-  }
-
-  /** 면의 밝기 단계 — t(위) · l(햇빛 쪽) · m(비스듬히) · d(그늘) */
-  function toneOf(n) {
-    const k = dot(n, LIGHT);
-    if (k >= 0.6) return 't';
-    if (k >= 0.32) return 'l';
-    if (k >= 0.1) return 'm';
-    return 'd';
-  }
-
-  function fmt(v) {
-    return (Math.round(v * 10) / 10).toString();
-  }
-
-  function pointsAttr(pts2) {
-    return pts2.map((p) => fmt(p[0]) + ',' + fmt(p[1])).join(' ');
-  }
-
-  /* ---------- 면 ---------- */
-
-  function newellNormal(pts) {
-    let nx = 0;
-    let ny = 0;
-    let nz = 0;
-    for (let i = 0; i < pts.length; i += 1) {
-      const a = pts[i];
-      const b = pts[(i + 1) % pts.length];
-      nx += (a[1] - b[1]) * (a[2] + b[2]);
-      ny += (a[2] - b[2]) * (a[0] + b[0]);
-      nz += (a[0] - b[0]) * (a[1] + b[1]);
-    }
-    return normalize([nx, ny, nz]);
-  }
-
-  function centroid(pts) {
-    const c = [0, 0, 0];
-    pts.forEach((p) => {
-      c[0] += p[0];
-      c[1] += p[1];
-      c[2] += p[2];
-    });
-    return [c[0] / pts.length, c[1] / pts.length, c[2] / pts.length];
-  }
-
-  /**
-   * 면 하나를 그릴 준비를 한다. 보이지 않는 면은 null.
-   * inside 를 주면 면의 바깥쪽을 그 점에서 멀어지는 쪽으로 맞춘다.
-   */
-  function face(pts, mat, inside, normal) {
-    let n = normal || newellNormal(pts);
-    const c = centroid(pts);
-    if (inside && dot(n, [c[0] - inside[0], c[1] - inside[1], c[2] - inside[2]]) < 0) n = [-n[0], -n[1], -n[2]];
-    if (dot(n, VIEW) <= 1e-4) return null;
-    return { pts2: pts.map(project), cls: 'm-' + mat + '-' + toneOf(n), depth: depthOf(c) };
-  }
-
-  function sortFaces(faces) {
-    return faces.filter(Boolean).sort((a, b) => a.depth - b.depth);
-  }
-
-  /* ---------- 입체 ---------- */
-
-  /** 원 둘레의 점. three.js 원기둥과 같은 각도 규칙(x = sin, z = cos) */
-  function ringPoints(cx, y, cz, r, segs, rot) {
-    const out = [];
-    for (let k = 0; k < segs; k += 1) {
-      const a = (rot || 0) + (k / segs) * TAU;
-      out.push([cx + r * Math.sin(a), y, cz + r * Math.cos(a)]);
-    }
-    return out;
-  }
-
-  /** 원뿔대(원기둥 포함) — 옆면 + 윗면 */
-  function frustum(cx, cz, y0, y1, r0, r1, segs, rot, mat, topMat) {
-    const bottom = ringPoints(cx, y0, cz, r0, segs, rot);
-    const top = ringPoints(cx, y1, cz, r1, segs, rot);
-    const inside = [cx, (y0 + y1) / 2, cz];
-    const faces = [];
-    for (let k = 0; k < segs; k += 1) {
-      const j = (k + 1) % segs;
-      faces.push(face([bottom[k], bottom[j], top[j], top[k]], mat, inside));
-    }
-    faces.push(face(top, topMat || mat, null, [0, 1, 0]));
-    return sortFaces(faces);
-  }
-
-  /** 원뿔(지붕·나무·먼 산) — 바닥은 위에서 보이지 않으므로 옆면만 */
-  function cone(cx, cz, y0, y1, r, segs, rot, mat) {
-    const base = ringPoints(cx, y0, cz, r, segs, rot);
-    const apex = [cx, y1, cz];
-    const inside = [cx, y0, cz];
-    const faces = [];
-    for (let k = 0; k < segs; k += 1) {
-      faces.push(face([base[k], base[(k + 1) % segs], apex], mat, inside));
-    }
-    return sortFaces(faces);
-  }
-
-  /** 방향을 가진 상자. ax·ay·az 는 단위 축, h 는 반 길이 */
-  function orientedBox(c, ax, ay, az, h, mat) {
-    const corner = (sx, sy, sz) => add(add(add(c, ax, sx * h[0]), ay, sy * h[1]), az, sz * h[2]);
-    const p = {};
-    [-1, 1].forEach((sx) => [-1, 1].forEach((sy) => [-1, 1].forEach((sz) => (p[sx + ',' + sy + ',' + sz] = corner(sx, sy, sz)))));
-    const q = (a, b, cc, d) => [p[a], p[b], p[cc], p[d]];
-    return sortFaces([
-      face(q('1,-1,-1', '1,1,-1', '1,1,1', '1,-1,1'), mat, c),
-      face(q('-1,-1,-1', '-1,-1,1', '-1,1,1', '-1,1,-1'), mat, c),
-      face(q('-1,1,-1', '-1,1,1', '1,1,1', '1,1,-1'), mat, c),
-      face(q('-1,-1,-1', '1,-1,-1', '1,-1,1', '-1,-1,1'), mat, c),
-      face(q('-1,-1,1', '1,-1,1', '1,1,1', '-1,1,1'), mat, c),
-      face(q('-1,-1,-1', '-1,1,-1', '1,1,-1', '1,-1,-1'), mat, c),
-    ]);
-  }
-
-  /** y 축으로 rot 만큼 돈 상자. 중심 (cx, cy, cz), 크기 w·h·d (three.js BoxGeometry·rotation.y 와 같다) */
-  function box(cx, cy, cz, w, h, d, rot, mat) {
-    const r = rot || 0;
-    return orientedBox([cx, cy, cz], [Math.cos(r), 0, -Math.sin(r)], [0, 1, 0], [Math.sin(r), 0, Math.cos(r)], [w / 2, h / 2, d / 2], mat);
-  }
-
-  /** 같은 산 모양이 매번 나오도록 고정 씨앗 난수를 쓴다(3D 판과 같은 식) */
-  function seeded(seed) {
-    let s = seed >>> 0;
-    return () => {
-      s = (s + 0x6d2b79f5) >>> 0;
-      let t = s;
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
+  /** 면 계산 — 밝기 경계: 윗면 0.6 · 햇빛 쪽 0.32 · 비스듬한 면 0.1 */
+  const { depthOf, toneOf, face, sortFaces, frustum, cone, orientedBox, box } = C.create({
+    project,
+    view: VIEW,
+    light: LIGHT,
+    tones: [0.6, 0.32, 0.1],
+  });
 
   /* ---------- 높이 함수 — 3D 판과 같은 식 ---------- */
 

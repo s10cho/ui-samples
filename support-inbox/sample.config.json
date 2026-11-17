@@ -1,0 +1,6 @@
+{
+  "kit": "app",
+  "build": [],
+  "states": ["", "?state=loading", "?state=empty", "?state=error", "?state=send-fail", "?theme=dark&c=c04"],
+  "budgetKB": 150
+}
