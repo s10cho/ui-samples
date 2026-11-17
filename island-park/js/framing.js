@@ -1,6 +1,6 @@
 /*
  * 처음 시점의 맞춤 계산 — 3D 장면(js/scene/scene.js)과 포스터 배치(js/main.js)가 같이 쓴다.
- * three.js 없이 돈다. 3D 를 받기 전에 포스터를 3D 첫 화면과 같은 배율·중심에 놓으려면
+ * three.js 없이 돈다. 3D를 받기 전에 포스터를 3D 첫 화면과 같은 배율·중심에 놓으려면
  * 둘이 같은 식을 써야 한다(설계서 5절 초기 로딩, STA-03).
  */
 import { CAMERA, POSTER } from './tokens.js';

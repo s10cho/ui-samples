@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>UI 샘플</title>
-  <meta name="description" content="정적 웹 페이지로 만든 화면 샘플 모음입니다.">
+  <meta name="description" content="정적 웹 페이지로 만든 화면 샘플 모음입니다. 3D 장면 6개와 같은 장면을 2D로 다시 그린 그림판 3개가 있습니다.">
   <link rel="icon" href="data:,">
   <style>
     :root {
@@ -21,7 +21,8 @@
 
       --font: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
       --text-title: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
-      --text-sample: 1.375rem;
+      --text-section: 1.25rem;
+      --text-sample: 1.125rem;
       --text-body: 1rem;
       --text-small: 0.875rem;
 
@@ -35,7 +36,8 @@
       --space-8: 4.5rem;
 
       --radius: 0.5rem;
-      --page-width: 70rem;
+      --page-width: 78rem;
+      --card-min: 19rem;
       --target: 2.75rem;
       --fade: 300ms;
     }
@@ -68,7 +70,7 @@
       padding: var(--space-7) var(--space-5) var(--space-8);
     }
 
-    .intro { max-width: 40rem; margin-bottom: var(--space-7); }
+    .intro { max-width: 44rem; margin-bottom: var(--space-7); }
     .intro h1 {
       margin: 0 0 var(--space-3);
       font-size: var(--text-title);
@@ -78,15 +80,21 @@
     .intro p { margin: 0; color: var(--c-text-muted); }
     .intro p span { display: block; }
 
-    .samples { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-7); }
+    .group + .group { margin-top: var(--space-8); }
+    .group__head { margin-bottom: var(--space-5); max-width: 44rem; }
+    .group__head h2 { margin: 0 0 var(--space-2); font-size: var(--text-section); line-height: 1.35; }
+    .group__head p { margin: 0; color: var(--c-text-muted); }
 
-    .sample {
+    .samples {
+      list-style: none;
+      margin: 0;
+      padding: 0;
       display: grid;
-      gap: var(--space-5);
-      padding-top: var(--space-7);
-      border-top: 1px solid var(--c-line);
+      grid-template-columns: repeat(auto-fill, minmax(min(var(--card-min), 100%), 1fr));
+      gap: var(--space-7) var(--space-6);
     }
-    .sample:first-child { padding-top: 0; border-top: 0; }
+
+    .sample { display: flex; flex-direction: column; gap: var(--space-4); }
 
     .sample__thumb {
       position: relative;
@@ -103,21 +111,21 @@
       height: 100%;
       object-fit: cover;
     }
-    .sample__thumb .is-night { opacity: 0; transition: opacity var(--fade) ease-out; }
-    .sample:hover .sample__thumb .is-night,
-    .sample:focus-within .sample__thumb .is-night { opacity: 1; }
+    .sample__thumb .is-alt { opacity: 0; transition: opacity var(--fade) ease-out; }
+    .sample:hover .sample__thumb .is-alt,
+    .sample:focus-within .sample__thumb .is-alt { opacity: 1; }
 
-    .sample__body { display: flex; flex-direction: column; gap: var(--space-4); align-items: flex-start; }
-    .sample__name { margin: 0; font-size: var(--text-sample); line-height: 1.35; }
+    .sample__body { display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start; flex: 1; }
+    .sample__name { margin: 0; font-size: var(--text-sample); line-height: 1.4; }
     .sample__desc { margin: 0; }
     .sample__desc span { display: block; }
 
-    .facts { margin: 0; display: grid; gap: var(--space-2); font-size: var(--text-small); }
-    .facts div { display: grid; grid-template-columns: 7rem 1fr; gap: var(--space-3); }
+    .facts { margin: 0; display: grid; gap: var(--space-1); font-size: var(--text-small); }
+    .facts div { display: grid; grid-template-columns: 4.5rem 1fr; gap: var(--space-3); }
     .facts dt { color: var(--c-text-muted); }
     .facts dd { margin: 0; }
 
-    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); margin-top: var(--space-2); }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-5); margin-top: auto; padding-top: var(--space-2); }
     .btn {
       display: inline-flex;
       align-items: center;
@@ -140,14 +148,14 @@
       font-size: var(--text-small);
     }
     .foot p { margin: 0; }
+    .foot p + p { margin-top: var(--space-2); }
 
     @media (min-width: 48rem) {
       .page { padding: var(--space-8) var(--space-6); }
-      .sample { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-6); align-items: center; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .sample__thumb .is-night { transition: none; }
+      .sample__thumb .is-alt { transition: none; }
     }
   </style>
 </head>
@@ -155,113 +163,202 @@
   <main class="page">
     <header class="intro">
       <h1>UI 샘플</h1>
-      <p><span>정적 웹 페이지로 만든 화면 샘플을 모았습니다. 서버 없이 브라우저에서 바로 열립니다.</span><span>모든 샘플은 화면 폭에 맞춰 바뀝니다. 그림에 마우스를 올리면 다른 시간대나 날씨가 보입니다.</span></p>
+      <p><span>정적 웹 페이지로 만든 화면 샘플을 모았습니다. 서버 없이 브라우저에서 바로 열립니다.</span><span>모든 샘플은 화면 폭에 맞춰 바뀝니다. 그림에 마우스를 올리면 다른 상태가 보입니다.</span></p>
     </header>
-
-    <ol class="samples">
-      <li class="sample">
-        <a class="sample__thumb" href="island-park/" tabindex="-1" aria-hidden="true">
-          <img src="assets/island-park-day.webp" width="960" height="600" alt="">
-          <img class="is-night" src="assets/island-park-night.webp" width="960" height="600" alt="" loading="lazy">
-        </a>
-        <div class="sample__body">
-          <h2 class="sample__name">바다 위 놀이공원</h2>
-          <p class="sample__desc">
-            <span>바다 위 섬 하나에 놀이공원 명소 다섯 곳을 3D 로 보여 줍니다.</span>
-            <span>시점을 돌려 둘러보고, 명소를 골라 설명을 읽고, 낮과 밤을 바꿀 수 있습니다.</span>
-          </p>
-          <dl class="facts">
-            <div><dt>기술</dt><dd>Three.js · HTML · CSS · JavaScript 모듈</dd></div>
-            <div><dt>전환</dt><dd>낮 ↔ 밤</dd></div>
-            <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/island-park/docs/ui/review/island-park-landmark/20261117-report.md">독립 검수 94.5점 · 합격</a></dd></div>
-            <div><dt>만든 날</dt><dd><time datetime="2026-11-17">2026. 11. 17.</time></dd></div>
-          </dl>
-          <div class="actions">
-            <a class="btn" href="island-park/">샘플 열기</a>
-            <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/island-park">코드 보기</a>
-            <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/island-park/docs/ui/island-park-landmark.md">화면 설계서</a>
+    <section class="group" aria-labelledby="group-1">
+      <div class="group__head">
+        <h2 id="group-1">3D 장면</h2>
+        <p>Three.js 로 그린 3D 첫 화면입니다. 시점을 돌리고, 명소를 골라 설명을 읽을 수 있습니다.</p>
+      </div>
+      <ol class="samples">
+        <li class="sample">
+          <a class="sample__thumb" href="island-park/" tabindex="-1" aria-hidden="true">
+            <img src="assets/island-park-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/island-park-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">바다 위 놀이공원</h3>
+            <p class="sample__desc"><span>바다 위 섬 하나에 놀이공원 명소 5곳을 3D로 보여 줍니다.</span><span>명소를 고르면 그곳으로 가까이 가고, 낮과 밤을 바꿀 수 있습니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>낮 ↔ 밤</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/island-park/docs/ui/review/island-park-landmark/20261117-report.md">독립 검수 94.5점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="island-park/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/island-park">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/island-park/docs/ui/island-park-landmark.md">화면 설계서</a>
+            </div>
           </div>
-        </div>
-      </li>
-      <li class="sample">
-        <a class="sample__thumb" href="island-park-iso/" tabindex="-1" aria-hidden="true">
-          <img src="assets/island-park-iso-day.webp" width="960" height="600" alt="">
-          <img class="is-night" src="assets/island-park-iso-night.webp" width="960" height="600" alt="" loading="lazy">
-        </a>
-        <div class="sample__body">
-          <h2 class="sample__name">바다 위 놀이공원 — 2D 그림판</h2>
-          <p class="sample__desc">
-            <span>같은 섬과 명소, 같은 설명을 3D 대신 2D 그림(SVG)으로 다시 그렸습니다.</span>
-            <span>끌어서 옮기고 확대할 수 있습니다. 3D 판과 나란히 열어 견줘 보세요.</span>
-          </p>
-          <dl class="facts">
-            <div><dt>기술</dt><dd>SVG · HTML · CSS · JavaScript(라이브러리 없음)</dd></div>
-            <div><dt>전환</dt><dd>낮 ↔ 밤</dd></div>
-            <div><dt>첫 방문 전송량</dt><dd>약 90KB(3D 판은 약 260KB)</dd></div>
-            <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/island-park-iso/docs/ui/review/island-park-iso/20261117-report.md">독립 검수 90.75점 · 합격</a></dd></div>
-            <div><dt>만든 날</dt><dd><time datetime="2026-11-17">2026. 11. 17.</time></dd></div>
-          </dl>
-          <div class="actions">
-            <a class="btn" href="island-park-iso/">샘플 열기</a>
-            <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/island-park-iso">코드 보기</a>
-            <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/island-park-iso/docs/ui/island-park-iso.md">화면 설계서</a>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="city-night/" tabindex="-1" aria-hidden="true">
+            <img src="assets/city-night-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/city-night-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">강을 낀 작은 도시</h3>
+            <p class="sample__desc"><span>강을 사이에 둔 가상의 작은 도시 한 블록을 3D로 보여 줍니다.</span><span>밤으로 바꾸면 창문과 가로등, 다리에 불이 켜집니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>해 질 녘 ↔ 밤</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/city-night/docs/ui/review/city-night/20261117-report.md">독립 검수 93.25점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="city-night/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/city-night">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/city-night/docs/ui/city-night.md">화면 설계서</a>
+            </div>
           </div>
-        </div>
-      </li>
-      <li class="sample">
-        <a class="sample__thumb" href="city-night/" tabindex="-1" aria-hidden="true">
-          <img src="assets/city-night-day.webp" width="960" height="600" alt="">
-          <img class="is-night" src="assets/city-night-night.webp" width="960" height="600" alt="" loading="lazy">
-        </a>
-        <div class="sample__body">
-          <h2 class="sample__name">강을 낀 작은 도시</h2>
-          <p class="sample__desc">
-            <span>강을 사이에 둔 가상의 작은 도시 한 블록을 3D 로 보여 줍니다.</span>
-            <span>전망 타워와 다리 같은 명소 다섯 곳을 고를 수 있습니다.</span>
-            <span>해 질 녘에서 밤으로 바꾸면 창문과 가로등에 불이 켜집니다.</span>
-          </p>
-          <dl class="facts">
-            <div><dt>기술</dt><dd>Three.js · HTML · CSS · JavaScript 모듈</dd></div>
-            <div><dt>전환</dt><dd>해 질 녘 ↔ 밤</dd></div>
-            <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/city-night/docs/ui/review/city-night/20261117-report.md">독립 검수 88.25점 · 합격</a></dd></div>
-            <div><dt>만든 날</dt><dd><time datetime="2026-11-17">2026. 11. 17.</time></dd></div>
-          </dl>
-          <div class="actions">
-            <a class="btn" href="city-night/">샘플 열기</a>
-            <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/city-night">코드 보기</a>
-            <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/city-night/docs/ui/city-night.md">화면 설계서</a>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="ski-mountain/" tabindex="-1" aria-hidden="true">
+            <img src="assets/ski-mountain-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/ski-mountain-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">겨울 산 스키장</h3>
+            <p class="sample__desc"><span>눈 덮인 가상의 산에 만든 스키장을 3D로 보여 줍니다.</span><span>리프트와 슬로프, 산장을 고르고 눈이 내리게 할 수 있습니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>맑음 ↔ 눈 내림</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/ski-mountain/docs/ui/review/ski-mountain/20261117-report.md">독립 검수 89.5점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="ski-mountain/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/ski-mountain">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/ski-mountain/docs/ui/ski-mountain.md">화면 설계서</a>
+            </div>
           </div>
-        </div>
-      </li>
-      <li class="sample">
-        <a class="sample__thumb" href="ski-mountain/" tabindex="-1" aria-hidden="true">
-          <img src="assets/ski-mountain-day.webp" width="960" height="600" alt="">
-          <img class="is-night" src="assets/ski-mountain-night.webp" width="960" height="600" alt="" loading="lazy">
-        </a>
-        <div class="sample__body">
-          <h2 class="sample__name">겨울 산 스키장</h2>
-          <p class="sample__desc">
-            <span>눈 덮인 가상의 산 하나에 만든 스키장을 3D 로 보여 줍니다.</span>
-            <span>리프트와 슬로프, 산장 같은 명소 다섯 곳을 고를 수 있습니다.</span>
-            <span>맑은 날과 눈 오는 날을 바꿀 수 있습니다.</span>
-          </p>
-          <dl class="facts">
-            <div><dt>기술</dt><dd>Three.js · HTML · CSS · JavaScript 모듈</dd></div>
-            <div><dt>전환</dt><dd>맑음 ↔ 눈 내림</dd></div>
-            <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/ski-mountain/docs/ui/review/ski-mountain/20261117-report.md">독립 검수 87점 · 합격</a></dd></div>
-            <div><dt>만든 날</dt><dd><time datetime="2026-11-17">2026. 11. 17.</time></dd></div>
-          </dl>
-          <div class="actions">
-            <a class="btn" href="ski-mountain/">샘플 열기</a>
-            <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/ski-mountain">코드 보기</a>
-            <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/ski-mountain/docs/ui/ski-mountain.md">화면 설계서</a>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="temple-seasons/" tabindex="-1" aria-hidden="true">
+            <img src="assets/temple-seasons-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/temple-seasons-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">사계절 산사 마을</h3>
+            <p class="sample__desc"><span>가상의 산속 절과 마을을 3D로 보여 줍니다.</span><span>4계절을 고르면 잎 색이 바뀌고 꽃잎·낙엽·눈이 날립니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>봄 · 여름 · 가을 · 겨울</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/temple-seasons/docs/ui/review/temple-seasons/20261117-report.md">독립 검수 90점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="temple-seasons/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/temple-seasons">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/temple-seasons/docs/ui/temple-seasons.md">화면 설계서</a>
+            </div>
           </div>
-        </div>
-      </li>
-    </ol>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="museum-floors/" tabindex="-1" aria-hidden="true">
+            <img src="assets/museum-floors-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/museum-floors-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">박물관 층별 안내</h3>
+            <p class="sample__desc"><span>가상의 4층 박물관을 층별로 펼쳐 보는 안내 화면입니다.</span><span>층과 전시실을 고르고, 화장실·엘리베이터 같은 편의시설을 켜고 끌 수 있습니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>펼쳐 보기 ↔ 쌓아 보기</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/museum-floors/docs/ui/review/museum-floors/20261117-report.md">독립 검수 100점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="museum-floors/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/museum-floors">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/museum-floors/docs/ui/museum-floors.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="space-station/" tabindex="-1" aria-hidden="true">
+            <img src="assets/space-station-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/space-station-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">지구 궤도의 작은 정거장</h3>
+            <p class="sample__desc"><span>지구 궤도를 도는 가상의 정거장을 3D로 보여 줍니다.</span><span>어두운 화면에 맞춘 UI 샘플입니다. 지구의 낮 쪽과 밤 쪽을 바꿀 수 있습니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>낮 쪽 ↔ 밤 쪽</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/space-station/docs/ui/review/space-station/20261117-report.md">독립 검수 97점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="space-station/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/space-station">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/space-station/docs/ui/space-station.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </section>
+    <section class="group" aria-labelledby="group-2">
+      <div class="group__head">
+        <h2 id="group-2">2D 그림판</h2>
+        <p>3D 장면과 같은 배치·명소·문구를 2D 그림(SVG)으로 다시 그렸습니다. 라이브러리 없이 첫 방문 전송량이 100KB 아래입니다. 3D 판과 나란히 열어 견줘 보세요.</p>
+      </div>
+      <ol class="samples">
+        <li class="sample">
+          <a class="sample__thumb" href="island-park-iso/" tabindex="-1" aria-hidden="true">
+            <img src="assets/island-park-iso-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/island-park-iso-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">바다 위 놀이공원 — 2D 그림판</h3>
+            <p class="sample__desc"><span>같은 섬과 명소 5곳을 2D 그림으로 다시 그렸습니다.</span><span>첫 방문 전송량은 약 90KB 입니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>낮 ↔ 밤</dd></div>
+              <div><dt>3D 판</dt><dd><a href="island-park/">바다 위 놀이공원</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/island-park-iso/docs/ui/review/island-park-iso/20261117-report.md">독립 검수 90.75점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="island-park-iso/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/island-park-iso">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/island-park-iso/docs/ui/island-park-iso.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="city-night-iso/" tabindex="-1" aria-hidden="true">
+            <img src="assets/city-night-iso-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/city-night-iso-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">강을 낀 작은 도시 — 2D 그림판</h3>
+            <p class="sample__desc"><span>3D 판과 같은 건물 배치를 2D 그림으로 다시 그렸습니다.</span><span>첫 방문 전송량은 약 96KB 입니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>해 질 녘 ↔ 밤</dd></div>
+              <div><dt>3D 판</dt><dd><a href="city-night/">강을 낀 작은 도시</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/city-night-iso/docs/ui/review/city-night-iso/20261117-report.md">독립 검수 93.25점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="city-night-iso/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/city-night-iso">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/city-night-iso/docs/ui/city-night-iso.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="ski-mountain-iso/" tabindex="-1" aria-hidden="true">
+            <img src="assets/ski-mountain-iso-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/ski-mountain-iso-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">겨울 산 스키장 — 2D 그림판</h3>
+            <p class="sample__desc"><span>3D 판과 같은 산과 명소를 2D 그림으로 다시 그렸습니다.</span><span>눈송이도 그림으로 내립니다. 첫 방문 전송량은 약 95KB 입니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>맑음 ↔ 눈 내림</dd></div>
+              <div><dt>3D 판</dt><dd><a href="ski-mountain/">겨울 산 스키장</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/ski-mountain-iso/docs/ui/review/ski-mountain-iso/20261117-report.md">독립 검수 93.25점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="ski-mountain-iso/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/ski-mountain-iso">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/ski-mountain-iso/docs/ui/ski-mountain-iso.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </section>
 
     <footer class="foot">
-      <p>샘플마다 폴더 하나에 코드·설계서·검수 보고서가 함께 있습니다. 저장소: <a href="https://github.com/s10cho/ui-samples">github.com/s10cho/ui-samples</a></p>
+      <p>샘플마다 폴더 하나에 코드·화면 설계서·검수 보고서가 함께 있습니다. 검수 점수는 만든 쪽과 다른 에이전트가 루브릭(100점, 80점 이상 합격)으로 매긴 값입니다.</p>
+      <p>저장소: <a href="https://github.com/s10cho/ui-samples">github.com/s10cho/ui-samples</a> · 2026. 11. 17. 기준</p>
     </footer>
   </main>
 </body>

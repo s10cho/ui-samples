@@ -1,0 +1,170 @@
+/*
+ * 산 그림(인라인 SVG)과 눈송이 층 — 색은 css/tokens.css 의 --iso-* 변수만 쓴다.
+ * 맑음·눈 내림은 html[data-weather] 가 그 변수를 바꿔서 전환한다(설계서 3-1절).
+ * 면 클래스: m-<재질>-<밝기>. 밝기 t 윗면 · l 햇빛 쪽 · m 비스듬한 면 · d 그늘 면.
+ */
+
+.iso {
+  position: absolute;
+  inset: 0;
+  z-index: var(--ds-z-base);
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.iso.is-dragging {
+  cursor: grabbing;
+}
+
+/* 면 사이에 바탕색 실선이 비치지 않게 면과 같은 색으로 테두리를 그린다(굵기는 svg 의 stroke-width 속성) */
+.iso path,
+.iso polygon,
+.iso line,
+.iso circle {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transition:
+    fill var(--ds-motion-weather-shift) var(--ds-easing-enter),
+    stroke var(--ds-motion-weather-shift) var(--ds-easing-enter),
+    opacity var(--ds-motion-weather-shift) var(--ds-easing-enter);
+}
+
+/* 매 프레임 움직이는 면은 색이 밝기 단계 사이를 오가므로 전환하지 않는다 */
+.iso [data-skier] *,
+.is-instant .iso path,
+.is-instant .iso polygon,
+.is-instant .iso line,
+.is-instant .iso circle {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iso path,
+  .iso polygon,
+  .iso line,
+  .iso circle {
+    transition: none;
+  }
+}
+
+.m-snow-t { fill: var(--iso-snow-t); stroke: var(--iso-snow-t); }
+.m-snow-l { fill: var(--iso-snow-l); stroke: var(--iso-snow-l); }
+.m-snow-m { fill: var(--iso-snow-m); stroke: var(--iso-snow-m); }
+.m-snow-d { fill: var(--iso-snow-d); stroke: var(--iso-snow-d); }
+.m-groomed-t { fill: var(--iso-groomed-t); stroke: var(--iso-groomed-t); }
+.m-groomed-l { fill: var(--iso-groomed-l); stroke: var(--iso-groomed-l); }
+.m-groomed-m { fill: var(--iso-groomed-m); stroke: var(--iso-groomed-m); }
+.m-groomed-d { fill: var(--iso-groomed-d); stroke: var(--iso-groomed-d); }
+.m-rock-t { fill: var(--iso-rock-t); stroke: var(--iso-rock-t); }
+.m-rock-l { fill: var(--iso-rock-l); stroke: var(--iso-rock-l); }
+.m-rock-m { fill: var(--iso-rock-m); stroke: var(--iso-rock-m); }
+.m-rock-d { fill: var(--iso-rock-d); stroke: var(--iso-rock-d); }
+.m-forest-t { fill: var(--iso-forest-t); stroke: var(--iso-forest-t); }
+.m-forest-l { fill: var(--iso-forest-l); stroke: var(--iso-forest-l); }
+.m-forest-m { fill: var(--iso-forest-m); stroke: var(--iso-forest-m); }
+.m-forest-d { fill: var(--iso-forest-d); stroke: var(--iso-forest-d); }
+.m-valley-t { fill: var(--iso-valley-t); stroke: var(--iso-valley-t); }
+.m-valley-l { fill: var(--iso-valley-l); stroke: var(--iso-valley-l); }
+.m-valley-m { fill: var(--iso-valley-m); stroke: var(--iso-valley-m); }
+.m-valley-d { fill: var(--iso-valley-d); stroke: var(--iso-valley-d); }
+.m-far-t { fill: var(--iso-far-t); stroke: var(--iso-far-t); }
+.m-far-l { fill: var(--iso-far-l); stroke: var(--iso-far-l); }
+.m-far-m { fill: var(--iso-far-m); stroke: var(--iso-far-m); }
+.m-far-d { fill: var(--iso-far-d); stroke: var(--iso-far-d); }
+.m-tree-t { fill: var(--iso-tree-t); stroke: var(--iso-tree-t); }
+.m-tree-l { fill: var(--iso-tree-l); stroke: var(--iso-tree-l); }
+.m-tree-m { fill: var(--iso-tree-m); stroke: var(--iso-tree-m); }
+.m-tree-d { fill: var(--iso-tree-d); stroke: var(--iso-tree-d); }
+.m-tree-snow-t { fill: var(--iso-tree-snow-t); stroke: var(--iso-tree-snow-t); }
+.m-tree-snow-l { fill: var(--iso-tree-snow-l); stroke: var(--iso-tree-snow-l); }
+.m-tree-snow-m { fill: var(--iso-tree-snow-m); stroke: var(--iso-tree-snow-m); }
+.m-tree-snow-d { fill: var(--iso-tree-snow-d); stroke: var(--iso-tree-snow-d); }
+.m-structure-t { fill: var(--iso-structure-t); stroke: var(--iso-structure-t); }
+.m-structure-l { fill: var(--iso-structure-l); stroke: var(--iso-structure-l); }
+.m-structure-m { fill: var(--iso-structure-m); stroke: var(--iso-structure-m); }
+.m-structure-d { fill: var(--iso-structure-d); stroke: var(--iso-structure-d); }
+.m-accent-t { fill: var(--iso-accent-t); stroke: var(--iso-accent-t); }
+.m-accent-l { fill: var(--iso-accent-l); stroke: var(--iso-accent-l); }
+.m-accent-m { fill: var(--iso-accent-m); stroke: var(--iso-accent-m); }
+.m-accent-d { fill: var(--iso-accent-d); stroke: var(--iso-accent-d); }
+.m-wood-t { fill: var(--iso-wood-t); stroke: var(--iso-wood-t); }
+.m-wood-l { fill: var(--iso-wood-l); stroke: var(--iso-wood-l); }
+.m-wood-m { fill: var(--iso-wood-m); stroke: var(--iso-wood-m); }
+.m-wood-d { fill: var(--iso-wood-d); stroke: var(--iso-wood-d); }
+.m-dark-t { fill: var(--iso-dark-t); stroke: var(--iso-dark-t); }
+.m-dark-l { fill: var(--iso-dark-l); stroke: var(--iso-dark-l); }
+.m-dark-m { fill: var(--iso-dark-m); stroke: var(--iso-dark-m); }
+.m-dark-d { fill: var(--iso-dark-d); stroke: var(--iso-dark-d); }
+
+.fog-1 { fill: var(--iso-fog-1); stroke: var(--iso-fog-1); }
+.fog-2 { fill: var(--iso-fog-2); stroke: var(--iso-fog-2); }
+.shadow { fill: var(--iso-shadow); stroke: none; opacity: var(--iso-shadow-opacity); }
+.s-rock { fill: none; stroke: var(--iso-rock-d); }
+.s-accent { fill: none; stroke: var(--iso-accent-t); }
+
+/* ---------- 눈송이 층 — 작은 원 바둑판 세 겹. 층마다 transform 하나만 움직인다(설계서 4-2절) ----------
+   한 번 되풀이에 오른쪽으로 한 칸, 아래로 네 칸 옮긴다. 바둑판이 한 칸마다 되풀이되므로 이음매가 없다. */
+
+.snowfall {
+  position: absolute;
+  inset: 0;
+  z-index: var(--ds-z-scene-weather);
+  overflow: hidden;
+  pointer-events: none;
+  opacity: var(--iso-flake-opacity);
+  visibility: hidden;
+  transition:
+    opacity var(--ds-motion-weather-shift) var(--ds-easing-enter),
+    visibility 0s linear var(--ds-motion-weather-shift);
+}
+
+[data-weather="snow"] .snowfall {
+  visibility: visible;
+  transition:
+    opacity var(--ds-motion-weather-shift) var(--ds-easing-enter),
+    visibility 0s;
+}
+
+.is-instant .snowfall {
+  transition: none;
+}
+
+.snowfall__layer {
+  position: absolute;
+  top: calc(var(--flake-tile) * -4);
+  left: calc(var(--flake-tile) * -1);
+  display: block;
+  width: calc(100% + var(--flake-tile));
+  height: calc(100% + var(--flake-tile) * 4);
+  overflow: hidden;
+  animation: flake-fall var(--flake-fall) linear infinite;
+  animation-play-state: paused;
+}
+
+.snowfall__layer--near { --flake-tile: var(--iso-flake-tile-near); --flake-fall: var(--iso-flake-fall-near); }
+.snowfall__layer--mid { --flake-tile: var(--iso-flake-tile-mid); --flake-fall: var(--iso-flake-fall-mid); }
+.snowfall__layer--far { --flake-tile: var(--iso-flake-tile-far); --flake-fall: var(--iso-flake-fall-far); }
+
+/* 바둑판 안 원만 칠한다. 바둑판을 채우는 rect 는 fill="url(#…)" 속성을 그대로 쓴다 */
+.snowfall__layer circle {
+  fill: var(--iso-flake);
+}
+
+/* 눈 내림이고 움직임을 켰을 때만 떨어진다. 멈추면 그 자리에 선다(정지 화면).
+   OS 움직임 줄이기가 켜져 있으면 js/app.js 가 처음부터 is-still 을 붙인다. 사용자가 "움직임 다시 켜기"를 누르면 의자·스키어와 함께 다시 떨어진다 */
+[data-weather="snow"]:not(.is-still) .snowfall__layer {
+  animation-play-state: running;
+}
+
+@keyframes flake-fall {
+  to {
+    transform: translate3d(var(--flake-tile), calc(var(--flake-tile) * 4), 0);
+  }
+}
+

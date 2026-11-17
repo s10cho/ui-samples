@@ -1,0 +1,165 @@
+/*
+ * 도시 그림(인라인 SVG) — 색은 css/tokens.css 의 --iso-* 변수만 쓴다.
+ * 해 질 녘·밤은 html[data-time] 이 그 변수를 바꿔서 전환한다(설계서 3-1절).
+ * 면 클래스: m-<재질>-<밝기>. 밝기 t 윗면 · l 햇빛 쪽 · m 비스듬한 면 · d 그늘 면.
+ */
+
+.iso {
+  position: absolute;
+  inset: 0;
+  z-index: var(--ds-z-base);
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.iso.is-dragging {
+  cursor: grabbing;
+}
+
+/* 면 사이에 바탕색 실선이 비치지 않게 면과 같은 색으로 테두리를 그린다(굵기는 svg 의 stroke-width 속성) */
+.iso polygon,
+.iso polyline,
+.iso path,
+.iso line,
+.iso rect,
+.iso circle,
+.iso ellipse {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transition:
+    fill var(--ds-motion-time-shift) var(--ds-easing-enter),
+    stroke var(--ds-motion-time-shift) var(--ds-easing-enter),
+    opacity var(--ds-motion-time-shift) var(--ds-easing-enter);
+}
+
+/* 매 프레임 움직이는 면은 색이 밝기 단계 사이를 오가므로 전환하지 않는다 */
+.iso [data-car] *,
+.is-instant .iso polygon,
+.is-instant .iso polyline,
+.is-instant .iso path,
+.is-instant .iso line,
+.is-instant .iso rect,
+.is-instant .iso circle,
+.is-instant .iso ellipse {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iso polygon,
+  .iso polyline,
+  .iso path,
+  .iso line,
+  .iso rect,
+  .iso circle,
+  .iso ellipse {
+    transition: none;
+  }
+}
+
+/* 해 질 녘에만 · 밤에만 보이는 것(시계 바늘) */
+html:not([data-time="night"]) .only-night,
+[data-time="night"] .only-dusk {
+  display: none;
+}
+
+/* ---------- 재질 면 — tools/palette.mjs 가 만든다 ---------- */
+/* iso-palette:start */
+.m-pave-t { fill: var(--iso-pave-t); stroke: var(--iso-pave-t); }
+.m-pave-l { fill: var(--iso-pave-l); stroke: var(--iso-pave-l); }
+.m-pave-m { fill: var(--iso-pave-m); stroke: var(--iso-pave-m); }
+.m-pave-d { fill: var(--iso-pave-d); stroke: var(--iso-pave-d); }
+.m-grass-t { fill: var(--iso-grass-t); stroke: var(--iso-grass-t); }
+.m-grass-l { fill: var(--iso-grass-l); stroke: var(--iso-grass-l); }
+.m-grass-m { fill: var(--iso-grass-m); stroke: var(--iso-grass-m); }
+.m-grass-d { fill: var(--iso-grass-d); stroke: var(--iso-grass-d); }
+.m-tree-t { fill: var(--iso-tree-t); stroke: var(--iso-tree-t); }
+.m-tree-l { fill: var(--iso-tree-l); stroke: var(--iso-tree-l); }
+.m-tree-m { fill: var(--iso-tree-m); stroke: var(--iso-tree-m); }
+.m-tree-d { fill: var(--iso-tree-d); stroke: var(--iso-tree-d); }
+.m-stone-t { fill: var(--iso-stone-t); stroke: var(--iso-stone-t); }
+.m-stone-l { fill: var(--iso-stone-l); stroke: var(--iso-stone-l); }
+.m-stone-m { fill: var(--iso-stone-m); stroke: var(--iso-stone-m); }
+.m-stone-d { fill: var(--iso-stone-d); stroke: var(--iso-stone-d); }
+.m-w1-t { fill: var(--iso-w1-t); stroke: var(--iso-w1-t); }
+.m-w1-l { fill: var(--iso-w1-l); stroke: var(--iso-w1-l); }
+.m-w1-m { fill: var(--iso-w1-m); stroke: var(--iso-w1-m); }
+.m-w1-d { fill: var(--iso-w1-d); stroke: var(--iso-w1-d); }
+.m-w2-t { fill: var(--iso-w2-t); stroke: var(--iso-w2-t); }
+.m-w2-l { fill: var(--iso-w2-l); stroke: var(--iso-w2-l); }
+.m-w2-m { fill: var(--iso-w2-m); stroke: var(--iso-w2-m); }
+.m-w2-d { fill: var(--iso-w2-d); stroke: var(--iso-w2-d); }
+.m-w3-t { fill: var(--iso-w3-t); stroke: var(--iso-w3-t); }
+.m-w3-l { fill: var(--iso-w3-l); stroke: var(--iso-w3-l); }
+.m-w3-m { fill: var(--iso-w3-m); stroke: var(--iso-w3-m); }
+.m-w3-d { fill: var(--iso-w3-d); stroke: var(--iso-w3-d); }
+.m-w4-t { fill: var(--iso-w4-t); stroke: var(--iso-w4-t); }
+.m-w4-l { fill: var(--iso-w4-l); stroke: var(--iso-w4-l); }
+.m-w4-m { fill: var(--iso-w4-m); stroke: var(--iso-w4-m); }
+.m-w4-d { fill: var(--iso-w4-d); stroke: var(--iso-w4-d); }
+.m-r1-t { fill: var(--iso-r1-t); stroke: var(--iso-r1-t); }
+.m-r1-l { fill: var(--iso-r1-l); stroke: var(--iso-r1-l); }
+.m-r1-m { fill: var(--iso-r1-m); stroke: var(--iso-r1-m); }
+.m-r1-d { fill: var(--iso-r1-d); stroke: var(--iso-r1-d); }
+.m-r2-t { fill: var(--iso-r2-t); stroke: var(--iso-r2-t); }
+.m-r2-l { fill: var(--iso-r2-l); stroke: var(--iso-r2-l); }
+.m-r2-m { fill: var(--iso-r2-m); stroke: var(--iso-r2-m); }
+.m-r2-d { fill: var(--iso-r2-d); stroke: var(--iso-r2-d); }
+.m-white-t { fill: var(--iso-white-t); stroke: var(--iso-white-t); }
+.m-white-l { fill: var(--iso-white-l); stroke: var(--iso-white-l); }
+.m-white-m { fill: var(--iso-white-m); stroke: var(--iso-white-m); }
+.m-white-d { fill: var(--iso-white-d); stroke: var(--iso-white-d); }
+.m-accent-t { fill: var(--iso-accent-t); stroke: var(--iso-accent-t); }
+.m-accent-l { fill: var(--iso-accent-l); stroke: var(--iso-accent-l); }
+.m-accent-m { fill: var(--iso-accent-m); stroke: var(--iso-accent-m); }
+.m-accent-d { fill: var(--iso-accent-d); stroke: var(--iso-accent-d); }
+.m-glass-t { fill: var(--iso-glass-t); stroke: var(--iso-glass-t); }
+.m-glass-l { fill: var(--iso-glass-l); stroke: var(--iso-glass-l); }
+.m-glass-m { fill: var(--iso-glass-m); stroke: var(--iso-glass-m); }
+.m-glass-d { fill: var(--iso-glass-d); stroke: var(--iso-glass-d); }
+.m-lamp-t { fill: var(--iso-lamp-t); stroke: var(--iso-lamp-t); }
+.m-lamp-l { fill: var(--iso-lamp-l); stroke: var(--iso-lamp-l); }
+.m-lamp-m { fill: var(--iso-lamp-m); stroke: var(--iso-lamp-m); }
+.m-lamp-d { fill: var(--iso-lamp-d); stroke: var(--iso-lamp-d); }
+.m-road-t { fill: var(--iso-road-t); stroke: var(--iso-road-t); }
+/* iso-palette:end */
+
+/* ---------- 물·불빛·선 ---------- */
+
+.river-deep { fill: var(--iso-river-deep); stroke: none; }
+.river-shallow { fill: var(--iso-river-shallow); stroke: none; }
+.wave { fill: none; stroke: var(--iso-wave); }
+.glint { fill: none; stroke: var(--iso-glow); opacity: var(--iso-glint-opacity); }
+.glow { fill: var(--iso-glow); stroke: none; }
+.pool { opacity: var(--iso-pool-opacity); }
+.halo { fill: var(--iso-glow); stroke: none; opacity: var(--iso-halo-opacity); }
+.bulb { fill: var(--iso-bulb); stroke: none; }
+.bulbs { fill: none; stroke: var(--iso-bulb); }
+.jet { fill: var(--iso-jet); stroke: none; opacity: var(--iso-jet-opacity); }
+.s-jet { fill: none; stroke: var(--iso-jet); opacity: var(--iso-jet-opacity); }
+.beacon { fill: var(--iso-beacon); stroke: none; opacity: var(--iso-beacon-opacity); }
+.head { fill: var(--iso-head); stroke: none; }
+.tail { fill: var(--iso-tail); stroke: none; }
+.clock { fill: var(--iso-clock); stroke: none; }
+.win-early { fill: var(--iso-win-early); stroke: none; }
+.win-late { fill: var(--iso-win-late); stroke: none; }
+.win-off { fill: var(--iso-win-off); stroke: none; }
+
+/* 창문 구역 — 면 좌표 transform 을 단 사각형을 창문 무늬로 칠한다(설계서 4-2절) */
+.wn { fill: url(#iso-wn); stroke: none; }
+.ws { fill: url(#iso-ws); stroke: none; }
+.wl { fill: url(#iso-wl); stroke: none; }
+
+.s-white { fill: none; stroke: var(--iso-white-l); }
+.s-stone { fill: none; stroke: var(--iso-stone-d); }
+.s-glass { fill: none; stroke: var(--iso-glass-t); }
+.s-trunk { fill: none; stroke: var(--iso-trunk); }
+.s-rail { fill: none; stroke: var(--iso-white-m); }
+
+/* 기찻길 침목 — 점선 마디가 네모난 침목이 되도록 끝을 각지게 둔다 */
+.iso .ties { stroke-linecap: butt; }

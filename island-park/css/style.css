@@ -446,8 +446,20 @@ button {
   line-height: var(--ds-text-caption-leading);
 }
 
-.scene__progress:empty {
-  display: none;
+/*
+ * live 영역(진행 문구 role=status · 배너 자리 aria-live)은 비어 있어도 렌더링해 둔다. display:none 은 쓰지 않는다.
+ * 영역과 내용이 한꺼번에 생기면 일부 화면낭독기가 읽지 않는다. 비었을 때는 화면에서만 숨긴다(.sr-only 와 같은 방식).
+ */
+.scene__progress:empty,
+.banner-region:empty {
+  position: absolute;
+  width: var(--ds-size-hairline);
+  height: var(--ds-size-hairline);
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  box-shadow: none;
+  pointer-events: none;
 }
 
 /* ---------- 정보 패널 ---------- */
@@ -457,10 +469,6 @@ button {
   flex-direction: column;
   gap: var(--ds-space-6);
   padding: var(--ds-space-4) var(--ds-space-4) var(--ds-space-8);
-}
-
-.banner-region:empty {
-  display: none;
 }
 
 .banner {
@@ -600,12 +608,21 @@ html:not(.js) .detail__hint {
 
 [data-mode="fallback"] .scene__controls,
 [data-mode="fallback"] .scene__labels,
-[data-mode="fallback"] [data-action="motion"],
-[data-mode="fallback"] .detail__hint,
 [data-mode="lost"] .scene__controls,
-[data-mode="lost"] .scene__labels,
-[data-mode="lost"] [data-action="motion"],
-[data-mode="lost"] .detail__hint {
+[data-mode="lost"] .scene__labels {
+  display: none;
+}
+
+/*
+ * 조작 안내(끌기·휠·두 손가락)·움직임 토글·"그곳으로 가까이 가요"는 3D 가 준비된 뒤(ready)에만 보인다.
+ * loading·fallback·lost 에서는 포스터만 있어 끌어도 반응하지 않는다.
+ * 고르는 법은 모든 모드에 한 줄 남긴다. ready 밖에서는 "목록에서 명소를 고르면…" 줄(.hint--pick-list)이 대신한다.
+ * 장면을 바꾸는 토글(시간대·날씨)은 포스터도 바꾸므로 숨기지 않는다.
+ */
+html:not([data-mode="ready"]) [data-action="motion"],
+html:not([data-mode="ready"]) .hint--gesture,
+html:not([data-mode="ready"]) .hint--pick-3d,
+html[data-mode="ready"] .hint--pick-list {
   display: none;
 }
 

@@ -43,6 +43,7 @@ const els = {
   zoomIn: $('[data-action="zoom-in"]'),
   zoomOut: $('[data-action="zoom-out"]'),
   bannerRegion: $('.banner-region'),
+  landmarksHead: $('#landmarks'),
   announcer: $('[data-announcer]'),
   backdrop: $('.panel-backdrop'),
   landmarkButtons: $$('.landmark'),
@@ -113,6 +114,23 @@ const wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
 function setMode(mode) {
   state.mode = mode;
   root.dataset.mode = mode;
+  syncSceneImage();
+}
+
+const setAriaHidden = (el, hidden) => {
+  if (hidden) el.setAttribute('aria-hidden', 'true');
+  else el.removeAttribute('aria-hidden');
+};
+
+/**
+ * 장면 그림을 접근성 트리에 하나만 둔다 — 캔버스(role=img)와 포스터 img 는 대체 텍스트가 같다.
+ * 3D가 보이는 ready 에서는 캔버스를, 그 밖(loading·lost·fallback)에서는 포스터를 남긴다.
+ * 캔버스는 장면을 만들 때 새로 생기므로 boot() 의 MutationObserver 도 이 함수를 부른다.
+ */
+function syncSceneImage() {
+  const ready = state.mode === 'ready';
+  $$('.scene__canvas', els.scene).forEach((canvas) => setAriaHidden(canvas, !ready));
+  setAriaHidden(els.poster, ready);
 }
 
 /* ---------- 화면낭독기 알림 ---------- */
@@ -264,7 +282,20 @@ function makeButton(className, label) {
   return button;
 }
 
+const isShown = (el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+
+/**
+ * 배너를 지우거나 바꾸기 직전에 부른다. 누른 버튼이 배너와 함께 사라지면 포커스가 body 로 떨어진다.
+ * 포커스가 배너 안에 있었으면 장면 토글 가운데 보이는 첫 버튼으로, 그런 버튼이 없으면 명소 목록 머리(tabindex="-1")로 옮긴다.
+ */
+function moveFocusAfterBanner() {
+  if (!els.bannerRegion.contains(document.activeElement)) return;
+  const toggle = $$('button', els.toggles).find(isShown);
+  (toggle ?? els.landmarksHead).focus();
+}
+
 function hideBanner() {
+  moveFocusAfterBanner();
   els.bannerRegion.replaceChildren();
 }
 
@@ -288,6 +319,7 @@ function showBanner({ text, action, onAction }) {
     '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
   close.addEventListener('click', hideBanner);
   banner.append(body, close);
+  moveFocusAfterBanner();
   els.bannerRegion.replaceChildren(banner);
 }
 
@@ -453,6 +485,7 @@ async function boot() {
   els.posterImg.addEventListener('load', placePoster);
   layoutObserver.observe(els.scene);
   layoutObserver.observe(els.backdrop);
+  new MutationObserver(syncSceneImage).observe(els.scene, { childList: true });
   if (debug.select) select(debug.select);
 
   els.landmarkButtons.forEach((button) => {
