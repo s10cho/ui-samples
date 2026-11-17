@@ -335,3 +335,14 @@ code {
 .dsx-task-area {
   display: contents;
 }
+
+/* 복제 스켈레톤 견본 — 배치에 쓰는 data-* (CSS 선택자에 나오는 것)는 복제본에도 남아 배치가 같다 */
+.dsx-row[data-align="split"] {
+  justify-content: space-between;
+}
+
+/* 카드(flush) 안 표 틀 — 카드 테두리와 겹치지 않게 */
+.dsx-plain-wrap {
+  border: 0;
+  border-radius: 0;
+}

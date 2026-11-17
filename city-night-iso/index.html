@@ -160,10 +160,28 @@
   <!--
     화면 스크립트 — 일반 스크립트 세 개. 서버로 열어도, 파일을 더블클릭해 열어도(file://) 같은 코드가 돈다.
     js/iso2d.js 는 공용 뼈대(shared/iso2d), js/iso-geom.js 와 js/scene.js 는 이 샘플의 것이다. 조립하면 한 폴더에 모인다.
-    받지 못하면 조작 버튼을 숨기고 명소 설명을 모두 펼친다(그림은 HTML 안에 있어 그대로 보인다).
+    아래 작은 로더가 세 파일을 순서대로 받는다. 하나가 실패하면(배포 직후 503 등) 0.5초 뒤 그 파일만 한 번 더 받는다.
+    두 번째도 실패하면 조작 버튼을 숨기고 명소 설명을 모두 펼친다(그림은 HTML 안에 있어 그대로 보인다).
+    로더 안에는 한글을 쓰지 않는다 — 본문 글자로 세어져 글꼴 서브셋 판단이 달라진다.
   -->
-  <script src="js/iso2d.js" onerror="document.documentElement.classList.remove('js')"></script>
-  <script src="js/iso-geom.js" onerror="document.documentElement.classList.remove('js')"></script>
-  <script src="js/scene.js" onerror="document.documentElement.classList.remove('js')"></script>
+  <script>
+    (function () {
+      var files = ['js/iso2d.js', 'js/iso-geom.js', 'js/scene.js'];
+      function load(i, retried) {
+        if (i >= files.length) return;
+        var el = document.createElement('script');
+        el.src = files[i];
+        el.async = false;
+        el.onload = function () { load(i + 1, false); };
+        el.onerror = function () {
+          el.remove();
+          if (retried) document.documentElement.classList.remove('js');
+          else setTimeout(function () { load(i, true); }, 500);
+        };
+        document.body.appendChild(el);
+      }
+      load(0, false);
+    })();
+  </script>
 </body>
 </html>

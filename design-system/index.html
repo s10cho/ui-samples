@@ -294,7 +294,7 @@
         <section class="ds-section" id="inputs" aria-labelledby="h-inputs">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-inputs">입력</h2></div>
           <p class="ds-section__desc">라벨은 늘 칸 위에 둬요. 자리 표시 글은 예시 값만 써요. 오류는 칸 바로 아래에 써요.</p>
-          <p class="dsx-api"><code>.ds-field</code> &gt; <code>.ds-field__label</code> · <code>.ds-input</code> · <code>.ds-select</code> · <code>.ds-textarea</code> · <code>.ds-search</code> · 도움말 <code>.ds-field__hint</code> · 오류 <code>aria-invalid="true"</code> + <code>.ds-field__error</code> · 필수 <code>aria-required="true"</code> + <code>.ds-field__req[aria-hidden]</code> · 오류 요약 <code>DS.form.summary(상자, [{ id, label, text }], { focus: true })</code></p>
+          <p class="dsx-api"><code>.ds-field</code> &gt; <code>.ds-field__label</code> · <code>.ds-input</code> · <code>.ds-select</code> · <code>.ds-textarea</code> · <code>.ds-search</code> · 도움말 <code>.ds-field__hint</code> · 오류 <code>aria-invalid="true"</code> + <code>.ds-field__error</code> · 필수 <code>aria-required="true"</code> + <code>.ds-field__req[aria-hidden]</code> · 오류 요약 <code>DS.form.summary(상자, [{ id, label, text }], { focus: true })</code> · 칸 뒤 고정 글 <code>.ds-input-group</code> &gt; <code>.ds-input</code> + <code>.ds-input-group__text</code></p>
           <div class="ds-form-grid">
             <div class="dsx-cell"><span class="dsx-state">기본</span>
               <div class="ds-field"><label class="ds-field__label" for="in-1">보고서 이름</label><input class="ds-input" id="in-1" placeholder="예: 3월 정산 보고서…" aria-describedby="in-1-hint"><p class="ds-field__hint" id="in-1-hint">목록에 보이는 이름이에요.</p></div>
@@ -322,6 +322,9 @@
             </div>
             <div class="dsx-cell"><span class="dsx-state">검색</span>
               <div class="ds-field"><label class="ds-field__label" for="in-9">작업 찾기</label><span class="ds-search"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-search"></use></svg><input class="ds-input" id="in-9" type="search" placeholder="예: 정산…"></span></div>
+            </div>
+            <div class="dsx-cell"><span class="dsx-state">뒤에 고정 글</span>
+              <div class="ds-field"><label class="ds-field__label" for="in-11">팀 주소</label><div class="ds-input-group"><input class="ds-input" id="in-11" value="jeongsan" autocomplete="off" spellcheck="false" aria-describedby="in-11-suffix"><span class="ds-input-group__text" id="in-11-suffix">.team.example</span></div></div>
             </div>
           </div>
           <div class="ds-field"><label class="ds-field__label" for="in-10">메모</label><textarea class="ds-textarea" id="in-10" placeholder="예: 다음 주 회의에서 다시 봐요…"></textarea></div>
@@ -403,7 +406,7 @@
         <section class="ds-section" id="table" aria-labelledby="h-table">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-table">표</h2></div>
           <p class="ds-section__desc">머리를 누르면 정렬하고, 칩을 누르면 걸러요. 정렬·필터는 주소에 남아요. 좁은 폭에서는 행을 쌓아요.</p>
-          <p class="dsx-api"><code>.ds-table-wrap</code>(+ <code>--scroll</code> 긴 표 · <code>--page</code> 페이지 스크롤) &gt; <code>table.ds-table</code>(+ <code>--stack</code> · <code>--sticky-first</code> 첫 열 고정 · <code>data-ds-sort-client</code> · <code>data-url-key</code>) · 정렬 <code>th &gt; button.ds-sort[data-key]</code> · 고르기 <code>td.ds-table__select &gt; label.ds-hit &gt; input</code> · 숫자 <code>.ds-num</code> · 작업 줄 <code>.ds-actionbar</code> + <code>DS.actionbar.set(줄, 고른 것이 있는지)</code>(좁은 폭에서 화면 아래에 붙어요)</p>
+          <p class="dsx-api"><code>.ds-table-wrap</code>(+ <code>--scroll</code> 긴 표 · <code>--page</code> 페이지 스크롤) &gt; <code>table.ds-table</code>(+ <code>--stack</code> · <code>--sticky-first</code> 첫 열 고정 · <code>data-ds-sort-client</code> · <code>data-url-key</code>) · 정렬 <code>th &gt; button.ds-sort[data-key]</code> · 고르기 <code>td.ds-table__select &gt; label.ds-hit &gt; input</code> · 숫자 <code>.ds-num</code> · 바뀐 칸 <code>[data-ds-changed]</code> + <code>.ds-sr-only</code> 글 · 작업 줄 <code>.ds-actionbar</code> + <code>DS.actionbar.set(줄, 고른 것이 있는지)</code>(좁은 폭에서 화면 아래에 붙어요)</p>
           <div class="ds-toolbar">
             <div class="ds-chips" role="group" aria-labelledby="flt-label">
               <span class="dsx-toolbar-label" id="flt-label">상태</span>
@@ -419,7 +422,7 @@
                 <button class="ds-btn ds-btn--ghost ds-btn--sm" type="button" id="btn-unselect" hidden>고르기 풀기</button>
               </div>
               <div class="ds-actionbar__actions">
-                <button class="ds-btn ds-btn--sm" type="button" id="btn-export" aria-disabled="true" data-ds-tip="내보낼 작업을 먼저 골라 주세요">
+                <button class="ds-btn ds-btn--sm" type="button" id="btn-export" aria-disabled="true" data-ds-tip="내보낼 작업을 먼저 골라 주세요" data-ds-actionbar-main data-ds-mini-label="내보내기">
                   <svg class="ds-icon" aria-hidden="true"><use href="#ds-i-download"></use></svg>고른 작업 내보내기
                 </button>
               </div>
@@ -502,6 +505,7 @@
           </div>
 
           <h3 class="dsx-sub" id="h-sticky">첫 열 고정 — 가로로 밀어도 고르기 열과 팀 이름이 남아요</h3>
+          <p class="dsx-note">정산팀 11월 칸은 저장 전에 바뀐 칸이에요(점 + 바탕 + 화면낭독기 글). 운영팀 행 끝 메뉴는 표 틀에 잘리지 않게 열려요.</p>
           <div class="ds-table-wrap" id="month-wrap" role="region" aria-labelledby="h-sticky" tabindex="0">
             <table class="ds-table ds-table--sticky-first dsx-wide" id="month-table">
               <caption class="ds-sr-only">팀별 월간 처리 건수</caption>
@@ -516,12 +520,19 @@
                   <th scope="col" class="ds-num" data-col="m11">11월</th>
                   <th scope="col" data-col="lead">담당</th>
                   <th scope="col" data-col="note">메모</th>
+                  <th scope="col" class="ds-table__actions"><span class="ds-sr-only">행 동작</span></th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="정산팀 고르기"></label></td><th scope="row">정산팀</th><td class="ds-num">1,204</td><td class="ds-num">1,318</td><td class="ds-num">1,122</td><td class="ds-num">1,402</td><td class="ds-num">1,284</td><td>박도현</td><td>분기 마감 주간에 건수가 몰려요</td></tr>
-                <tr><td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="상담팀 고르기"></label></td><th scope="row">상담팀</th><td class="ds-num">3,410</td><td class="ds-num">3,122</td><td class="ds-num">3,560</td><td class="ds-num">3,804</td><td class="ds-num">3,615</td><td>이하은</td><td>신규 채널 문의가 늘었어요</td></tr>
-                <tr><td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="운영팀 고르기"></label></td><th scope="row">운영팀</th><td class="ds-num">512</td><td class="ds-num">488</td><td class="ds-num">530</td><td class="ds-num">604</td><td class="ds-num">577</td><td>최지안</td><td>점검 일정 변경 없음</td></tr>
+                <tr><td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="정산팀 고르기"></label></td><th scope="row">정산팀</th><td class="ds-num">1,204</td><td class="ds-num">1,318</td><td class="ds-num">1,122</td><td class="ds-num">1,402</td><td class="ds-num" data-ds-changed>1,284<span class="ds-sr-only">(바뀜)</span></td><td>박도현</td><td>분기 마감 주간에 건수가 몰려요</td><td class="ds-table__actions"></td></tr>
+                <tr><td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="상담팀 고르기"></label></td><th scope="row">상담팀</th><td class="ds-num">3,410</td><td class="ds-num">3,122</td><td class="ds-num">3,560</td><td class="ds-num">3,804</td><td class="ds-num">3,615</td><td>이하은</td><td>신규 채널 문의가 늘었어요</td><td class="ds-table__actions"></td></tr>
+                <tr><td class="ds-table__select"><label class="ds-hit"><input type="checkbox" aria-label="운영팀 고르기"></label></td><th scope="row">운영팀</th><td class="ds-num">512</td><td class="ds-num">488</td><td class="ds-num">530</td><td class="ds-num">604</td><td class="ds-num">577</td><td>최지안</td><td>점검 일정 변경 없음</td><td class="ds-table__actions"><div class="ds-menu-anchor"><button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm" type="button" id="btn-row-menu" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-row-ops" aria-label="운영팀 동작" data-ds-tip="운영팀 동작"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-more"></use></svg></button>
+                  <div class="ds-menu" id="menu-row-ops" role="menu" aria-label="운영팀 동작" hidden>
+                    <button class="ds-menu__item" type="button" role="menuitem"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-edit"></use></svg>메모 고치기</button>
+                    <button class="ds-menu__item ds-menu__item--detail" type="button" role="menuitem" aria-disabled="true"><span class="ds-menu__label">담당 바꾸기</span><span class="ds-menu__desc">관리자만 바꿀 수 있어요</span></button>
+                    <hr class="ds-menu__sep">
+                    <button class="ds-menu__item ds-menu__item--danger" type="button" role="menuitem"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-trash"></use></svg>팀 지우기</button>
+                  </div></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -603,12 +614,12 @@
             <div class="ds-banner" data-ds-banner data-focus-next="#btn-banner-demo">
               <svg class="ds-icon ds-banner__icon" aria-hidden="true"><use href="#ds-i-info"></use></svg>
               <div class="ds-banner__body"><p class="ds-banner__title">새 칸이 생겼어요</p><p class="ds-banner__text">작업마다 마감일을 적을 수 있어요.</p></div>
-              <button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm ds-banner__close" type="button" data-ds-dismiss aria-label="알림 닫기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg></button>
+              <button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm ds-banner__close" type="button" data-ds-dismiss aria-label="안내 닫기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg></button>
             </div>
             <div class="ds-banner ds-banner--success" data-ds-banner data-focus-next="#btn-banner-demo">
               <svg class="ds-icon ds-banner__icon" aria-hidden="true"><use href="#ds-i-success"></use></svg>
               <div class="ds-banner__body"><p class="ds-banner__title">보고서를 보냈어요</p><p class="ds-banner__text">받는 곳 3곳에 메일로 보냈어요.</p></div>
-              <button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm ds-banner__close" type="button" data-ds-dismiss aria-label="알림 닫기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg></button>
+              <button class="ds-btn ds-btn--ghost ds-btn--icon ds-btn--sm ds-banner__close" type="button" data-ds-dismiss aria-label="안내 닫기"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-close"></use></svg></button>
             </div>
             <div class="ds-banner ds-banner--warning" data-ds-banner>
               <svg class="ds-icon ds-banner__icon" aria-hidden="true"><use href="#ds-i-info"></use></svg>
@@ -631,7 +642,7 @@
         <section class="ds-section" id="states" aria-labelledby="h-states">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-states">빈 상태·로딩</h2></div>
           <p class="ds-section__desc">로딩 표시는 0.3초 뒤에 보이고, 한번 보이면 0.4초는 남아요. 스켈레톤은 실제 내용을 복제해 색만 바꿔요. 그래서 불러온 뒤에도 아무것도 밀리지 않아요.</p>
-          <p class="dsx-api"><code>.ds-empty</code>(+ <code>--center</code> · <code>--error</code> · <code>--inline</code>) · 복제 스켈레톤 <code>DS.skeleton.show(영역)</code> · <code>DS.skeleton.hide(영역)</code>(고정 안내 글은 <code>data-ds-skeleton-keep</code>) · <code>.ds-skeleton</code>(+ <code>--short</code> · <code>--medium</code> · <code>--title</code> · <code>--value</code> · <code>--circle</code>) · <code>.ds-spinner</code> · <code>.ds-progress</code> · <code>.ds-steps</code>(+ <code>--compact</code> 좁은 폭에서 지금 단계 이름만 · 끝난 단계 <code>data-state="done"</code> · 이름 <code>.ds-steps__label</code>) · 견본은 <code>.is-static</code>으로 멈춰요</p>
+          <p class="dsx-api"><code>.ds-empty</code>(+ <code>--center</code> · <code>--error</code> · <code>--inline</code>) · 복제 스켈레톤 <code>DS.skeleton.show(영역)</code> · <code>DS.skeleton.hide(영역)</code>(고정 안내 글은 <code>data-ds-skeleton-keep</code> · 표 머리는 늘 그대로 · CSS 선택자에 쓰는 <code>data-*</code>는 남아요) · <code>.ds-skeleton</code>(+ <code>--short</code> · <code>--medium</code> · <code>--title</code> · <code>--value</code> · <code>--circle</code>) · <code>.ds-spinner</code> · <code>.ds-progress</code> · <code>.ds-steps</code>(+ <code>--compact</code> 좁은 폭에서 지금 단계 이름만 · 끝난 단계 <code>data-state="done"</code> · 건너뛴 단계 <code>data-state="skipped"</code> · 이름 <code>.ds-steps__label</code>) · 견본은 <code>.is-static</code>으로 멈춰요</p>
           <div class="ds-grid">
             <div class="ds-card">
               <div class="ds-empty">
@@ -655,8 +666,9 @@
               <div class="dsx-row"><button class="ds-btn ds-btn--sm" type="button">올리기 멈추기</button><span class="ds-loading"><span class="ds-spinner is-static" aria-hidden="true"></span>남은 시간 계산 중</span></div>
               <ol class="ds-steps ds-steps--compact" aria-label="예약 단계">
                 <li class="ds-steps__item" data-state="done"><span class="ds-steps__mark"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-check"></use></svg></span><span class="ds-steps__label">정보 입력</span><span class="ds-sr-only">(끝남)</span></li>
-                <li class="ds-steps__item" aria-current="step"><span class="ds-steps__mark">2</span><span class="ds-steps__label">시간 고르기</span></li>
-                <li class="ds-steps__item"><span class="ds-steps__mark">3</span><span class="ds-steps__label">확인</span></li>
+                <li class="ds-steps__item" data-state="skipped"><span class="ds-steps__mark"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-minus"></use></svg></span><span class="ds-steps__label">팀원 초대</span><span class="ds-sr-only">(건너뜀)</span></li>
+                <li class="ds-steps__item" aria-current="step"><span class="ds-steps__mark">3</span><span class="ds-steps__label">시간 고르기</span></li>
+                <li class="ds-steps__item"><span class="ds-steps__mark">4</span><span class="ds-steps__label">확인</span></li>
               </ol>
             </div>
             <div class="ds-card dsx-sk-card">
@@ -665,7 +677,7 @@
                 <button class="ds-btn ds-btn--sm" type="button" id="btn-sk-reload" data-busy-label="읽는 중">다시 불러오기</button>
               </div>
               <div class="dsx-sk-target" id="sk-target">
-                <p class="ds-text-muted" data-ds-skeleton-keep>매일 오전 9시에 모은 숫자예요.</p>
+                <p class="ds-text-muted" data-ds-skeleton-keep>매일 오전 9시에 모은 숫자예요. <span class="ds-badge">자동</span></p>
                 <div class="ds-cq">
                   <dl class="ds-dl">
                     <dt data-ds-skeleton-keep>담당 팀</dt><dd>정산팀</dd>
@@ -676,6 +688,10 @@
                 <div class="ds-options">
                   <label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" checked><span class="ds-switch__track" aria-hidden="true"></span><span data-ds-skeleton-keep>주간 요약 메일</span></label>
                   <label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" disabled><span class="ds-switch__track" aria-hidden="true"></span><span data-ds-skeleton-keep>관리자 승인(비활성)</span></label>
+                </div>
+                <div class="dsx-row" data-align="split">
+                  <a href="#cards">지난 요약 보기</a>
+                  <span class="ds-badge ds-badge--warning">마감 3개</span>
                 </div>
                 <div class="dsx-row">
                   <button class="ds-btn ds-btn--primary" type="button">변경 내용 저장</button>
@@ -741,7 +757,7 @@
         <section class="ds-section" id="overlays" aria-labelledby="h-overlays">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-overlays">툴팁·메뉴</h2></div>
           <p class="ds-section__desc">툴팁은 마우스를 올리거나 키보드로 옮기면 떠요. 툴팁 위로 마우스를 옮겨도 남고, Esc로 닫혀요. 메뉴는 화살표 키로 옮기고 Esc로 닫아요.</p>
-          <p class="dsx-api">툴팁 <code>[data-ds-tip="글"]</code> · 메뉴 <code>button[aria-haspopup="menu"][aria-controls]</code> + <code>.ds-menu[role="menu"]</code> &gt; <code>.ds-menu__item[role="menuitem"]</code> · 체크 메뉴 <code>.ds-menu--check</code> &gt; <code>[role="menuitemcheckbox"][aria-checked]</code> + <code>.ds-menu__check</code>(켜고 끄면 <code>ds:menucheck</code>) · 위로 <code>.ds-menu--up</code> · 두 줄 <code>.ds-menu__item--detail</code> &gt; <code>.ds-menu__label</code> + <code>.ds-menu__desc</code></p>
+          <p class="dsx-api">툴팁 <code>[data-ds-tip="글"]</code> · 메뉴 <code>button[aria-haspopup="menu"][aria-controls]</code> + <code>.ds-menu[role="menu"]</code> &gt; <code>.ds-menu__item[role="menuitem"]</code> · 체크 메뉴 <code>.ds-menu--check</code> &gt; <code>[role="menuitemcheckbox"][aria-checked]</code> + <code>.ds-menu__check</code>(켜고 끄면 <code>ds:menucheck</code>) · 위로 <code>.ds-menu--up</code> · 두 줄 <code>.ds-menu__item--detail</code> &gt; <code>.ds-menu__label</code> + <code>.ds-menu__desc</code> · 고를 수 없는 항목 <code>aria-disabled="true"</code> + 이유 <code>.ds-menu__desc</code></p>
           <div class="dsx-columns">
             <div class="dsx-cell">
               <h3 class="dsx-sub">툴팁</h3>
@@ -800,7 +816,7 @@
         <section class="ds-section" id="cards" aria-labelledby="h-cards">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-cards">카드·목록</h2></div>
           <p class="ds-section__desc">카드는 테두리로 나누고 카드 안에 카드를 넣지 않아요. 목록 행 사이는 구분선이에요.</p>
-          <p class="dsx-api"><code>.ds-grid</code> &gt; <code>.ds-card</code>(+ <code>--flush</code> · <code>--danger</code>) · <code>.ds-stat</code> · <code>.ds-list</code> &gt; <code>.ds-list__row</code> · <code>.ds-dl</code>(카드 폭으로 쌓으려면 카드 안쪽 <code>.ds-cq</code>로 감싸요) · <code>.ds-avatar</code></p>
+          <p class="dsx-api"><code>.ds-grid</code> &gt; <code>.ds-card</code>(+ <code>--flush</code> · <code>--danger</code>) · <code>.ds-stat</code> · <code>.ds-list</code> &gt; <code>.ds-list__row</code>(줄 끝 버튼 <code>.ds-list__action</code>) · <code>.ds-dl</code>(카드 폭으로 쌓으려면 카드 안쪽 <code>.ds-cq</code>로 감싸요) · <code>.ds-avatar</code> · 검색어 강조 <code>mark</code> · 틀 폭으로 쌓는 표 <code>.ds-table--stack-cq</code> · 읽기 전용 상태 <code>.ds-state-mark[data-state="on|off|na"]</code></p>
           <div class="ds-grid" id="stats">
             <div class="ds-card ds-stat"><p class="ds-stat__label">오늘 들어온 문의</p><p class="ds-stat__value">128<span class="ds-stat__unit">건</span></p><p class="ds-stat__delta ds-stat__delta--bad"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-arrow-up"></use></svg>지난주 같은 요일보다 12% 늘었어요</p></div>
             <div class="ds-card ds-stat"><p class="ds-stat__label">답을 기다리는 문의</p><p class="ds-stat__value">14<span class="ds-stat__unit">건</span></p><p class="ds-stat__delta ds-stat__delta--good"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-arrow-down"></use></svg>어제보다 3건 줄었어요</p></div>
@@ -824,6 +840,26 @@
                   <dt>마감일</dt><dd><time datetime="2026-11-20">2026년 11월 20일</time></dd>
                   <dt>만든 날</dt><dd><time datetime="2026-11-03">2026년 11월 3일</time></dd>
                 </dl>
+              </div>
+            </div>
+            <div class="ds-card ds-card--flush">
+              <div class="ds-card__head"><h3 class="ds-card__title">연결할 채널</h3></div>
+              <div class="ds-list">
+                <div class="ds-list__row"><div class="ds-list__main"><span class="ds-list__title">메일 받은편지함</span><span class="ds-list__meta">문의 메일을 대화로 모아요</span></div><div class="ds-list__action"><button class="ds-btn ds-btn--sm" type="button">연결</button></div></div>
+                <div class="ds-list__row"><div class="ds-list__main"><span class="ds-list__title"><mark>정산</mark> 문의 양식</span><span class="ds-list__meta">검색어 "정산"이 든 이름이에요</span></div><div class="ds-list__action"><button class="ds-btn ds-btn--sm" type="button">연결</button></div></div>
+              </div>
+            </div>
+            <div class="ds-card ds-card--flush">
+              <div class="ds-card__head"><h3 class="ds-card__title">알림 받는 곳</h3></div>
+              <div class="ds-table-wrap dsx-plain-wrap">
+                <table class="ds-table ds-table--stack-cq">
+                  <caption class="ds-sr-only">팀별 알림 받는 곳</caption>
+                  <thead><tr><th scope="col">팀</th><th scope="col">메일</th><th scope="col">문자</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row" class="ds-table__primary">정산팀</th><td data-label="메일"><span class="ds-state-mark" data-state="on"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-check"></use></svg><span class="ds-sr-only">켜짐</span></span></td><td data-label="문자"><span class="ds-state-mark" data-state="off"><span class="ds-sr-only">꺼짐</span></span></td></tr>
+                    <tr><th scope="row" class="ds-table__primary">상담팀</th><td data-label="메일"><span class="ds-state-mark" data-state="on"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-check"></use></svg><span class="ds-sr-only">켜짐</span></span></td><td data-label="문자"><span class="ds-state-mark" data-state="na"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-minus"></use></svg><span class="ds-sr-only">해당 없음</span></span></td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
             <div class="ds-card ds-card--danger">

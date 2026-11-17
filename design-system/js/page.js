@@ -461,13 +461,13 @@
     }
     btn.addEventListener('click', function () {
       DS.busy(btn, true);
-      DS.announce(COPY.skLoading);
       target.setAttribute('aria-busy', 'true');
-      // 0.3초 안에 끝나면 아무것도 보이지 않고, 보이면 0.4초는 남는다(DS.loadingTimer)
+      // 0.3초 안에 끝나면 아무것도 보이지 않고, 보이면 0.4초는 남는다(DS.loadingTimer).
+      // announce 로 보낸 "불러오는 중" 문장은 끝나면 live 영역에서 지워진다
       var timer = DS.loadingTimer(function () { DS.skeleton.show(target); }, function () {
         DS.skeleton.hide(target);
         target.removeAttribute('aria-busy');
-      });
+      }, { announce: COPY.skLoading });
       setTimeout(function () {
         timer.stop();
         DS.busy(btn, false).then(function () { DS.announce(COPY.skLoaded); });
