@@ -17,7 +17,8 @@
  *   옆 패널          DS.panel · [data-ds-panel] — 열림을 주소에 남기고, 덮는 폭에서는 뒤를 inert 로
  *   테마             DS.theme — 밝게·어둡게·시스템. 저장값이 없으면 밝게 시작한다
  *   글꼴             DS.fonts — 화면 글자가 page subset 에 없을 때만 다이나믹 서브셋을 붙인다
- *   아이콘           DS.icon(name) — 문서 안 스프라이트(<use href="#ds-i-이름">)
+ *   아이콘           DS.icon(name) — 문서 안 스프라이트(<use href="#ds-i-이름">) · DS.iconEl(name) 은 요소
+ *   여러 줄 입력     form 안 textarea 에서 ⌘/Ctrl+Enter 로 제출(data-ds-no-submit-shortcut 로 끈다)
  *   로딩             DS.loadingTimer · DS.busy — 300ms 뒤에 보이고 400ms 는 남는다(둘 다 기본)
  */
 (function () {
@@ -105,6 +106,7 @@
     'arrow-up': '<path d="M12 19V5M6 11l6-6 6 6"/>',
     'arrow-down': '<path d="M12 5v14M6 13l6 6 6-6"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
+    minus: '<path d="M5 12h14"/>',
     more: '<path d="M6 12h.01M12 12h.01M18 12h.01" stroke-width="3"/>',
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5h.01" stroke-width="2.5"/>',
     success: '<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.75 2.75L16 10"/>',
@@ -147,6 +149,9 @@
     return wrap.firstChild;
   }
 
+  /** 아이콘 <svg> 요소를 돌려준다(appendChild 로 바로 붙일 때) */
+  DS.iconEl = iconEl;
+
   function injectSprite() {
     if (doc.getElementById('ds-sprite')) return;
     var symbols = Object.keys(ICONS).map(function (k) {
@@ -171,10 +176,24 @@
   }
 
   /** 화면낭독기에 한 줄을 읽힌다. 같은 문장을 다시 보내도 다시 읽힌다. */
+  var liveTimers = {};
+
+  /**
+   * opts: { assertive(기본 false), clearAfter(ms, 기본 7000 · 0 이면 비우지 않음) }
+   * 새 알림을 보내면 다른 live 영역의 낡은 문장도 비운다. 보낸 문장은 clearAfter 뒤에 비운다.
+   */
   DS.announce = function (text, opts) {
-    var el = liveRegion(!!(opts && opts.assertive));
+    opts = opts || {};
+    var assertive = !!opts.assertive;
+    var el = liveRegion(assertive);
+    var other = liveRegion(!assertive);
+    clearTimeout(liveTimers[other.id]);
+    other.textContent = '';
+    clearTimeout(liveTimers[el.id]);
     el.textContent = '';
     setTimeout(function () { el.textContent = text; }, 100);
+    var keep = typeof opts.clearAfter === 'number' ? opts.clearAfter : 7000;
+    if (keep > 0) liveTimers[el.id] = setTimeout(function () { el.textContent = ''; }, keep + 100);
     DS.fonts.ensureText(text);
   };
 
@@ -245,9 +264,9 @@
       if (o.announce !== false && line) DS.announce(line, { assertive: tone === 'danger' });
       else DS.fonts.ensureText(line);
 
-      // 배너가 화면 밖이면 보이는 곳까지만 스크롤한다
+      // 배너가 화면 밖이면 보이는 곳까지만 스크롤한다(scroll:false 면 하지 않는다)
       var r = el.getBoundingClientRect();
-      if (r.top < remPx() * 3.5 || r.bottom > window.innerHeight) {
+      if (o.scroll !== false && (r.top < remPx() * 3.5 || r.bottom > window.innerHeight)) {
         el.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
       }
       emit(el, 'ds:banner-show', { id: el.id });
@@ -315,6 +334,7 @@
       dlg = resolve(dlg);
       if (!dlg || dlg.open) return;
       openers.set(dlg, opener || doc.activeElement);
+      dlg.returnValue = '';
       if (typeof dlg.showModal === 'function') dlg.showModal();
       else dlg.setAttribute('open', '');
       var first = $('[data-ds-initial-focus]', dlg) || focusables(dlg)[0] || dlg;
@@ -365,12 +385,35 @@
     return $$('[role="tab"]', list).filter(function (t) { return t.closest('[role="tablist"]') === list && !t.disabled; });
   }
 
+  // 고른 탭이 탭 줄 밖(가로 스크롤)에 있으면 줄 안으로 옮긴다. 페이지는 스크롤하지 않는다
+  function revealTab(list, tab) {
+    if (list.scrollWidth <= list.clientWidth) return;
+    var lr = list.getBoundingClientRect();
+    var tr = tab.getBoundingClientRect();
+    var pad = remPx();
+    if (tr.left < lr.left) list.scrollLeft -= lr.left - tr.left + pad;
+    else if (tr.right > lr.right) list.scrollLeft += tr.right - lr.right + pad;
+  }
+
   DS.tabs = {
+    /**
+     * 탭을 고른다. 사용자가 바꾸기 전에 취소할 수 있는 ds:tabbeforechange 를 보낸다
+     * (detail: { tab, from, value }) — preventDefault() 하면 바꾸지 않고 false 를 돌려준다.
+     * opts: { focus, fromUrl, force(이벤트 없이) }
+     */
     select: function (tab, opts) {
       tab = resolve(tab);
       opts = opts || {};
       var list = tab.closest('[role="tablist"]');
       var tabs = tabsIn(list);
+      var current = tabs.filter(function (t) { return t.getAttribute('aria-selected') === 'true'; })[0];
+      if (!opts.fromUrl && !opts.force && current && current !== tab) {
+        var before = new CustomEvent('ds:tabbeforechange', {
+          bubbles: true, cancelable: true,
+          detail: { tab: tab, from: current, value: tab.getAttribute('data-value') || tab.id }
+        });
+        if (!list.dispatchEvent(before)) return false;
+      }
       tabs.forEach(function (t) {
         var on = t === tab;
         t.setAttribute('aria-selected', on ? 'true' : 'false');
@@ -379,6 +422,7 @@
         if (panel) panel.hidden = !on;
       });
       if (opts.focus) tab.focus();
+      revealTab(list, tab);
       var key = list.getAttribute('data-url-key');
       if (key && !opts.fromUrl) {
         var o = {};
@@ -386,6 +430,7 @@
         DS.url.set(o);
       }
       emit(list, 'ds:tabchange', { tab: tab, value: tab.getAttribute('data-value') || tab.id });
+      return true;
     }
   };
 
@@ -615,7 +660,7 @@
 
   /* ---------- 9. 옆 메뉴 서랍(좁은 폭) ---------- */
 
-  var wide = window.matchMedia ? matchMedia('(min-width: 1024px)') : null;
+  var wide = window.matchMedia ? matchMedia('(min-width: 64rem)') : null;
 
   function setNav(app, open, opts) {
     if (!app) return;
@@ -651,7 +696,7 @@
 
   /* ---------- 9-2. 옆 패널 — 1280 이상은 본문 옆에 붙고(비모달), 그보다 좁으면 덮는다(뒤는 inert) ---------- */
 
-  var docked = window.matchMedia ? matchMedia('(min-width: 1280px)') : null;
+  var docked = window.matchMedia ? matchMedia('(min-width: 80rem)') : null;
   var panelOpeners = new WeakMap();
 
   function panelControls(panel) {
@@ -880,6 +925,7 @@
 
   function showBusy(btn) {
     btn._dsLabel = Array.prototype.slice.call(btn.childNodes);
+    btn._dsAriaDisabled = btn.getAttribute('aria-disabled');
     btn.setAttribute('aria-busy', 'true');
     btn.setAttribute('aria-disabled', 'true');
     btn.textContent = '';
@@ -891,7 +937,10 @@
 
   function hideBusy(btn) {
     btn.removeAttribute('aria-busy');
-    btn.removeAttribute('aria-disabled');
+    // 처리 전에 있던 aria-disabled 값으로 되돌린다(없었으면 지운다)
+    if (btn._dsAriaDisabled == null) btn.removeAttribute('aria-disabled');
+    else btn.setAttribute('aria-disabled', btn._dsAriaDisabled);
+    btn._dsAriaDisabled = null;
     if (btn._dsLabel) {
       btn.textContent = '';
       btn._dsLabel.forEach(function (n) { btn.appendChild(n); });
@@ -945,6 +994,31 @@
       e.stopImmediatePropagation();
     }
   }, true);
+
+  // 처리 중(data-ds-pending · aria-busy)인 제출 버튼이 있는 폼은 Enter 로도 다시 제출되지 않는다
+  doc.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (!form || !form.querySelector) return;
+    var pending = form.hasAttribute('data-ds-pending') ||
+      (e.submitter && e.submitter.matches('[data-ds-pending], [aria-busy="true"]')) ||
+      form.querySelector('button[data-ds-pending]:not([type="button"]):not([type="reset"]), input[type="submit"][data-ds-pending], button[aria-busy="true"]:not([type="button"]):not([type="reset"])');
+    if (pending) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }, true);
+
+  // 여러 줄 입력에서 ⌘/Ctrl+Enter — 폼을 제출한다(CMP-INPUT-13). Enter 는 줄바꿈으로 둔다.
+  // 샘플이 먼저 처리했으면(preventDefault) 건너뛴다 — window 에서 들어 문서·요소의 리스너가 모두 끝난 뒤에 본다.
+  // data-ds-no-submit-shortcut 이 칸·폼에 있으면 하지 않는다
+  window.addEventListener('keydown', function (e) {
+    if (e.defaultPrevented || e.key !== 'Enter' || !(e.metaKey || e.ctrlKey) || e.isComposing) return;
+    var t = e.target;
+    if (!t || t.tagName !== 'TEXTAREA' || !t.form || t.closest('[data-ds-no-submit-shortcut]')) return;
+    e.preventDefault();
+    if (typeof t.form.requestSubmit === 'function') t.form.requestSubmit();
+    else t.form.submit();
+  });
 
   doc.addEventListener('click', function (e) {
     var t = e.target;
@@ -1200,8 +1274,18 @@
 
   /* ---------- 시작 ---------- */
 
+  function watchTopbar() {
+    var top = $('.ds-app__top');
+    if (!top) return;
+    var set = function () { root.style.setProperty('--ds-app-top', Math.round(top.getBoundingClientRect().height) + 'px'); };
+    set();
+    if (window.ResizeObserver) new ResizeObserver(set).observe(top);
+    else window.addEventListener('resize', set);
+  }
+
   function init() {
     injectSprite();
+    watchTopbar();
     liveRegion(false);
     liveRegion(true);
     initTheme();

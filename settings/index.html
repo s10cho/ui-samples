@@ -105,10 +105,10 @@
 
         <div class="settings-body" id="settings-body">
           <div class="ds-tabs" role="tablist" aria-label="설정 묶음" id="settings-tabs" data-url-key="tab">
-            <button class="ds-tab" type="button" role="tab" id="tab-account" aria-controls="tp-account" aria-selected="true" data-value="account">계정<span class="settings-tab-dot" aria-hidden="true" hidden></span><span class="ds-sr-only" data-dirty-sr hidden>(저장 안 한 변경 있음)</span></button>
-            <button class="ds-tab" type="button" role="tab" id="tab-notifications" aria-controls="tp-notifications" aria-selected="false" data-value="notifications">알림<span class="settings-tab-dot" aria-hidden="true" hidden></span><span class="ds-sr-only" data-dirty-sr hidden>(저장 안 한 변경 있음)</span></button>
-            <button class="ds-tab" type="button" role="tab" id="tab-security" aria-controls="tp-security" aria-selected="false" data-value="security">보안</button>
-            <button class="ds-tab" type="button" role="tab" id="tab-team" aria-controls="tp-team" aria-selected="false" data-value="team">팀</button>
+            <button class="ds-tab" type="button" role="tab" id="tab-account" aria-controls="tp-account" aria-selected="true" data-value="account">계정<span class="ds-tab__dot" aria-hidden="true"></span><span class="ds-sr-only" data-dirty-sr hidden>(저장 안 한 변경 있음)</span></button>
+            <button class="ds-tab" type="button" role="tab" id="tab-notifications" aria-controls="tp-notifications" aria-selected="false" data-value="notifications">알림<span class="ds-tab__dot" aria-hidden="true"></span><span class="ds-sr-only" data-dirty-sr hidden>(저장 안 한 변경 있음)</span></button>
+            <button class="ds-tab" type="button" role="tab" id="tab-security" aria-controls="tp-security" aria-selected="false" data-value="security">보안<span class="ds-tab__dot" aria-hidden="true"></span></button>
+            <button class="ds-tab" type="button" role="tab" id="tab-team" aria-controls="tp-team" aria-selected="false" data-value="team">팀<span class="ds-tab__dot" aria-hidden="true"></span></button>
           </div>
 
           <!-- 계정 -->
@@ -144,7 +144,7 @@
                   </div>
                   <div class="ds-form-actions settings-actions">
                     <button class="ds-btn ds-btn--primary" type="submit" data-save data-busy-label="저장 중…">계정 정보 저장</button>
-                    <button class="ds-btn ds-btn--ghost" type="button" data-reset hidden>변경 되돌리기</button>
+                    <button class="ds-btn ds-btn--ghost" type="button" data-reset aria-disabled="true" data-ds-tip="되돌릴 변경이 없어요">변경 되돌리기</button>
                     <p class="settings-status" data-status></p>
                   </div>
                 </form>
@@ -167,27 +167,27 @@
                     <tbody>
                       <tr>
                         <th scope="row" class="ds-table__primary">새 상담 배정<span class="ds-table__sub">나에게 상담이 배정될 때</span></th>
-                        <td data-label="메일"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="assign.mail" aria-label="새 상담 배정 메일 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
-                        <td data-label="앱"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="assign.app" aria-label="새 상담 배정 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
-                        <td data-label="문자"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="assign.sms" aria-label="새 상담 배정 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="assign.mail" aria-label="새 상담 배정 메일 알림"><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">메일</span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="assign.app" aria-label="새 상담 배정 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">앱</span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="assign.sms" aria-label="새 상담 배정 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">문자</span></label></td>
                       </tr>
                       <tr>
                         <th scope="row" class="ds-table__primary">나를 언급한 메모<span class="ds-table__sub">누가 메모에서 나를 부를 때</span></th>
-                        <td data-label="메일"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="mention.mail" aria-label="나를 언급한 메모 메일 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
-                        <td data-label="앱"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="mention.app" aria-label="나를 언급한 메모 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
-                        <td data-label="문자"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="mention.sms" aria-label="나를 언급한 메모 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="mention.mail" aria-label="나를 언급한 메모 메일 알림"><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">메일</span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="mention.app" aria-label="나를 언급한 메모 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">앱</span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="mention.sms" aria-label="나를 언급한 메모 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">문자</span></label></td>
                       </tr>
                       <tr>
                         <th scope="row" class="ds-table__primary">매일 아침 요약<span class="ds-table__sub">오전 9시에 어제 상담을 모아서</span></th>
-                        <td data-label="메일"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="digest.mail" aria-label="매일 아침 요약 메일 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
-                        <td data-label="앱"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="digest.app" aria-label="매일 아침 요약 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
-                        <td data-label="문자"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="digest.sms" aria-label="매일 아침 요약 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="digest.mail" aria-label="매일 아침 요약 메일 알림"><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">메일</span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="digest.app" aria-label="매일 아침 요약 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">앱</span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="digest.sms" aria-label="매일 아침 요약 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">문자</span></label></td>
                       </tr>
                       <tr>
                         <th scope="row" class="ds-table__primary">보안 알림<span class="ds-table__sub">새 기기 로그인, 비밀번호 변경</span></th>
-                        <td data-label="메일"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="security.mail" aria-label="보안 알림 메일 알림" aria-describedby="sec-mail-note" disabled><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-switch-note" id="sec-mail-note">늘 받음</span></label></td>
-                        <td data-label="앱"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="security.app" aria-label="보안 알림 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
-                        <td data-label="문자"><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="security.sms" aria-label="보안 알림 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="security.mail" aria-label="보안 알림 메일 알림" aria-describedby="sec-mail-note" disabled><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">메일</span><span class="settings-switch-note" id="sec-mail-note">끌 수 없어요</span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="security.app" aria-label="보안 알림 앱 알림"><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">앱</span></label></td>
+                        <td><label class="ds-switch"><input class="ds-switch__input" type="checkbox" role="switch" data-notify="security.sms" aria-label="보안 알림 문자 알림"><span class="ds-switch__track" aria-hidden="true"></span><span class="settings-channel">문자</span></label></td>
                       </tr>
                     </tbody>
                   </table>
@@ -199,21 +199,24 @@
                 <p class="ds-section__desc">이 시간에는 앱과 문자로 알리지 않아요. 보안 알림은 시간과 상관없이 보내요.</p>
                 <form class="ds-form settings-form" id="form-dnd" data-form="dnd" novalidate>
                   <label class="ds-check"><input type="checkbox" id="dnd-on" name="enabled"><span>방해 금지 시간 쓰기</span></label>
-                  <div class="settings-time-row">
-                    <div class="ds-field">
-                      <label class="ds-field__label" for="dnd-start">시작</label>
-                      <span class="ds-select"><select id="dnd-start" name="start" data-time></select></span>
+                  <div class="settings-time-group">
+                    <div class="settings-time-row">
+                      <div class="ds-field">
+                        <label class="ds-field__label" for="dnd-start">시작</label>
+                        <span class="ds-select"><select id="dnd-start" name="start" data-time data-error-id="dnd-time-error" aria-describedby="dnd-time-error"></select></span>
+                      </div>
+                      <div class="ds-field">
+                        <label class="ds-field__label" for="dnd-end">끝</label>
+                        <span class="ds-select"><select id="dnd-end" name="end" data-time data-error-id="dnd-time-error" aria-describedby="dnd-time-error"></select></span>
+                      </div>
                     </div>
-                    <div class="ds-field">
-                      <label class="ds-field__label" for="dnd-end">끝</label>
-                      <span class="ds-select"><select id="dnd-end" name="end" data-time aria-describedby="dnd-end-error"></select></span>
-                      <p class="ds-field__error" id="dnd-end-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
-                    </div>
+                    <!-- 시작·끝 두 칸이 함께 만드는 오류라 두 칸 아래에 한 번 쓴다 -->
+                    <p class="ds-field__error" id="dnd-time-error" hidden><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-error"></use></svg><span></span></p>
                   </div>
                   <label class="ds-check"><input type="checkbox" id="dnd-weekend" name="weekend"><span>주말에는 하루 종일</span></label>
                   <div class="ds-form-actions settings-actions">
                     <button class="ds-btn ds-btn--primary" type="submit" data-save data-busy-label="저장 중…">방해 금지 시간 저장</button>
-                    <button class="ds-btn ds-btn--ghost" type="button" data-reset hidden>변경 되돌리기</button>
+                    <button class="ds-btn ds-btn--ghost" type="button" data-reset aria-disabled="true" data-ds-tip="되돌릴 변경이 없어요">변경 되돌리기</button>
                     <p class="settings-status" data-status></p>
                   </div>
                 </form>
@@ -242,7 +245,7 @@
                   <button class="ds-btn" type="button" id="btn-signout" data-ds-dialog="dlg-signout">다른 기기에서 모두 로그아웃…</button>
                 </div>
                 <div class="ds-table-wrap" role="region" aria-label="로그인 기록 표" tabindex="0">
-                  <table class="ds-table ds-table--stack settings-table" id="login-table">
+                  <table class="ds-table ds-table--stack settings-table settings-logins" id="login-table">
                     <caption class="ds-sr-only">최근 로그인 기록</caption>
                     <thead>
                       <tr><th scope="col">시각</th><th scope="col">기기</th><th scope="col">위치</th><th scope="col">결과</th><th scope="col">상태</th></tr>
@@ -271,9 +274,9 @@
                     <h2 class="ds-section__title" id="h-members" tabindex="-1">구성원 <span id="member-count">0</span>명</h2>
                     <button class="ds-btn ds-btn--primary" type="button" id="btn-invite" data-ds-dialog="dlg-invite"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-plus"></use></svg>구성원 초대</button>
                   </div>
-                  <p class="ds-section__desc" id="roles-desc">관리자는 구성원과 팀 설정을, 편집자는 상담과 보고서를 바꿀 수 있어요. 보기만은 읽기만 해요.<span id="roles-apply"> 역할을 고르면 바로 적용돼요.</span></p>
+                  <p class="ds-section__desc" id="roles-desc">관리자는 구성원과 팀 설정을, 편집자는 상담과 보고서를 바꿀 수 있어요. 보기만 역할은 읽기만 할 수 있어요.<span id="roles-apply"> 역할을 고르면 바로 적용돼요.</span></p>
                   <div class="ds-table-wrap" role="region" aria-label="구성원 표" tabindex="0">
-                    <table class="ds-table ds-table--stack settings-table" id="member-table">
+                    <table class="ds-table ds-table--stack settings-table settings-members" id="member-table">
                       <caption class="ds-sr-only">팀 구성원</caption>
                       <thead>
                         <tr><th scope="col">구성원</th><th scope="col">역할</th><th scope="col">마지막 접속</th></tr>
@@ -285,19 +288,19 @@
 
                 <section class="ds-section" aria-labelledby="h-danger" id="danger-zone">
                   <div class="ds-section__head"><h2 class="ds-section__title" id="h-danger">위험 구역</h2></div>
-                  <div class="ds-card settings-danger">
+                  <div class="ds-card ds-card--danger">
                     <div class="settings-danger__row">
                       <div class="settings-danger__text">
                         <h3 class="ds-card__title">팀 삭제</h3>
                         <p>팀과 구성원 연결, 상담 기록을 한꺼번에 지워요.</p>
                       </div>
-                      <button class="ds-btn ds-btn--danger" type="button" id="btn-delete" data-ds-dialog="dlg-delete">팀 삭제…</button>
+                      <button class="ds-btn" type="button" id="btn-delete" data-ds-dialog="dlg-delete">팀 삭제…</button>
                     </div>
                   </div>
                 </section>
               </div>
 
-              <div class="ds-empty" id="team-empty" hidden>
+              <div class="ds-empty settings-team-empty" id="team-empty" hidden>
                 <svg class="ds-icon ds-empty__icon" aria-hidden="true"><use href="#ds-i-users"></use></svg>
                 <h2 class="ds-empty__title" id="team-empty-title" tabindex="-1">속한 팀이 없어요</h2>
                 <p class="ds-empty__text">팀을 만들면 구성원을 초대하고 역할을 나눌 수 있어요.</p>
@@ -307,7 +310,7 @@
           </div>
         </div>
 
-        <p class="settings-footnote">이 화면의 이름·이메일·기록은 모두 가상의 샘플 데이터예요.</p>
+        <footer class="settings-footnote"><p class="ds-sample-note"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-info"></use></svg>이 화면의 이름·이메일·기록은 모두 가상의 샘플 데이터예요.</p></footer>
       </div>
     </main>
   </div>

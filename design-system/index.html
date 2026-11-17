@@ -112,6 +112,7 @@
           <div class="ds-page__titles">
             <h1 class="ds-page__title">업무 화면 부품 모음</h1>
             <p class="ds-page__desc">업무 화면 샘플이 함께 쓰는 토큰과 부품을 상태별로 모았어요. 값은 저장소의 DESIGN.md와 같아요.</p>
+            <p class="ds-sample-note"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-info"></use></svg>표와 목록의 이름·숫자는 지어낸 예시예요.</p>
           </div>
         </header>
 
@@ -121,7 +122,7 @@
         <section class="ds-section" id="colors" aria-labelledby="h-colors">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-colors">색</h2></div>
           <p class="ds-section__desc">부품은 역할 이름이 붙은 색만 써요. 오른쪽 값은 지금 고른 화면 밝기에서 읽은 값이에요.</p>
-          <p class="dsx-api"><code>--ds-color-surface-*</code> · <code>fg-*</code> · <code>fill-*</code> · <code>line-*</code> · 어두운 UI <code>&lt;html data-theme="dark"&gt;</code></p>
+          <p class="dsx-api"><code>--ds-color-surface-*</code> · <code>fg-*</code> · <code>fill-*</code> · <code>line-*</code> · 그래프 <code>series-1</code>~<code>6</code>(강조색은 그래프에 쓰지 않아요. 밝은 UI 3·4·5번은 바탕 대비가 3:1 미만이라 범례와 직접 표기, 또는 표 보기를 함께 둬요) · 어두운 UI <code>&lt;html data-theme="dark"&gt;</code></p>
           <div class="dsx-swatch-groups" id="swatches"></div>
         </section>
 
@@ -191,7 +192,7 @@
         <section class="ds-section" id="icons" aria-labelledby="h-icons">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-icons">아이콘</h2></div>
           <p class="ds-section__desc">선 아이콘이에요. <code>DS.icon('search')</code>로 넣고, 뜻이 있는 아이콘 옆에는 글자를 함께 둬요. 느낌표(<code>error</code>)는 오류에만 써요.</p>
-          <p class="dsx-api"><code>&lt;svg class="ds-icon"&gt;&lt;use href="#ds-i-이름"&gt;</code> · 크기 <code>.ds-icon--sm</code> · <code>.ds-icon--lg</code></p>
+          <p class="dsx-api"><code>&lt;svg class="ds-icon"&gt;&lt;use href="#ds-i-이름"&gt;</code> · 요소로 받기 <code>DS.iconEl('이름')</code> · 크기 <code>.ds-icon--sm</code> · <code>.ds-icon--lg</code></p>
           <ul class="dsx-icons" id="icon-grid"></ul>
         </section>
 
@@ -374,7 +375,7 @@
                 <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="list"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-menu"></use></svg>목록</button>
                 <button class="ds-segmented__item" type="button" role="radio" aria-checked="false" data-value="board"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-columns"></use></svg>보드</button>
               </div>
-              <p class="dsx-note">화살표 키로 옮겨요. 고른 값은 주소의 <code>?view=</code>에 남아요.</p>
+              <p class="dsx-note">화살표 키로 옮겨요. 고른 값은 주소의 <span class="dsx-nowrap"><code>?view=</code>에</span> 남아요.</p>
             </div>
           </div>
         </section>
@@ -476,8 +477,8 @@
         <!-- 탭 -->
         <section class="ds-section" id="tabs" aria-labelledby="h-tabs">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-tabs">탭</h2></div>
-          <p class="ds-section__desc">고른 탭은 막대와 글자색으로 보여요. 화살표 키로 옮기고, 고른 탭은 주소의 <code>?tab=</code>에 남아요.</p>
-          <p class="dsx-api"><code>.ds-tabs[role="tablist"][data-url-key]</code> &gt; <code>.ds-tab[role="tab"][aria-controls]</code> · <code>.ds-tabpanel[role="tabpanel"]</code></p>
+          <p class="ds-section__desc">고른 탭은 막대와 글자색으로 보여요. 화살표 키로 옮기고, 고른 탭은 주소의 <span class="dsx-nowrap"><code>?tab=</code>에</span> 남아요.</p>
+          <p class="dsx-api"><code>.ds-tabs[role="tablist"][data-url-key]</code> &gt; <code>.ds-tab[role="tab"][aria-controls]</code> · <code>.ds-tabpanel[role="tabpanel"]</code> · 바꾸기 전 취소 <code>ds:tabbeforechange</code> · 저장 안 한 변경 <code>.ds-tab__dot</code> + <code>.ds-sr-only</code> 글</p>
           <div>
             <div class="ds-tabs" role="tablist" aria-label="작업 상태" data-url-key="tab">
               <button class="ds-tab" type="button" role="tab" id="tab-all" aria-controls="tp-all" aria-selected="true" data-value="all">전체<span class="ds-count">6</span></button>
@@ -495,6 +496,7 @@
             <span class="dsx-strip__item"><span class="ds-tab is-hover">보류</span><span class="dsx-state">마우스 올림</span></span>
             <span class="dsx-strip__item"><span class="ds-tab is-focus">보류</span><span class="dsx-state">포커스</span></span>
             <span class="dsx-strip__item"><span class="ds-tab is-selected">보류</span><span class="dsx-state">고름</span></span>
+            <span class="dsx-strip__item"><span class="ds-tab">알림 설정<span class="ds-tab__dot"></span></span><span class="dsx-state">저장 안 한 변경</span></span>
           </div>
         </section>
 
@@ -576,7 +578,7 @@
         <section class="ds-section" id="states" aria-labelledby="h-states">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-states">빈 상태·로딩</h2></div>
           <p class="ds-section__desc">로딩 표시는 0.3초 뒤에 보이고, 한번 보이면 0.4초는 남아요. 스켈레톤은 실제 모양대로 그려요.</p>
-          <p class="dsx-api"><code>.ds-empty</code>(+ <code>--center</code>) · <code>.ds-skeleton</code>(+ <code>--short</code> · <code>--medium</code> · <code>--title</code> · <code>--value</code> · <code>--circle</code>) · <code>.ds-spinner</code> · <code>.ds-progress</code> · <code>.ds-steps</code> · 견본은 <code>.is-static</code> 으로 멈춘다</p>
+          <p class="dsx-api"><code>.ds-empty</code>(+ <code>--center</code> · <code>--error</code> · <code>--inline</code>) · <code>.ds-skeleton</code>(+ <code>--short</code> · <code>--medium</code> · <code>--title</code> · <code>--value</code> · <code>--circle</code>) · <code>.ds-spinner</code> · <code>.ds-progress</code> · <code>.ds-steps</code>(끝난 단계 <code>data-state="done"</code>) · 견본은 <code>.is-static</code>으로 멈춰요</p>
           <div class="ds-grid">
             <div class="ds-card">
               <div class="ds-empty">
@@ -599,10 +601,27 @@
               </div>
               <div class="dsx-row"><button class="ds-btn ds-btn--sm" type="button">올리기 멈추기</button><span class="ds-loading"><span class="ds-spinner is-static" aria-hidden="true"></span>남은 시간 계산 중</span></div>
               <ol class="ds-steps" aria-label="예약 단계">
-                <li class="ds-steps__item is-done"><span class="ds-steps__mark"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-check"></use></svg></span>정보 입력<span class="ds-sr-only">(끝남)</span></li>
+                <li class="ds-steps__item" data-state="done"><span class="ds-steps__mark"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-check"></use></svg></span>정보 입력<span class="ds-sr-only">(끝남)</span></li>
                 <li class="ds-steps__item" aria-current="step"><span class="ds-steps__mark">2</span>시간 고르기</li>
                 <li class="ds-steps__item"><span class="ds-steps__mark">3</span>확인</li>
               </ol>
+            </div>
+            <div class="ds-card">
+              <div class="ds-empty ds-empty--error">
+                <svg class="ds-icon ds-empty__icon" aria-hidden="true"><use href="#ds-i-error"></use></svg>
+                <p class="ds-empty__title">목록을 불러오지 못했어요</p>
+                <p class="ds-empty__text">연결을 확인한 뒤 다시 불러와 주세요.</p>
+                <div class="ds-empty__actions"><button class="ds-btn" type="button">다시 불러오기</button></div>
+              </div>
+            </div>
+            <div class="ds-card">
+              <h3 class="ds-card__title">메모</h3>
+              <div class="ds-empty ds-empty--inline">
+                <svg class="ds-icon ds-empty__icon" aria-hidden="true"><use href="#ds-i-file"></use></svg>
+                <p class="ds-empty__title">아직 메모가 없어요</p>
+                <p class="ds-empty__text">메모를 남기면 여기에 보여요.</p>
+                <div class="ds-empty__actions"><button class="ds-btn ds-btn--sm" type="button">메모 추가</button></div>
+              </div>
             </div>
           </div>
         </section>
@@ -621,7 +640,7 @@
         <!-- 페이지 나누기 -->
         <section class="ds-section" id="pagination" aria-labelledby="h-pagination">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-pagination">페이지 나누기</h2></div>
-          <p class="ds-section__desc">지금 쪽은 주소의 <code>?page=</code>에 남아요. 아주 좁은 폭에서는 앞·뒤 버튼과 쪽 수만 보여요.</p>
+          <p class="ds-section__desc">지금 쪽은 주소의 <span class="dsx-nowrap"><code>?page=</code>에</span> 남아요. 아주 좁은 폭에서는 앞·뒤 버튼과 쪽 수만 보여요.</p>
           <p class="dsx-api"><code>nav.ds-pagination</code> &gt; <code>.ds-pagination__list</code> &gt; <code>a.ds-pagination__page[aria-current="page"]</code> · 줄임 <code>.ds-pagination__compact</code> · 앞뒤 <code>.ds-pagination__edge</code></p>
           <nav class="ds-pagination" aria-label="작업 목록 쪽">
             <p class="ds-pagination__summary" id="pg-summary">248개 중 41–60</p>
@@ -676,7 +695,7 @@
         <section class="ds-section" id="cards" aria-labelledby="h-cards">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-cards">카드·목록</h2></div>
           <p class="ds-section__desc">카드는 테두리로 나누고 카드 안에 카드를 넣지 않아요. 목록 행 사이는 구분선이에요.</p>
-          <p class="dsx-api"><code>.ds-grid</code> &gt; <code>.ds-card</code>(+ <code>--flush</code>) · <code>.ds-stat</code> · <code>.ds-list</code> &gt; <code>.ds-list__row</code> · <code>.ds-dl</code> · <code>.ds-avatar</code></p>
+          <p class="dsx-api"><code>.ds-grid</code> &gt; <code>.ds-card</code>(+ <code>--flush</code> · <code>--danger</code>) · <code>.ds-stat</code> · <code>.ds-list</code> &gt; <code>.ds-list__row</code> · <code>.ds-dl</code> · <code>.ds-avatar</code></p>
           <div class="ds-grid" id="stats">
             <div class="ds-card ds-stat"><p class="ds-stat__label">오늘 들어온 문의</p><p class="ds-stat__value">128<span class="ds-stat__unit">건</span></p><p class="ds-stat__delta ds-stat__delta--bad"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-arrow-up"></use></svg>지난주 같은 요일보다 12% 늘었어요</p></div>
             <div class="ds-card ds-stat"><p class="ds-stat__label">답을 기다리는 문의</p><p class="ds-stat__value">14<span class="ds-stat__unit">건</span></p><p class="ds-stat__delta ds-stat__delta--good"><svg class="ds-icon ds-icon--sm" aria-hidden="true"><use href="#ds-i-arrow-down"></use></svg>어제보다 3건 줄었어요</p></div>
@@ -700,14 +719,19 @@
                 <dt>만든 날</dt><dd><time datetime="2026-11-03">2026년 11월 3일</time></dd>
               </dl>
             </div>
+            <div class="ds-card ds-card--danger">
+              <div class="ds-card__head"><h3 class="ds-card__title">위험 구역</h3></div>
+              <p class="ds-text-muted">되돌리기 어려운 동작을 이 카드에 모아요.</p>
+              <div><button class="ds-btn ds-btn--danger" type="button" data-ds-dialog="dlg-delete">보고서 지우기…</button></div>
+            </div>
           </div>
         </section>
 
         <!-- 앱 틀 -->
         <section class="ds-section" id="frame" aria-labelledby="h-frame">
           <div class="ds-section__head"><h2 class="ds-section__title" id="h-frame">앱 틀</h2></div>
-          <p class="ds-section__desc">이 화면도 앱 틀로 만들었어요. 창 폭이 1024픽셀보다 좁으면 옆 메뉴가 서랍이 돼요. 옆 패널은 1280픽셀부터 본문 옆에 붙어요.</p>
-          <p class="dsx-api"><code>.ds-app</code> &gt; <code>.ds-app__top</code> · <code>__nav</code> · <code>__main</code> · <code>__panel[data-url-key]</code> · 서랍 <code>[data-ds-nav-toggle]</code> · 패널 <code>[data-ds-panel="id"]</code> · <code>DS.panel.open(panel)</code></p>
+          <p class="ds-section__desc">이 화면도 앱 틀로 만들었어요. 기본 글자 크기에서 창 폭이 1024픽셀보다 좁으면 옆 메뉴가 서랍이 되고, 옆 패널은 1280픽셀부터 본문 옆에 붙어요. 브라우저 글자를 키우면 이 경계도 함께 넓어져요.</p>
+          <p class="dsx-api"><code>.ds-app</code>(+ <code>--bare</code> 옆 메뉴 없음) &gt; <code>.ds-app__top</code> · <code>__nav</code> · <code>__main</code> · <code>__panel[data-url-key]</code> · 서랍 <code>[data-ds-nav-toggle]</code> · 패널 <code>[data-ds-panel="id"]</code> · <code>DS.panel.open(panel)</code> · 가상 데이터 안내 <code>.ds-sample-note</code></p>
           <div class="ds-table-wrap" role="region" aria-label="앱 틀 영역 표" tabindex="0">
             <table class="ds-table dsx-matrix">
               <thead><tr><th scope="col">영역</th><th scope="col">클래스</th><th scope="col">1280 이상</th><th scope="col">1024–1279</th><th scope="col">1023 이하</th></tr></thead>
@@ -715,7 +739,7 @@
                 <tr><th scope="row">머리줄</th><td><code>ds-app__top</code></td><td>위에 붙음</td><td>위에 붙음</td><td>위에 붙음 · 메뉴 버튼 표시</td></tr>
                 <tr><th scope="row">옆 메뉴</th><td><code>ds-app__nav</code></td><td>왼쪽 240</td><td>왼쪽 240</td><td>서랍</td></tr>
                 <tr><th scope="row">본문</th><td><code>ds-app__main</code></td><td>최대 1280</td><td>남은 폭</td><td>전체 폭</td></tr>
-                <tr><th scope="row">옆 패널</th><td><code>ds-app__panel</code></td><td>오른쪽 360에 붙음</td><td>오른쪽에서 덮음</td><td>전체 폭으로 덮음</td></tr>
+                <tr><th scope="row">옆 패널</th><td><code>ds-app__panel</code></td><td>오른쪽 360에 붙음</td><td>오른쪽에서 덮음</td><td>768–1023은 오른쪽 360으로 덮음 · 767 이하는 전체 폭으로 덮음</td></tr>
               </tbody>
             </table>
           </div>

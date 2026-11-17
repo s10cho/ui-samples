@@ -1,7 +1,7 @@
 /*
  * 가상의 샘플 데이터 — 이 화면의 이름·회사·연락처·메일·메시지는 모두 지어낸 값이다(DESIGN.md 「샘플 데이터」).
  * 가상 데이터는 이 파일에만 둔다. 화면 HTML·page.js 에는 쓰지 않는다.
- * - 사람 이름은 음절을 이어 붙인 누가 봐도 가짜인 이름, 전화는 010-0000-00NN, 메일은 example.com 만 쓴다.
+ * - 사람 이름은 흔한 성 + 두 음절 이름, 회사는 ○○상사·△△공방 꼴 가상 이름, 전화는 010-0000-00NN, 메일은 example.com 만 쓴다.
  * - 시각은 시간대 없는 날짜·시각 문자열이다(보는 사람의 시간대와 상관없이 같은 시각으로 보인다).
  * - 화면의 "지금"은 now 로 고정한다. 새로 보낸 메시지는 now 에 연 뒤 지난 시간을 더한다.
  * - from: 'c' 고객 · 'sys' 시스템 · 상담원 id(a1~a4)
@@ -10,15 +10,15 @@ window.SI_DATA = {
   now: '2026-11-17T15:00',
   me: 'a1',
   agents: [
-    { id: 'a1', name: '김가나' },
-    { id: 'a2', name: '이다라' },
-    { id: 'a3', name: '박마바' },
-    { id: 'a4', name: '최사아' }
+    { id: 'a1', name: '정유진' },
+    { id: 'a2', name: '한지호' },
+    { id: 'a3', name: '오세린' },
+    { id: 'a4', name: '윤태오' }
   ],
   channels: { web: '웹 채팅', mail: '메일', app: '앱' },
 
   quickReplies: [
-    { title: '인사', text: '안녕하세요, 상담원 김가나예요. 무엇을 도와드릴까요?' },
+    { title: '인사', text: '안녕하세요, 상담원 정유진이에요. 무엇을 도와드릴까요?' },
     { title: '주문 번호 묻기', text: '주문 번호를 알려 주시면 바로 찾아볼게요.' },
     { title: '확인 중', text: '확인해 보고 10분 안에 다시 알려 드릴게요.' },
     { title: '기다려 주셔서 고마워요', text: '기다려 주셔서 고마워요. 지금 바로 확인할게요.' },
@@ -41,7 +41,7 @@ window.SI_DATA = {
   conversations: [
     {
       id: 'c01', status: 'open', who: 'a1', channel: 'web', unread: 2,
-      customer: { name: '고자차', company: '가나다 상사', grade: '골드', phone: '010-0000-0001', email: 'gojacha@example.com', no: '1024', since: '2023-05-02',
+      customer: { name: '김민서', company: '솔바람상사', grade: '골드', phone: '010-0000-0001', email: 'minseo.kim@example.com', no: '1024', since: '2023-05-02',
         history: [{ title: '배송지 변경', date: '2026-10-02' }, { title: '영수증 다시 받기', date: '2026-08-19' }, { title: '대량 주문 가격', date: '2026-06-03' }] },
       messages: [
         { from: 'sys', t: '2026-11-17T14:20', text: '웹 채팅으로 대화를 시작했어요' },
@@ -55,7 +55,7 @@ window.SI_DATA = {
     },
     {
       id: 'c02', status: 'open', who: null, channel: 'mail', unread: 1,
-      customer: { name: '노카타', company: '', grade: '일반', phone: '010-0000-0002', email: 'nokata@example.com', no: '1187', since: '2025-02-11',
+      customer: { name: '박지훈', company: '', grade: '일반', phone: '010-0000-0002', email: 'jihoon.park@example.com', no: '1187', since: '2025-02-11',
         history: [{ title: '결제 오류', date: '2026-09-14' }, { title: '쿠폰 사용', date: '2026-04-22' }] },
       messages: [
         { from: 'sys', t: '2026-11-17T14:40', text: '메일로 대화를 시작했어요' },
@@ -64,17 +64,17 @@ window.SI_DATA = {
     },
     {
       id: 'c03', status: 'pending', who: 'a2', channel: 'app', unread: 0,
-      customer: { name: '도파하', company: '라마바 물산', grade: '실버', phone: '010-0000-0003', email: 'dopaha@example.com', no: '1032', since: '2023-09-18',
+      customer: { name: '이수아', company: '푸른결공방', grade: '실버', phone: '010-0000-0003', email: 'sua.lee@example.com', no: '1032', since: '2023-09-18',
         history: [{ title: '세금계산서 발급', date: '2026-10-16' }, { title: '대량 주문 가격', date: '2026-07-07' }, { title: '배송 조회', date: '2026-03-30' }] },
       messages: [
         { from: 'c', t: '2026-11-16T16:10', text: '세금계산서를 받을 수 있나요?' },
         { from: 'a2', t: '2026-11-16T16:22', text: '사업자 번호를 알려 주시면 바로 보내 드릴게요.' },
-        { from: 'sys', t: '2026-11-16T16:23', text: '이다라 님이 대화를 대기로 바꿨어요' }
+        { from: 'sys', t: '2026-11-16T16:23', text: '한지호 님이 대화를 대기로 바꿨어요' }
       ]
     },
     {
       id: 'c04', status: 'open', who: 'a1', channel: 'web', unread: 0,
-      customer: { name: '로가다', company: '', grade: '일반', phone: '010-0000-0004', email: 'rogada@example.com', no: '1210', since: '2025-06-01',
+      customer: { name: '최현우', company: '', grade: '일반', phone: '010-0000-0004', email: 'hyunwoo.choi@example.com', no: '1210', since: '2025-06-01',
         history: [{ title: '배송 조회', date: '2026-08-02' }] },
       messages: [
         { from: 'sys', t: '2026-11-17T13:05', text: '웹 채팅으로 대화를 시작했어요' },
@@ -86,7 +86,7 @@ window.SI_DATA = {
     },
     {
       id: 'c05', status: 'open', who: 'a3', channel: 'mail', unread: 1,
-      customer: { name: '모나라', company: '', grade: '새 고객', phone: '010-0000-0005', email: 'monara@example.com', no: '1302', since: '2026-11-10', history: [] },
+      customer: { name: '강예린', company: '', grade: '새 고객', phone: '010-0000-0005', email: 'yerin.kang@example.com', no: '1302', since: '2026-11-10', history: [] },
       messages: [
         { from: 'sys', t: '2026-11-17T12:48', text: '메일로 대화를 시작했어요' },
         { from: 'c', t: '2026-11-17T12:48', text: '받는 주소를 바꾸고 싶어요. 새 주소는 메일 끝에 적었어요.' }
@@ -94,28 +94,28 @@ window.SI_DATA = {
     },
     {
       id: 'c06', status: 'closed', who: 'a1', channel: 'app', unread: 0,
-      customer: { name: '보마사', company: '', grade: '일반', phone: '010-0000-0006', email: 'bomasa@example.com', no: '1145', since: '2024-12-24',
+      customer: { name: '조은호', company: '', grade: '일반', phone: '010-0000-0006', email: 'eunho.jo@example.com', no: '1145', since: '2024-12-24',
         history: [{ title: '교환 문의', date: '2026-09-01' }, { title: '쿠폰 사용', date: '2026-05-19' }, { title: '로그인 문의', date: '2026-01-08' }] },
       messages: [
         { from: 'c', t: '2026-11-16T11:02', text: '쿠폰이 결제 화면에 안 보여요.' },
         { from: 'a1', t: '2026-11-16T11:10', text: '쿠폰은 3만 원 이상 주문에 쓸 수 있어요.' },
         { from: 'c', t: '2026-11-16T11:15', text: '금액을 바꾸니 보여요. 고마워요.' },
-        { from: 'sys', t: '2026-11-16T11:16', text: '김가나 님이 대화를 종료했어요' }
+        { from: 'sys', t: '2026-11-16T11:16', text: '정유진 님이 대화를 종료했어요' }
       ]
     },
     {
       id: 'c07', status: 'pending', who: 'a4', channel: 'mail', unread: 0,
-      customer: { name: '소바아', company: '사아자 식품', grade: '골드', phone: '010-0000-0007', email: 'sobaa@example.com', no: '1009', since: '2022-11-30',
+      customer: { name: '윤채원', company: '담쟁이식품', grade: '골드', phone: '010-0000-0007', email: 'chaewon.yoon@example.com', no: '1009', since: '2022-11-30',
         history: [{ title: '대량 주문 가격', date: '2026-10-21' }, { title: '거래 명세서', date: '2026-09-09' }, { title: '배송지 변경', date: '2026-06-27' }] },
       messages: [
         { from: 'c', t: '2026-11-17T11:30', text: '상자 200개를 주문하면 가격이 달라지나요?' },
         { from: 'a4', t: '2026-11-17T11:52', text: '수량별 가격표를 메일로 보내 드렸어요.', files: [{ name: '가격표.pdf', size: '64KB' }] },
-        { from: 'sys', t: '2026-11-17T11:53', text: '최사아 님이 대화를 대기로 바꿨어요' }
+        { from: 'sys', t: '2026-11-17T11:53', text: '윤태오 님이 대화를 대기로 바꿨어요' }
       ]
     },
     {
       id: 'c08', status: 'open', who: null, channel: 'web', unread: 2,
-      customer: { name: '오자카', company: '', grade: '새 고객', phone: '010-0000-0008', email: 'ojaka@example.com', no: '1311', since: '2026-11-15', history: [] },
+      customer: { name: '장도윤', company: '', grade: '새 고객', phone: '010-0000-0008', email: 'doyoon.jang@example.com', no: '1311', since: '2026-11-15', history: [] },
       messages: [
         { from: 'sys', t: '2026-11-17T14:10', text: '웹 채팅으로 대화를 시작했어요' },
         { from: 'c', t: '2026-11-17T14:10', text: '로그인이 안 돼요.' },
@@ -124,17 +124,17 @@ window.SI_DATA = {
     },
     {
       id: 'c09', status: 'closed', who: 'a2', channel: 'app', unread: 0,
-      customer: { name: '조차타', company: '', grade: '일반', phone: '010-0000-0009', email: 'jochata@example.com', no: '1166', since: '2025-01-05',
+      customer: { name: '임하린', company: '', grade: '일반', phone: '010-0000-0009', email: 'harin.lim@example.com', no: '1166', since: '2025-01-05',
         history: [{ title: '배송 조회', date: '2026-07-15' }] },
       messages: [
         { from: 'c', t: '2026-11-14T10:20', text: '크기를 바꿔 교환할 수 있나요?' },
         { from: 'a2', t: '2026-11-14T10:31', text: '받은 날부터 7일 안에 교환할 수 있어요. 교환 신청을 열어 드렸어요.' },
-        { from: 'sys', t: '2026-11-14T10:32', text: '이다라 님이 대화를 종료했어요' }
+        { from: 'sys', t: '2026-11-14T10:32', text: '한지호 님이 대화를 종료했어요' }
       ]
     },
     {
       id: 'c10', status: 'open', who: 'a1', channel: 'mail', unread: 1,
-      customer: { name: '초파하', company: '차카타 여행', grade: '실버', phone: '010-0000-0010', email: 'chopaha@example.com', no: '1077', since: '2024-03-12',
+      customer: { name: '신우진', company: '새벽길여행사', grade: '실버', phone: '010-0000-0010', email: 'woojin.shin@example.com', no: '1077', since: '2024-03-12',
         history: [{ title: '예약 날짜 변경', date: '2026-09-25' }, { title: '영수증 다시 받기', date: '2026-05-02' }] },
       messages: [
         { from: 'sys', t: '2026-11-17T10:15', text: '메일로 대화를 시작했어요' },
@@ -143,17 +143,17 @@ window.SI_DATA = {
     },
     {
       id: 'c11', status: 'pending', who: 'a1', channel: 'web', unread: 0,
-      customer: { name: '코가나', company: '', grade: '일반', phone: '010-0000-0011', email: 'kogana@example.com', no: '1258', since: '2025-08-20',
+      customer: { name: '서지안', company: '', grade: '일반', phone: '010-0000-0011', email: 'jian.seo@example.com', no: '1258', since: '2025-08-20',
         history: [{ title: '결제 오류', date: '2026-10-10' }] },
       messages: [
         { from: 'c', t: '2026-11-17T09:40', text: '영수증을 다시 받고 싶어요.' },
         { from: 'a1', t: '2026-11-17T09:46', text: '영수증을 메일로 다시 보내 드렸어요. 받으셨는지 알려 주세요.' },
-        { from: 'sys', t: '2026-11-17T09:47', text: '김가나 님이 대화를 대기로 바꿨어요' }
+        { from: 'sys', t: '2026-11-17T09:47', text: '정유진 님이 대화를 대기로 바꿨어요' }
       ]
     },
     {
       id: 'c12', status: 'open', who: 'a2', channel: 'app', unread: 1,
-      customer: { name: '토다라', company: '', grade: '일반', phone: '010-0000-0012', email: 'todara@example.com', no: '1199', since: '2025-03-03',
+      customer: { name: '권나윤', company: '', grade: '일반', phone: '010-0000-0012', email: 'nayoon.kwon@example.com', no: '1199', since: '2025-03-03',
         history: [{ title: '교환 문의', date: '2026-08-30' }, { title: '배송 조회', date: '2026-02-14' }] },
       messages: [
         { from: 'c', t: '2026-11-17T08:55', text: '상자가 찢어진 채로 왔어요. 사진을 붙여요.', files: [{ name: '파손사진.jpg', size: '1.2MB' }] },
@@ -163,17 +163,17 @@ window.SI_DATA = {
     },
     {
       id: 'c13', status: 'closed', who: 'a3', channel: 'mail', unread: 0,
-      customer: { name: '포마바', company: '파하 문구', grade: '골드', phone: '010-0000-0013', email: 'pomaba@example.com', no: '1015', since: '2023-01-16',
+      customer: { name: '황시우', company: '물결문구', grade: '골드', phone: '010-0000-0013', email: 'siwoo.hwang@example.com', no: '1015', since: '2023-01-16',
         history: [{ title: '거래 명세서', date: '2026-10-13' }, { title: '대량 주문 가격', date: '2026-08-11' }, { title: '세금계산서 발급', date: '2026-04-09' }] },
       messages: [
         { from: 'c', t: '2026-11-13T15:05', text: '거래 명세서를 보내 주세요.' },
         { from: 'a3', t: '2026-11-13T15:20', text: '명세서를 메일로 보내 드렸어요.', files: [{ name: '거래명세서.pdf', size: '88KB' }] },
-        { from: 'sys', t: '2026-11-13T15:21', text: '박마바 님이 대화를 종료했어요' }
+        { from: 'sys', t: '2026-11-13T15:21', text: '오세린 님이 대화를 종료했어요' }
       ]
     },
     {
       id: 'c14', status: 'open', who: null, channel: 'web', unread: 1,
-      customer: { name: '호사아', company: '', grade: '실버', phone: '010-0000-0014', email: 'hosaa@example.com', no: '1093', since: '2024-07-07',
+      customer: { name: '안소율', company: '', grade: '실버', phone: '010-0000-0014', email: 'soyul.ahn@example.com', no: '1093', since: '2024-07-07',
         history: [{ title: '쿠폰 사용', date: '2026-10-05' }, { title: '회원 등급', date: '2026-03-18' }] },
       messages: [
         { from: 'sys', t: '2026-11-17T13:40', text: '웹 채팅으로 대화를 시작했어요' },
@@ -182,21 +182,21 @@ window.SI_DATA = {
     },
     {
       id: 'c15', status: 'closed', who: 'a4', channel: 'app', unread: 0,
-      customer: { name: '구자차', company: '', grade: '일반', phone: '010-0000-0015', email: 'gujacha@example.com', no: '1240', since: '2025-07-19',
+      customer: { name: '송건우', company: '', grade: '일반', phone: '010-0000-0015', email: 'gunwoo.song@example.com', no: '1240', since: '2025-07-19',
         history: [{ title: '로그인 문의', date: '2026-06-06' }] },
       messages: [
         { from: 'c', t: '2026-11-12T19:12', text: '비밀번호를 바꾸고 싶어요.' },
         { from: 'a4', t: '2026-11-12T19:20', text: '로그인 화면 아래 비밀번호 찾기를 눌러 주세요. 바꾸는 주소를 메일로 보내 드려요.' },
-        { from: 'sys', t: '2026-11-12T19:21', text: '최사아 님이 대화를 종료했어요' }
+        { from: 'sys', t: '2026-11-12T19:21', text: '윤태오 님이 대화를 종료했어요' }
       ]
     },
     {
       id: 'c16', status: 'pending', who: 'a3', channel: 'web', unread: 0,
-      customer: { name: '누카타', company: '', grade: '새 고객', phone: '010-0000-0016', email: 'nukata@example.com', no: '1320', since: '2026-11-16', history: [] },
+      customer: { name: '유다인', company: '', grade: '새 고객', phone: '010-0000-0016', email: 'dain.yoo@example.com', no: '1320', since: '2026-11-16', history: [] },
       messages: [
         { from: 'c', t: '2026-11-16T17:20', text: '품절된 상품은 언제 다시 들어오나요?' },
         { from: 'a3', t: '2026-11-16T17:31', text: '다음 주에 들어와요. 들어오면 문자로 알려 드릴게요.' },
-        { from: 'sys', t: '2026-11-16T17:32', text: '박마바 님이 대화를 대기로 바꿨어요' }
+        { from: 'sys', t: '2026-11-16T17:32', text: '오세린 님이 대화를 대기로 바꿨어요' }
       ]
     }
   ]

@@ -15,10 +15,6 @@ code {
   border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
 }
 
-.ds-section {
-  scroll-margin-top: calc(var(--ds-size-topbar) + var(--ds-space-4));
-}
-
 .dsx-sub {
   font-size: var(--ds-text-label-size);
   line-height: var(--ds-text-label-leading);
@@ -41,6 +37,17 @@ code {
 
 .dsx-api code {
   color: var(--ds-color-fg-default);
+}
+
+/* 코드 한 덩어리는 통째로 다음 줄로 넘긴다. 열보다 긴 코드만 안에서 줄을 바꾼다(TYP-04: 넘치지 않게) */
+.dsx-api code {
+  display: inline-block;
+  max-inline-size: 100%;
+  vertical-align: bottom;
+}
+
+.dsx-nowrap {
+  white-space: nowrap;
 }
 
 .dsx-state {
@@ -113,6 +120,7 @@ code {
 
 .ds-menu.dsx-static {
   display: inline-flex;
+  max-width: 100%;
   margin-block-start: var(--ds-space-2);
 }
 
@@ -183,13 +191,14 @@ code {
 
 .dsx-bars li {
   display: grid;
-  grid-template-columns: var(--ds-size-dl-key) minmax(0, 1fr) var(--ds-space-8);
+  grid-template-columns: max-content minmax(var(--ds-space-8), 1fr) max-content;
   align-items: center;
   gap: var(--ds-space-2);
 }
 
 .dsx-bar {
   width: var(--w);
+  max-width: 100%;
   height: var(--ds-space-3);
   border-radius: var(--ds-radius-xs);
   background: var(--ds-color-fill-accent);
@@ -298,8 +307,15 @@ code {
 }
 
 /* 아주 좁은 폭 — 화면 밝기 고르기는 아이콘만(이름은 툴팁과 aria-label 로) */
-@media (max-width: 479px) {
+@media (max-width: 29.9375rem) {
   .dsx-theme-text {
     display: none;
   }
+}
+
+/* 지표 카드 스켈레톤이 글줄 높이를 차지하게(CMP-FB-09: 불러온 뒤 밀리지 않게) */
+.ds-stat__value > .ds-skeleton,
+.ds-stat__delta > .ds-skeleton {
+  display: inline-block;
+  vertical-align: middle;
 }

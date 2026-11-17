@@ -46,6 +46,8 @@
   var COPY = {
     saved: '방금 저장했어요',
     nothing: '바꾼 내용이 없어요',
+    nothingToRevert: '되돌릴 변경이 없어요',
+    reloading: '불러오는 중…',
     dirty: function (n) { return '저장 안 한 변경 ' + n + '곳'; },
     reverted: '변경을 되돌렸어요',
     retry: '다시 저장',
@@ -103,6 +105,7 @@
   }
 
   /* 버튼 로딩 — kit 의 DS.busy 가 300ms 뒤 "저장 중…"을 보이고, 보였으면 400ms 를 채운다.
+     처리 중 다시 누르기·다시 보내기는 kit 이 data-ds-pending 으로 막는다.
      돌려준 Promise 는 버튼이 원래 글자로 돌아온 뒤 끝난다. 결과(글·배너·대화상자 닫기)는 그 뒤에 보인다 */
   function withBusy(btn, promise) {
     DS.busy(btn, true);
@@ -112,9 +115,6 @@
       return DS.busy(btn, false).then(function () { throw err; });
     });
   }
-
-  /* 처리 중인 버튼 — kit 이 data-ds-pending 으로 클릭을 막는다. Enter 로 폼을 보내는 길은 여기서 막는다 */
-  function isPending(btn) { return btn.hasAttribute('data-ds-pending'); }
 
   /* ---------- 시각 ---------- */
 
@@ -159,13 +159,16 @@
 
   var body = $('#settings-body');
   var tablist = $('#settings-tabs');
-  var tabs = $$('[role="tab"]', tablist);
 
   function currentTab() { return $('[role="tab"][aria-selected="true"]', tablist); }
   function tabName(tab) { return TAB_NAMES[tab.getAttribute('data-value')]; }
 
+  function errorEl(input) {
+    return doc.getElementById(input.getAttribute('data-error-id') || input.id + '-error');
+  }
+
   function setFieldError(input, text) {
-    var err = doc.getElementById(input.id + '-error');
+    var err = errorEl(input);
     if (text) {
       input.setAttribute('aria-invalid', 'true');
       if (err) { $('span', err).textContent = text; err.hidden = false; }
@@ -193,9 +196,10 @@
     this.write(this.saved);
     this.touched = {};
 
+    // 처리 중 다시 보내기는 kit(DS.busy 의 data-ds-pending)이 submit 단계에서 막는다
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      if (!isPending(self.saveBtn)) self.save();
+      self.save();
     });
     form.addEventListener('input', function (e) { self.onEdit(e.target); });
     form.addEventListener('change', function (e) { self.onEdit(e.target); });
@@ -238,7 +242,14 @@
 
   FormCtl.prototype.refresh = function () {
     var n = this.dirtyCount();
-    this.resetBtn.hidden = !n;
+    // "변경 되돌리기"는 늘 자리를 지킨다. 바꾼 것이 없으면 이유를 툴팁으로 보이는 비활성
+    if (n) {
+      this.resetBtn.removeAttribute('aria-disabled');
+      this.resetBtn.removeAttribute('data-ds-tip');
+    } else {
+      this.resetBtn.setAttribute('aria-disabled', 'true');
+      this.resetBtn.setAttribute('data-ds-tip', COPY.nothingToRevert);
+    }
     if (n) this.setStatus('dirty', COPY.dirty(n));
     else if (this.status.getAttribute('data-tone') === 'dirty') this.setStatus('', '');
     markTab(this.tab);
@@ -258,13 +269,15 @@
     this.refresh();
   };
 
-  /* 칸 하나를 검사한다. 오류가 있으면 그 칸(오류를 보일 칸)을 돌려준다 */
+  /* 칸 하나를 검사한다. 오류가 있으면 포커스를 옮길 칸을 돌려준다.
+     r.fields 는 함께 오류가 되는 칸들(방해 금지 시간의 시작·끝) — 오류 글은 묶음 아래 한 곳에 쓴다 */
   FormCtl.prototype.check = function (name) {
     var r = this.opts.validate(this.read(), name);
     if (!r) return null;
-    var target = this.form.elements[r.field];
-    setFieldError(target, r.error);
-    return r.error ? target : null;
+    var self = this;
+    var targets = (r.fields || [r.field]).map(function (n) { return self.form.elements[n]; });
+    targets.forEach(function (t) { setFieldError(t, r.error); });
+    return r.error ? targets[0] : null;
   };
 
   FormCtl.prototype.checkAll = function () {
@@ -280,7 +293,7 @@
   FormCtl.prototype.discard = function () {
     var self = this;
     this.write(this.saved);
-    this.fields.forEach(function (el) { if (doc.getElementById(el.id + '-error')) setFieldError(el, ''); });
+    this.fields.forEach(function (el) { if (errorEl(el)) setFieldError(el, ''); });
     this.touched = {};
     this.setStatus('', '');
     DS.banner.dismiss('#banner-' + self.kind);
@@ -337,12 +350,12 @@
     });
   }
 
+  /* 탭의 저장 안 한 변경 점(kit .ds-tab__dot) — 점 자리는 늘 두고 보이기만 바꾼다(탭 폭이 밀리지 않게) */
   function markTab(tabKey) {
     var tab = doc.getElementById('tab-' + tabKey);
-    var dot = $('.settings-tab-dot', tab);
-    if (!dot) return;
+    if (!$('.ds-tab__dot', tab)) return;
     var dirty = dirtyIn(tabKey).length > 0;
-    dot.hidden = !dirty;
+    tab.toggleAttribute('data-dirty', dirty);
     $('[data-dirty-sr]', tab).hidden = !dirty;
   }
 
@@ -433,12 +446,13 @@
       sync: function (ctl) {
         var on = ctl.form.elements.enabled.checked;
         ['start', 'end', 'weekend'].forEach(function (n) { ctl.form.elements[n].disabled = !on; });
-        if (!on) setFieldError(ctl.form.elements.end, '');
+        if (!on) { setFieldError(ctl.form.elements.start, ''); setFieldError(ctl.form.elements.end, ''); }
       },
-      errorsOf: function (name) { return name === 'start' || name === 'end' || name === 'enabled' ? ['end'] : [name]; },
+      // 시작·끝은 둘이 함께 맞아야 하는 묶음이다. 오류는 두 칸 모두에 걸고 글은 묶음 아래 한 번 쓴다
+      errorsOf: function (name) { return name === 'start' || name === 'end' || name === 'enabled' ? ['start'] : [name]; },
       validate: function (v, name) {
         if (name !== 'start' && name !== 'end') return null;
-        return { field: 'end', error: v.enabled && v.start === v.end ? COPY.sameTime : '' };
+        return { fields: ['start', 'end'], error: v.enabled && v.start === v.end ? COPY.sameTime : '' };
       },
       commit: function (v) {
         D.dnd = { enabled: v.enabled, start: v.start, end: v.end, weekend: v.weekend };
@@ -468,14 +482,15 @@
   function renderLogins() {
     $('#login-body').innerHTML = D.logins.map(function (l) {
       var d = shift(l.at);
+      // 성공은 글자로만, 눈여겨볼 실패만 배지로(같은 배지가 줄마다 반복되지 않게)
       var result = l.ok
-        ? '<span class="ds-badge">성공</span>'
+        ? '<span class="settings-muted">성공</span>'
         : '<span class="settings-result"><span class="ds-badge ds-badge--danger">실패</span><span class="ds-table__sub">' + esc(l.reason) + '</span></span>';
       var status = {
-        current: '<span class="ds-badge ds-badge--accent">지금 이 기기</span>',
+        current: '<span class="ds-badge">지금 이 기기</span>',
         active: '<span class="ds-badge ds-badge--info">로그인 중</span>',
         ended: '<span class="settings-muted">로그아웃함</span>',
-        none: '<span class="settings-muted" aria-label="없음">—</span>'
+        none: '<span class="settings-muted" aria-hidden="true">—</span><span class="ds-sr-only">없음</span>'
       }[l.status];
       return '<tr>' +
         '<td data-label="시각" class="settings-when"><time datetime="' + iso(d) + '">' + day(d) + ' ' + clock(d) + '</time></td>' +
@@ -489,7 +504,7 @@
     var others = activeOthers();
     var count = $('#session-count');
     var btn = $('#btn-signout');
-    count.textContent = others.length ? '로그인 중인 다른 기기 ' + others.length + '곳' : '';
+    count.innerHTML = others.length ? '로그인 중인 다른 기기 <strong>' + others.length + '곳</strong>' : '';
     count.hidden = !others.length;
     if (others.length) {
       btn.removeAttribute('aria-disabled');
@@ -524,7 +539,6 @@
     formTfa.addEventListener('submit', function (e) {
       e.preventDefault();
       var btn = $('[type="submit"]', formTfa);
-      if (isPending(btn)) return;
       if (!codeOk()) { setFieldError(code, COPY.codeBad); code.focus(); return; }
       withBusy(btn, request('tfa', 800)).then(function () {
         D.tfa = { on: true, since: D.now };
@@ -536,7 +550,6 @@
 
     $('#btn-tfa-off').addEventListener('click', function (e) {
       var btn = e.currentTarget;
-      if (isPending(btn)) return;
       withBusy(btn, request('tfa', 700)).then(function () {
         D.tfa = { on: false, since: '' };
         renderTfa();
@@ -555,7 +568,6 @@
     });
     $('#btn-signout-go').addEventListener('click', function (e) {
       var btn = e.currentTarget;
-      if (isPending(btn)) return;
       var n = activeOthers().length;
       withBusy(btn, request('signout', 900)).then(function () {
         D.logins.forEach(function (l) { if (l.status === 'active') l.status = 'ended'; });
@@ -593,7 +605,7 @@
           ['admin', 'editor', 'viewer'].map(function (r) {
             return '<option value="' + r + '"' + (r === m.role ? ' selected' : '') + '>' + ROLES[r] + '</option>';
           }).join('') + '</select></span>' +
-          '<button class="ds-btn ds-btn--ghost ds-btn--sm" type="button" data-undo="' + m.id + '" aria-label="' + esc(name) + ' 역할 되돌리기" hidden>' + COPY.undo + '</button></span>';
+          '<button class="ds-btn ds-btn--sm settings-undo" type="button" data-undo="' + m.id + '" aria-label="' + esc(name) + ' 역할 되돌리기">' + COPY.undo + '</button></span>';
       }
       var seen = m.invited ? '<span class="ds-badge ds-badge--info">' + COPY.invited + '</span>' : '<span class="settings-when">' + relative(m.seen) + '</span>';
       return '<tr data-id="' + m.id + '">' +
@@ -605,11 +617,14 @@
     $('#delete-count').textContent = D.members.length;
   }
 
+  /* 팀 이름이 들어가는 글 — 팀 삭제 대화상자에만 쓴다.
+     페이지 설명("내 계정과 알림, 보안, 팀 설정을 바꿔요.")에는 팀 이름을 넣지 않는다:
+     불러오는 중·실패·팀 없음과 기준이 하나가 되고, 불러온 뒤 설명 줄 수가 바뀌어 아래가 밀리지 않는다 */
   function teamTexts() {
-    var t = D.team.name;
+    var t = D.team ? D.team.name : '';
+    if (!t) return;
     $('#dlg-delete-title').textContent = josa(t, ['을', '를']) + ' 삭제할까요?';
     $('#delete-name-hint').textContent = '확인하려면 ' + josa(t, ['을', '를']) + ' 똑같이 입력해 주세요.';
-    $('#page-desc').textContent = '내 계정과 알림, 보안, ' + t + ' 설정을 바꿔요.';
   }
 
   function showTeam(has) {
@@ -617,12 +632,21 @@
     $('#team-empty').hidden = has;
   }
 
+  /* 팀을 지운 뒤(또는 ?state=empty) — 팀이 없으니 설명에서도 팀 이름을 뺀다 */
+  function removeTeam() {
+    D.team = null;
+    D.members = D.members.filter(function (m) { return m.id === D.me.id; });
+    showTeam(false);
+    teamTexts();
+  }
+
   /* 권한을 낮추면 그 행에 "되돌리기"를 둔다(PAT-SET-04). 다른 행을 바꾸면 사라진다.
-     배너로 띄우면 페이지 맨 위로 끌려가 표를 놓치므로 행 안에 둔다 */
+     결과가 바뀐 행 바로 옆에 있어야 해서 배너가 아니라 행 안에 둔다.
+     버튼 자리는 늘 잡아 두고(visibility) 보일 때만 data-shown 을 단다 — 나타나도 행이 밀리지 않게 */
   var undo = null; // { id, prev }
 
   function hideUndo() {
-    $$('[data-undo]').forEach(function (b) { b.hidden = true; });
+    $$('[data-undo]').forEach(function (b) { b.removeAttribute('data-shown'); });
     undo = null;
   }
 
@@ -637,7 +661,7 @@
       if (RANK[role] < RANK[prev]) {
         undo = { id: m.id, prev: prev };
         var btn = $('[data-undo="' + m.id + '"]');
-        if (btn) btn.hidden = false;
+        if (btn) btn.setAttribute('data-shown', '');
         DS.announce(title + '. 권한이 줄었어요. 옆의 되돌리기 버튼으로 되돌릴 수 있어요.');
       } else {
         DS.announce(title);
@@ -711,7 +735,6 @@
     formInvite.addEventListener('submit', function (e) {
       e.preventDefault();
       var btn = $('[type="submit"]', formInvite);
-      if (isPending(btn)) return;
       var err = emailError();
       setFieldError(email, err);
       if (err) { email.focus(); return; }
@@ -731,7 +754,7 @@
     var nameInput = $('#delete-name');
     var deleteGo = $('#btn-delete-go');
     var deleted = false;
-    function nameMatches() { return nameInput.value.trim() === D.team.name; }
+    function nameMatches() { return !!D.team && nameInput.value.trim() === D.team.name; }
     function syncDelete() {
       if (nameMatches()) deleteGo.removeAttribute('aria-disabled');
       else deleteGo.setAttribute('aria-disabled', 'true');
@@ -746,13 +769,11 @@
     nameInput.addEventListener('input', syncDelete);
     formDelete.addEventListener('submit', function (e) {
       e.preventDefault();
-      if (isPending(deleteGo)) return;
       if (!nameMatches()) { setFieldError(nameInput, COPY.teamNameBad); nameInput.focus(); return; }
       var teamName = D.team.name;
       withBusy(deleteGo, request('delete', 900)).then(function () {
         deleted = true;
-        D.members = D.members.filter(function (m) { return m.id === D.me.id; });
-        showTeam(false);
+        removeTeam();
         DS.dialog.close(dlgDelete);
         DS.announce(josa(teamName, ['을', '를']) + ' 삭제했어요');
       });
@@ -789,12 +810,11 @@
     $('#leave-discard').textContent = labels[0];
     $('#leave-save').textContent = labels[1];
     $('#dlg-leave-desc').textContent = describeDirty(p.ctls);
-    dlgLeave.returnValue = '';
     DS.dialog.open(dlgLeave, opener);
   }
 
   function proceed(p) {
-    if (p.type === 'tab') DS.tabs.select(p.tab, { focus: true });
+    if (p.type === 'tab') DS.tabs.select(p.tab, { focus: true, force: true });
     else { leaving = true; location.href = p.href; }
   }
 
@@ -830,20 +850,10 @@
   }
 
   function setupGuards() {
-    // kit 의 탭 동작(문서 단계)보다 먼저 가로챈다
-    tablist.addEventListener('click', function (e) {
-      var tab = e.target.closest('[role="tab"]');
-      if (tab && guardTab(tab, currentTab())) { e.preventDefault(); e.stopPropagation(); }
-    }, true);
-    tablist.addEventListener('keydown', function (e) {
-      var keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
-      if (keys.indexOf(e.key) < 0 || !e.target.closest('[role="tab"]')) return;
-      var i = tabs.indexOf(currentTab());
-      var n = tabs.length;
-      var target = e.key === 'Home' ? tabs[0] : e.key === 'End' ? tabs[n - 1]
-        : tabs[(i + (e.key === 'ArrowLeft' ? n - 1 : 1)) % n];
-      if (guardTab(target, currentTab())) { e.preventDefault(); e.stopPropagation(); }
-    }, true);
+    // 탭을 바꾸기 전에(클릭·화살표 모두) kit 이 보내는 취소 가능한 이벤트
+    tablist.addEventListener('ds:tabbeforechange', function (e) {
+      if (guardTab(e.detail.tab, e.detail.from)) e.preventDefault();
+    });
 
     // 옆 메뉴·머리줄 링크로 나갈 때
     doc.addEventListener('click', function (e) {
@@ -865,66 +875,98 @@
     });
   }
 
-  /* 탭이 바뀌면 — 문서 제목, 탭 줄에서 고른 탭이 보이게 */
-  function revealTab(tab) {
-    var left = tab.offsetLeft - tablist.offsetLeft;
-    if (left < tablist.scrollLeft) tablist.scrollLeft = left;
-    else if (left + tab.offsetWidth > tablist.scrollLeft + tablist.clientWidth) tablist.scrollLeft = left + tab.offsetWidth - tablist.clientWidth;
-  }
-
+  /* 탭이 바뀌면 문서 제목을 바꾼다(고른 탭을 탭 줄 안으로 끌어오는 일은 kit 이 한다) */
   function onTab(tab) {
     doc.title = tabName(tab) + ' — 설정';
-    revealTab(tab);
   }
 
   /* ---------- 불러오기 · 불러오기 실패 ---------- */
 
-  var SKELETON = '<div class="settings-skeleton" aria-hidden="true"><span class="ds-skeleton ds-skeleton--title"></span>' +
-    [1, 2, 3, 4].map(function () {
-      return '<div class="settings-skeleton__field"><span class="ds-skeleton ds-skeleton--short"></span><span class="ds-skeleton settings-skeleton__bar"></span></div>';
-    }).join('') + '</div>';
+  /* 스켈레톤 — 최종 배치의 모든 칸을 그대로 그린다(DESIGN.md "스켈레톤은 최종 배치의 모든 칸").
+     탭 패널 내용을 복제해 같은 클래스(ds-table--stack·settings-matrix·ds-card--danger …)를 그대로 쓰고,
+     글자는 회색 막대로, 입력·버튼·스위치·배지는 회색 면으로 바꾼다. 그래서 폭마다(쌓은 카드 포함)
+     행 수·행 높이·열 위치·도구 줄·위험 구역 한 줄 배치·방해 금지 칸 배치가 내용과 같다.
+     복제본은 inert + aria-hidden 이고, id·연결 속성·스크립트 고리를 지워 실제 요소와 겹치지 않는다 */
+  var SK_DROP = ['href', 'aria-labelledby', 'aria-describedby', 'aria-controls', 'aria-label',
+    'data-ds-tip', 'data-ds-dialog', 'data-notify', 'data-member', 'data-undo', 'data-save', 'data-reset',
+    'data-status', 'data-form', 'data-time', 'data-error-id', 'data-busy-label', 'tabindex'];
+
+  function skeletonOf(real) {
+    var sk = real.cloneNode(true);
+    sk.classList.add('settings-skeleton');
+    sk.setAttribute('aria-hidden', 'true');
+    sk.inert = true;
+    [sk].concat($$('*', sk)).forEach(function (el) {
+      SK_DROP.forEach(function (a) { el.removeAttribute(a); });
+      // id·for 는 "sk-" 를 붙여 실제 요소와 겹치지 않게 하고 라벨 연결은 남긴다
+      if (el.id) el.id = 'sk-' + el.id;
+      if (el.htmlFor) el.htmlFor = 'sk-' + el.htmlFor;
+    });
+    // 글자 마디를 막대로 — 글자 폭만큼 회색, 글자는 투명(줄바꿈 자리도 같다)
+    var walker = doc.createTreeWalker(sk, NodeFilter.SHOW_TEXT, {
+      acceptNode: function (n) {
+        if (!n.nodeValue.trim() || n.parentNode.closest('select, option, textarea, svg')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var texts = [];
+    while (walker.nextNode()) texts.push(walker.currentNode);
+    texts.forEach(function (t) {
+      var bar = doc.createElement('span');
+      bar.className = 'settings-sk-text';
+      t.parentNode.replaceChild(bar, t);
+      bar.appendChild(t);
+    });
+    return sk;
+  }
+
+  function panelBody(panel) { return $(':scope > .settings-panel__body:not(.settings-skeleton)', panel); }
 
   function setLoading(on) {
     $$('[role="tabpanel"]', body).forEach(function (panel) {
-      var real = $('.settings-panel__body', panel);
-      var sk = $('.settings-skeleton', panel);
-      if (on && !sk) panel.insertAdjacentHTML('afterbegin', SKELETON);
-      if (!on && sk) sk.remove();
+      var real = panelBody(panel);
+      var old = $(':scope > .settings-skeleton', panel);
+      if (on && !old) panel.insertBefore(skeletonOf(real), real);
+      if (!on && old) old.remove();
       real.hidden = on;
     });
     if (on) body.setAttribute('aria-busy', 'true');
     else body.removeAttribute('aria-busy');
   }
 
+  /* 불러오기 실패 — 닫을 수 없는 배너에 "다시 불러오기". 누르면 버튼을 처리 중으로 바꾸고,
+     스켈레톤은 DS.loadingTimer 로(0.3초 뒤 보이고 0.4초 유지) 보인 뒤 내용으로 바꾼다.
+     스켈레톤이 보이는 순간 배너를 닫는다 — 스켈레톤과 내용이 같은 자리에 오게(배너가 나중에 닫히며 내용이 밀리지 않게) */
   function showLoadError() {
     body.hidden = true;
-    // 불러오지 못했으니 팀 이름도 아직 모른다
-    var desc = $('#page-desc');
-    var loadedDesc = desc.textContent;
-    desc.textContent = '내 계정과 알림, 보안, 팀 설정을 바꿔요.';
     DS.banner.show({
       id: 'banner-load',
       tone: 'danger',
       title: COPY.loadFail,
       text: COPY.loadFailText,
       dismissible: false,
-      actions: [{
-        label: COPY.reload,
-        primary: true,
-        onClick: function () {
-          DS.url.set({ state: null });
-          body.hidden = false;
-          setLoading(true);
-          DS.announce(COPY.loading);
-          setTimeout(function () {
-            setLoading(false);
-            desc.textContent = loadedDesc;
-            DS.announce(COPY.loaded);
-          }, 1200);
-        }
-      }],
-      focusNext: '#settings-tabs [aria-selected="true"]'
+      actions: [{ label: COPY.reload, primary: true, onClick: function (banner) { reload(banner); return false; } }]
     });
+  }
+
+  function reload(banner) {
+    var btn = $('.ds-banner__actions .ds-btn', banner);
+    btn.setAttribute('data-busy-label', COPY.reloading);
+    DS.announce(COPY.loading);
+    var focusTab = { focusNext: '#settings-tabs [aria-selected="true"]' };
+    var timer = DS.loadingTimer(function () {
+      body.hidden = false;
+      setLoading(true);
+      DS.banner.dismiss(banner, focusTab);
+    }, function () {
+      DS.url.set({ state: null });
+      body.hidden = false;
+      setLoading(false);
+      teamTexts();
+      if (banner.isConnected) DS.banner.dismiss(banner, focusTab);
+      DS.announce(COPY.loaded);
+    });
+    withBusy(btn, request('load', 1300)).then(function () { timer.stop(); });
   }
 
   /* ---------- 시작 ---------- */
@@ -949,10 +991,7 @@
       acc.refresh();
       if (state === 'save-fail') showSaveFail(acc);
     }
-    if (state === 'empty') {
-      D.members = D.members.filter(function (m) { return m.id === D.me.id; });
-      showTeam(false);
-    }
+    if (state === 'empty') removeTeam();
     if (state === 'loading') {
       setLoading(true);
       DS.announce(COPY.loading);

@@ -55,7 +55,8 @@
     newFrom: {},
     jump: 0,
     waiting: [],
-    arrivalsScheduled: false
+    arrivalsScheduled: false,
+    reloading: false
   };
 
   /* ---------- 요소 ---------- */
@@ -70,12 +71,15 @@
   var log = $('#log');
   var msgs = $('#msgs');
   var reply = $('#reply');
-  var sendBtn = $('#btn-send');
   var panel = $('#panel');
   var qInput = $('#q');
   var jump = $('#jump');
-  var mqWide = matchMedia('(min-width: 1280px)');
-  var mqNav = matchMedia('(min-width: 1024px)');
+  // kit 과 같은 폭 경계(rem — 브라우저 글자 크기를 키우면 덮는 패널·서랍이 된다)
+  var mqWide = matchMedia('(min-width: 80rem)');
+  var mqNav = matchMedia('(min-width: 64rem)');
+  // 화면낭독기용 구분 — 이어 붙은 글(이름·회사·시각)이 한 낱말로 읽히지 않게
+  var SEP = '<span class="ds-sr-only">, </span>';
+  var coarse = matchMedia('(pointer: coarse)').matches;
 
   /* ---------- 시각 — 데이터의 "지금"(D.now)에 연 뒤 지난 시간을 더한다 ---------- */
 
@@ -147,21 +151,28 @@
 
   /* ---------- 배치 — 본문 폭이 40rem 이상이면 두 칸(CSS 컨테이너 쿼리와 같은 기준) ---------- */
 
-  function isSplit() { return inbox.clientWidth >= 40 * remPx(); }
+  // 40rem 을 넘어야 두 칸(글자 200% 의 1280 폭 = 정확히 40rem 은 한 칸). CSS 컨테이너 쿼리 40.0625rem 과 같다
+  function isSplit() { return inbox.clientWidth >= 40.0625 * remPx(); }
   function chatShown() { return isSplit() || split.getAttribute('data-view') === 'chat'; }
-  /* 패널은 창이 1280 이상이고 글자 크기가 기본에 가까울(창 폭 72rem 이상) 때만 붙인다. 아니면 덮는다(설계서 10절) */
-  function roomy() { return window.innerWidth / remPx() >= 72; }
-  function docked() { return mqWide.matches && roomy(); }
-  function setView() { split.setAttribute('data-view', S.current ? 'chat' : 'list'); }
+  /* 패널을 붙이는 폭(80rem). kit DS.panel 과 같은 기준이다 */
+  function docked() { return mqWide.matches; }
+  /*
+   * 첫 방문에 패널을 열어 둘지 — 붙는 폭이고, 뿌리 글자 크기로 잰 창 폭도 80rem 이상일 때만.
+   * (붙임·덮음은 kit 이 정한다. 이 판단은 "처음부터 열어 둘지"만 정한다. 뿌리 글자 크기를 키운 화면에서
+   *  kit 미디어 쿼리는 바뀌지 않아, 처음부터 열면 본문이 좁아진다)
+   */
+  function openPanelFirst() { return docked() && window.innerWidth / remPx() >= 80; }
+  /* 불러오기에 실패하면 한 칸 배치에서도 목록 칸(다시 불러오기가 있는 곳)을 보인다 */
+  function setView() { split.setAttribute('data-view', S.current && !S.failed ? 'chat' : 'list'); }
 
   /* ---------- 빈 상태 조각 ---------- */
 
-  function emptyHTML(icon, title, text, actions) {
+  function emptyHTML(icon, title, text, actions, mod) {
     var acts = (actions || []).filter(Boolean).map(function (a) {
       return '<button class="ds-btn ds-btn--sm" type="button" data-act="' + a[0] + '">' + a[1] + '</button>';
     }).join('');
-    return '<div class="ds-empty ds-empty--center">' + DS.icon(icon, 'ds-empty__icon') +
-      '<p class="ds-empty__title">' + title + '</p><p class="ds-empty__text">' + text + '</p>' +
+    return '<div class="ds-empty ds-empty--center' + (mod ? ' ' + mod : '') + '">' + (icon ? DS.icon(icon, 'ds-empty__icon') : '') +
+      '<p class="ds-empty__title">' + title + '</p>' + (text ? '<p class="ds-empty__text">' + text + '</p>' : '') +
       (acts ? '<div class="ds-empty__actions">' + acts + '</div>' : '') + '</div>';
   }
 
@@ -171,18 +182,18 @@
     var lm = last(c);
     var prefix = lm.from === 'c' || lm.from === 'sys' ? '' : senderName(c, lm.from) + ': ';
     var k = c.customer;
-    return '<li><a class="si-row" href="' + esc(hrefWith({ c: c.id })) + '" data-id="' + c.id + '" tabindex="-1"' +
+    return '<li><a class="si-row" href="' + esc(hrefWith({ c: c.id })) + '" data-id="' + c.id + '" tabindex="-1" aria-describedby="rows-hint"' +
       (c.id === S.current ? ' aria-current="true"' : '') + (c.unread ? ' data-unread' : '') + '>' +
       '<span class="si-row__top"><span class="si-row__name">' + esc(k.name) +
-      (k.company ? '<span class="si-row__company">' + esc(k.company) + '</span>' : '') + '</span>' +
-      '<time class="si-row__time" datetime="' + lm.t + '">' + rowTime(lm.t) + '</time></span>' +
-      '<span class="si-row__preview">' + esc(prefix + lm.text) + '</span>' +
-      '<span class="si-row__meta"><span class="ds-badge ' + STATUS_BADGE[c.status] + '">' + STATUS[c.status] + '</span>' +
-      '<span>' + esc(D.channels[c.channel]) + '</span>' +
+      (k.company ? SEP + '<span class="si-row__company">' + esc(k.company) + '</span>' : '') + '</span>' + SEP +
+      '<time class="si-row__time" datetime="' + lm.t + '">' + rowTime(lm.t) + '</time></span>' + SEP +
+      '<span class="si-row__preview">' + esc(prefix + lm.text) + '</span>' + SEP +
+      '<span class="si-row__meta"><span class="ds-badge ' + STATUS_BADGE[c.status] + '">' + STATUS[c.status] + '</span>' + SEP +
+      '<span>' + esc(D.channels[c.channel]) + '</span>' + SEP +
       '<span>' + (c.who ? '담당 ' + esc(agentName(c.who)) : '담당자 없음') + '</span>' +
-      (lm.send === 'failed' ? '<span class="si-row__fail">' + DS.icon('error', 'ds-icon--sm') + '보내지 못했어요</span>' : '') +
+      (lm.send === 'failed' ? SEP + '<span class="si-row__fail">' + DS.icon('error', 'ds-icon--sm') + '보내지 못했어요</span>' : '') +
       (c.unread ? '<span class="ds-count ds-count--accent si-row__unread" aria-hidden="true">' + c.unread + '</span>' +
-        '<span class="ds-sr-only">안 읽은 메시지 ' + c.unread + '건</span>' : '') +
+        '<span class="ds-sr-only">, 안 읽은 메시지 ' + c.unread + '건</span>' : '') +
       '</span></a></li>';
   }
 
@@ -224,7 +235,8 @@
     $$('a[data-who]').forEach(function (a) {
       var w = a.getAttribute('data-who');
       if (w === S.who) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
-      a.href = hrefWith({ who: w === 'all' ? null : w, c: null });
+      // 보기를 바꾸면 고른 대화와 패널 열림은 남기지 않는다(대화 없이 info=open 이 남으면 빈 패널이 열린다)
+      a.href = hrefWith({ who: w === 'all' ? null : w, c: null, info: null });
     });
     $('#view-name').textContent = viewName(S.who);
   }
@@ -233,11 +245,19 @@
     opts = opts || {};
     var list = S.loaded ? visibleList() : [];
     rows.innerHTML = list.map(rowHTML).join('');
-    $('#list-count').textContent = S.loaded ? list.length + '건' : '';
+    // 보기 이름 옆에는 지금 상태 필터와 건수 — "모든 대화 · 전체 16"이 엇갈려 보이지 않게
+    // 화면낭독기용 쉼표는 건수가 있을 때만 — 불러오는 중 제목이 "모든 대화 ,"로 읽히지 않게
+    $('#list-count').innerHTML = S.loaded
+      ? '<span class="ds-sr-only">, </span>' + (S.status === 'all' ? '' : STATUS[S.status] + ' ') + list.length + '건' : '';
     updateCounts();
     syncNav();
     setRoving();
-    if (!S.loaded || list.length) {
+    if (S.failed) {
+      // 불러오기 오류는 결과 자리에 둔다. 닫을 수 있는 배너에만 두면 닫은 뒤 다시 불러올 방법이 없다(STA-06)
+      listEmpty.innerHTML = emptyHTML('error', '대화 목록을 불러오지 못했어요', '연결이 잠시 끊겼어요. 다시 불러오면 이어서 볼 수 있어요.',
+        [['reload', '다시 불러오기']], 'ds-empty--error');
+      listEmpty.hidden = false;
+    } else if (!S.loaded || list.length) {
       listEmpty.hidden = true;
       listEmpty.innerHTML = '';
     } else if (!S.q && S.who === 'all' && S.status === 'open') {
@@ -276,7 +296,7 @@
         '<span class="si-file__size">' + esc(f.size) + '</span><span class="ds-sr-only">첨부</span></span>';
     }).join('');
     var status = '';
-    if (m.send === 'pending') status = '<p class="si-msg__status">' + DS.icon('clock', 'ds-icon--sm') + '보내는 중…</p>';
+    if (m.send === 'pending') status = '<p class="si-msg__status">보내는 중…</p>';
     else if (m.send === 'sent') status = '<p class="si-msg__status">' + DS.icon('check', 'ds-icon--sm') + '보냄</p>';
     else if (m.send === 'failed') {
       status = '<div class="si-msg__fail"><p class="si-msg__status si-msg__status--fail">' + DS.icon('error', 'ds-icon--sm') + '보내지 못했어요</p>' +
@@ -330,22 +350,31 @@
 
   function renderHead(c) {
     var k = c.customer;
-    $('#chat-title').innerHTML = esc(k.name) + (k.company ? '<span class="si-chat__company">' + esc(k.company) + '</span>' : '');
-    $('#chat-meta').innerHTML = '<span class="ds-badge ' + STATUS_BADGE[c.status] + '">' + STATUS[c.status] + '</span>' +
-      '<span class="si-meta-item">' + DS.icon('chat', 'ds-icon--sm') + esc(D.channels[c.channel]) + '</span>' +
-      '<span class="si-meta-item">' + DS.icon('user', 'ds-icon--sm') + (c.who ? '담당 ' + esc(agentName(c.who)) : '담당자 없음') + '</span>';
-    $('#btn-take').hidden = !!c.who || c.status === 'closed';
-    $$('#menu-status [data-status]').forEach(function (it) {
+    $('#chat-title').innerHTML = esc(k.name) + (k.company ? SEP + '<span class="si-chat__company">' + esc(k.company) + '</span>' : '');
+    $('#chat-meta').innerHTML = '<span class="ds-badge ' + STATUS_BADGE[c.status] + '">' + STATUS[c.status] + '</span>' + SEP +
+      '<span>' + esc(D.channels[c.channel]) + '</span>' + SEP +
+      '<span>' + (c.who ? '담당 ' + esc(agentName(c.who)) : '담당자 없음') + '</span>';
+    var canTake = !c.who && c.status !== 'closed';
+    $('#btn-take').hidden = !canTake;
+    $('#more-take').hidden = !canTake;
+    $$('[data-status]', chat).forEach(function (it) {
       it.setAttribute('aria-checked', it.getAttribute('data-status') === c.status ? 'true' : 'false');
     });
-    $('#back').href = hrefWith({ c: null });
+    $('#back').href = hrefWith({ c: null, info: null });
   }
 
-  function syncSend() {
-    var empty = !reply.value.trim();
-    sendBtn.setAttribute('aria-disabled', empty ? 'true' : 'false');
-    if (empty) sendBtn.setAttribute('data-ds-tip', '답장을 먼저 써 주세요');
-    else sendBtn.removeAttribute('data-ds-tip');
+  /* 보내기는 늘 누를 수 있다(CMP-BTN-08). 빈 채 누르면 입력창 아래에 안내하고 입력창으로 포커스 */
+  function replyError(on) {
+    var err = $('#reply-error');
+    err.hidden = !on;
+    if (on) reply.setAttribute('aria-invalid', 'true');
+    else reply.removeAttribute('aria-invalid');
+    // 터치 화면에서는 단축키 안내를 숨기므로 설명에서도 뺀다
+    var ids = [];
+    if (!coarse) ids.push('reply-hint');
+    if (on) ids.push('reply-error');
+    if (ids.length) reply.setAttribute('aria-describedby', ids.join(' '));
+    else reply.removeAttribute('aria-describedby');
   }
 
   function autosize() {
@@ -357,8 +386,8 @@
     var closed = c.status === 'closed';
     $('#composer').hidden = closed;
     $('#closed-note').hidden = !closed;
-    if (restore) reply.value = c.draft || '';
-    if (!closed) { autosize(); syncSend(); }
+    if (restore) { reply.value = c.draft || ''; replyError(false); }
+    if (!closed) autosize();
   }
 
   function chatParts(show) {
@@ -366,6 +395,7 @@
     $('#logwrap').hidden = !show;
     if (!show) { $('#composer').hidden = true; $('#closed-note').hidden = true; }
     $('#chat-empty').hidden = show;
+    if (show) $('#chat-empty').innerHTML = '';
   }
 
   function renderChat() {
@@ -374,9 +404,11 @@
     if (!c) {
       chatParts(false);
       $('#chat-empty').className = 'si-pane-empty si-pane-empty--chat';
+      // 목록에 고를 대화가 있을 때만 "목록에서 고르면" 안내를 둔다. 오류·빈 목록에서는 목록 칸의 안내 한 곳만 말한다
+      var canPick = S.loaded && !S.failed && visibleList().length > 0;
       $('#chat-empty').innerHTML = S.current && S.loaded
-        ? emptyHTML('chat', '대화를 찾지 못했어요', '주소가 바뀌었거나 지운 대화예요.', [['to-list', '목록으로']])
-        : emptyHTML('chat', '고른 대화가 없어요', S.loaded ? '목록에서 대화를 고르면 여기에 메시지가 보여요.' : '목록을 다시 불러오면 대화를 고를 수 있어요.');
+        ? emptyHTML('search', '대화를 찾지 못했어요', '주소가 바뀌었거나 지운 대화예요.', [['to-list', '목록으로']])
+        : emptyHTML(null, '고른 대화가 없어요', canPick ? '목록에서 대화를 고르면 여기에 메시지가 보여요.' : '');
       chat.removeAttribute('aria-labelledby');
       chat.setAttribute('aria-label', '대화');
     } else {
@@ -448,8 +480,8 @@
     var r = prevId && rowEl(prevId);
     if (r) r.removeAttribute('aria-current');
     hideJump();
-    renderChat();
     autoOpen();
+    if (!S.current) renderChat();
     if (r && shown(r)) { setRoving(r); r.focus(); } else focusList();
   }
 
@@ -496,12 +528,17 @@
 
   function submitReply() {
     var c = find(S.current);
+    if (!c || c.status === 'closed') return;
     var text = reply.value.trim();
-    if (!c || !text || c.status === 'closed') return;
+    if (!text) {
+      replyError(true);
+      reply.focus();
+      return;
+    }
     reply.value = '';
     c.draft = '';
     autosize();
-    syncSend();
+    replyError(false);
     sendMessage(c, text);
     reply.focus();
   }
@@ -536,7 +573,7 @@
         id: 'banner-taken', tone: 'warning',
         title: name + ' 님이 먼저 맡은 대화예요',
         text: '담당자를 바꾸려면 ' + name + ' 님과 먼저 이야기해 주세요.',
-        focusNext: '#btn-status'
+        focusNext: shown($('#btn-status')) ? '#btn-status' : '#btn-more'
       });
     } else {
       c.who = D.me;
@@ -548,7 +585,9 @@
     renderHead(c);
     patchRow(c);
     updateCounts();
-    $('#btn-status').focus();
+    // 누른 "내가 맡기"는 사라진다 — 다음 자리(넓은 폭은 상태 바꾸기, 좁은 폭은 대화 동작 메뉴)로
+    var next = $('#btn-status');
+    (shown(next) ? next : $('#btn-more')).focus();
   }
 
   /* ---------- 고객 정보 패널 — 1280 이상은 붙고, 그보다 좁으면 대화 위에 덮는다(비모달) ---------- */
@@ -584,39 +623,15 @@
   }
 
   /**
-   * 여닫기·inert·가림막·Esc·주소(?info=open)는 kit 의 DS.panel 이 맡는다(data-ds-panel · data-ds-panel-close).
-   * 이 함수는 내용만 채우고, 보일 대화가 없으면 닫는다.
+   * 여닫기·붙임/덮음(80rem)·inert·가림막·Esc·주소(?info=open)는 kit 의 DS.panel 이 맡는다
+   * (data-ds-panel · data-ds-panel-close). 이 함수는 내용만 채우고, 보일 대화가 없으면 닫는다.
+   * 불러오는 동안은 비워 두고, 스켈레톤은 showSkeleton 이 다른 칸과 함께 그린다.
    */
   function renderPanel() {
-    var body = $('#panel-body');
-    if (!S.loaded && !S.failed) {
-      if (!panel.hidden) body.innerHTML = panelSkeleton();
-      fixDock();
-      return;
-    }
+    if (!S.loaded && !S.failed) return;
     var c = S.current && S.loaded ? find(S.current) : null;
-    if (c) body.innerHTML = customerHTML(c);
+    if (c) $('#panel-body').innerHTML = customerHTML(c);
     if ((!c || !chatShown()) && !panel.hidden) DS.panel.close(panel);
-    fixDock();
-  }
-
-  /*
-   * kit 은 창이 1280px 이상이면 늘 패널을 붙인다. 글자를 200% 로 키우면 본문이 한 칸도 안 남으므로
-   * 그때는 붙이지 않고 덮는다(kit 이 덮을 때 하는 일과 같게: 가림막 + 뒤 inert). 샘플의 임시 메움 — kit 에 요청했다.
-   */
-  function fixDock() {
-    var over = !panel.hidden && mqWide.matches && !roomy();
-    app.classList.toggle('si-app--panel-over', over);
-    if (!over) return;
-    app.classList.toggle('ds-app--panel', false);
-    app.setAttribute('data-panel-overlay', '');
-    if (!$('.ds-app__scrim', app)) {
-      var scrim = doc.createElement('div');
-      scrim.className = 'ds-app__scrim';
-      scrim.setAttribute('aria-hidden', 'true');
-      app.appendChild(scrim);
-    }
-    $$(':scope > .ds-app__top, :scope > .ds-app__nav, :scope > .ds-app__main', app).forEach(function (el) { el.inert = true; });
   }
 
   /* ---------- 새 메시지 도착 — 포커스를 옮기지 않고, 바뀐 행만 고친다 ---------- */
@@ -668,48 +683,91 @@
       '<span class="ds-skeleton"></span><span class="ds-skeleton ds-skeleton--short"></span></li>';
     return new Array(7).join(one);
   }
+  /**
+   * 대화 칸 스켈레톤 — 최종 배치와 같은 부품 이름(si-chat__head · si-log · si-composer)으로 그려 같은 높이를 차지한다.
+   * 머리: 뒤로·동작 메뉴 자리(좁은 폭) 또는 버튼 2개 자리(넓은 폭), 아래: 라벨 줄 + 입력창 + 보내기 자리.
+   * 어느 자리가 보일지는 실제 머리와 같은 컨테이너 쿼리가 정한다.
+   */
   function skeletonChat() {
+    var sk = function (cls) { return '<span class="ds-skeleton ' + cls + '"></span>'; };
     var b = function (out) {
-      return '<div class="si-skel-msg' + (out ? ' si-skel-msg--out' : '') + '"><span class="ds-skeleton ds-skeleton--short"></span><span class="ds-skeleton"></span></div>';
+      return '<div class="si-skel-msg' + (out ? ' si-skel-msg--out' : '') + '">' + sk('ds-skeleton--short') + sk('') + '</div>';
     };
-    return '<div class="si-skel" aria-hidden="true"><span class="ds-skeleton ds-skeleton--title"></span>' + b(false) + b(true) + b(false) + b(true) + '</div>';
+    return '<div class="si-skel" aria-hidden="true">' +
+      '<div class="si-chat__head">' + sk('si-back si-skel-icon') +
+        '<div class="si-chat__titles"><p class="si-chat__title">' + sk('si-skel-inline si-skel-w-title') + '</p>' +
+        '<p class="si-chat__meta">' + sk('si-skel-badge') + sk('si-skel-inline si-skel-w-meta') + '</p></div>' +
+        sk('si-more si-skel-icon') +
+        '<div class="si-chat__actions">' + sk('si-skel-btn si-skel-w-status') + sk('si-skel-btn si-skel-w-info') + '</div>' +
+      '</div>' +
+      '<div class="si-logwrap"><div class="si-log">' + b(false) + b(true) + b(false) + b(true) + '</div></div>' +
+      '<div class="si-composer"><div class="si-composer__bar"><span class="ds-field__label">' + sk('si-skel-inline si-skel-w-label') + '</span>' +
+        '<span class="ds-toolbar__spacer"></span>' + sk('si-skel-btn si-skel-w-quick') + '</div>' +
+        '<div class="si-composer__row">' + sk('si-reply') + sk('si-skel-send') + '</div></div>' +
+      '</div>';
   }
 
+  /** 최종 배치의 모든 칸(목록·대화·열린 패널)을 같은 모양의 스켈레톤으로 그린다(STA-03·CMP-FB-09) */
   function showSkeleton() {
     listBody.setAttribute('aria-busy', 'true');
     chat.setAttribute('aria-busy', 'true');
+    listEmpty.hidden = true;
     rows.innerHTML = skeletonRows();
     chatParts(false);
     var box = $('#chat-empty');
     box.className = 'si-pane-empty si-pane-empty--skel';
     box.innerHTML = skeletonChat();
+    if (!panel.hidden) $('#panel-body').innerHTML = panelSkeleton();
     DS.announce('대화 목록을 불러오는 중이에요');
   }
 
   function onLoaded() {
     S.loaded = true;
+    S.failed = false;
     listBody.setAttribute('aria-busy', 'false');
     if (S.offline) showOffline();
+    setView();
     renderList();
+    // 연 대화가 없으면 먼저 맨 위 대화를 열어 본다 — 그 전에 대화 칸을 그리면 "보일 대화 없음"으로 패널이 닫힌다
     if (S.current) openConversation(S.current, { history: 'none' });
-    else { renderChat(); autoOpen(); }
-    if (S.fresh && S.current && docked() && chatShown()) DS.panel.open(panel, { focus: false });
-    S.fresh = false;
+    else { autoOpen(); if (!S.current) renderChat(); }
     scheduleArrivals();
   }
 
   function onLoadFail() {
     S.failed = true;
     listBody.setAttribute('aria-busy', 'false');
+    setView();
     renderList();
     renderChat();
-    DS.banner.show({
-      id: 'banner-load', tone: 'danger',
-      title: '대화 목록을 불러오지 못했어요',
-      text: '연결이 잠시 끊겼어요. 다시 불러오면 이어서 볼 수 있어요.',
-      focusNext: '#q',
-      actions: [{ label: '다시 불러오기', onClick: function (el) { retryLoad(el); return false; } }]
+    DS.announce('대화 목록을 불러오지 못했어요. 다시 불러오기를 눌러 주세요.', { assertive: true });
+  }
+
+  /**
+   * 흉내 불러오기. 1초 안에 끝나는 첫 불러오기는 스켈레톤 없이 바로 결과를 보이고(STA-01),
+   * 다시 불러오기는 1.2초로 두어 kit 로딩 타이머(0.3초 뒤 표시·0.4초 유지)대로 스켈레톤을 보인다.
+   */
+  function load(opts) {
+    opts = opts || {};
+    var fail = opts.fail;
+    var timer = DS.loadingTimer(showSkeleton, function () {
+      if (fail) onLoadFail(); else onLoaded();
+      if (opts.done) opts.done();
     });
+    if (MODE === 'loading') return; // 끝나지 않는 로딩(견본)
+    setTimeout(function () { timer.stop(); }, opts.ms || 250);
+  }
+
+  function reload() {
+    if (S.reloading) return;
+    S.reloading = true;
+    // 누른 버튼은 스켈레톤으로 바뀌므로 포커스를 목록 제목에 맡겨 둔다
+    if (listEmpty.contains(doc.activeElement)) $('#list-title').focus();
+    load({ ms: 1200, done: function () {
+      S.reloading = false;
+      focusList();
+      DS.announce('대화 ' + visibleList().length + '건을 불러왔어요');
+    } });
   }
 
   /**
@@ -722,22 +780,6 @@
     btn.setAttribute('data-busy-label', label);
     DS.busy(btn, true);
     setTimeout(function () { DS.busy(btn, false).then(done); }, ms);
-  }
-
-  function retryLoad(el) {
-    busyAction(el, '불러오는 중…', 700, function () {
-      S.failed = false;
-      onLoaded();
-      DS.banner.dismiss(el, { focusNext: $('a.si-row[tabindex="0"]', rows) || '#q' });
-      DS.announce('대화 ' + visibleList().length + '건을 불러왔어요');
-    });
-  }
-
-  function load() {
-    var fail = MODE === 'error';
-    var timer = DS.loadingTimer(showSkeleton, function () { if (fail) onLoadFail(); else onLoaded(); });
-    if (MODE === 'loading') return; // 끝나지 않는 로딩(견본)
-    setTimeout(function () { timer.stop(); }, fail ? 600 : 250);
   }
 
   function showOffline() {
@@ -812,13 +854,21 @@
       focusList();
     } else if (act === 'to-list') {
       closeConversation();
+    } else if (act === 'reload') {
+      reload();
     }
   });
 
-  $('.si-status').addEventListener('ds:change', function (e) {
-    S.status = e.detail.value;
+  /** 거른 뒤 — 두 칸이면 맨 위 대화를 열고, 연 대화가 없으면 대화 칸 안내를 목록 상태에 맞춘다 */
+  function afterFilter() {
     renderList({ announce: true });
     autoOpen();
+    if (!S.current) renderChat();
+  }
+
+  $('.si-status').addEventListener('ds:change', function (e) {
+    S.status = e.detail.value;
+    afterFilter();
   });
 
   $('#nav').addEventListener('click', function (e) {
@@ -833,10 +883,8 @@
       DS.url.set({ c: null });
       S.current = null;
       setView();
-      renderChat();
     }
-    renderList({ announce: true });
-    autoOpen();
+    afterFilter();
     // 서랍은 kit 이 닫는다. 닫힌 뒤 포커스를 목록으로 옮긴다
     if (drawer) setTimeout(focusList, 0);
   });
@@ -845,7 +893,7 @@
   function applyQ() {
     S.q = qInput.value.trim();
     DS.url.set({ q: S.q || null });
-    renderList({ announce: true });
+    afterFilter();
   }
   qInput.addEventListener('input', function () { clearTimeout(qTimer); qTimer = setTimeout(applyQ, 250); });
   qInput.addEventListener('keydown', function (e) {
@@ -860,11 +908,9 @@
 
   reply.addEventListener('input', function () {
     autosize();
-    syncSend();
+    if (reply.value.trim() && reply.hasAttribute('aria-invalid')) replyError(false);
   });
-  reply.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); submitReply(); }
-  });
+  // ⌘/Ctrl+Enter 는 kit 이 폼 제출(requestSubmit)로 바꾼다 — 여기서는 제출 한 곳만 듣는다(두 번 보내지 않게)
   $('#composer').addEventListener('submit', function (e) { e.preventDefault(); submitReply(); });
 
   msgs.addEventListener('click', function (e) {
@@ -877,15 +923,25 @@
     if (m) sendMessage(c, m.text, m);
   });
 
-  $('#menu-status').addEventListener('click', function (e) {
-    var it = e.target.closest('[data-status]');
-    if (it) setStatus(find(S.current), it.getAttribute('data-status'));
+  // 상태 바꾸기 — 넓은 폭의 상태 메뉴와 좁은 폭의 "대화 동작" 메뉴가 같은 처리를 쓴다
+  $$('#menu-status, #menu-more').forEach(function (menu) {
+    menu.addEventListener('click', function (e) {
+      var it = e.target.closest('[data-status]');
+      if (it) setStatus(find(S.current), it.getAttribute('data-status'));
+    });
   });
   $('#btn-reopen').addEventListener('click', function () {
     setStatus(find(S.current), 'open');
     reply.focus();
   });
   $('#btn-take').addEventListener('click', takeConversation);
+  $('#more-take').addEventListener('click', function () {
+    // kit 이 메뉴를 닫고 메뉴 버튼으로 포커스를 돌린 뒤에 맡는다
+    setTimeout(takeConversation, 0);
+  });
+  $('#more-info').addEventListener('click', function () {
+    setTimeout(function () { DS.panel.open(panel, { opener: $('#btn-more') }); }, 0);
+  });
 
   $('#menu-quick').addEventListener('click', function (e) {
     var it = e.target.closest('[data-quick]');
@@ -894,7 +950,7 @@
     var now = reply.value.replace(/\s+$/, '');
     reply.value = now ? now + ' ' + text : text;
     autosize();
-    syncSend();
+    replyError(false);
     // kit 이 메뉴를 닫고 메뉴 버튼으로 포커스를 돌린 뒤, 입력창으로 옮긴다
     setTimeout(function () {
       reply.focus();
@@ -902,9 +958,8 @@
     }, 0);
   });
 
-  // 고객 정보 패널 — 여닫기는 kit(data-ds-panel). 열리면 내용을 채우고, 붙일지 덮을지 맞춘다
+  // 고객 정보 패널 — 여닫기는 kit(data-ds-panel). 열리면 내용을 채운다
   panel.addEventListener('ds:panel-open', renderPanel);
-  panel.addEventListener('ds:panel-close', fixDock);
 
   jump.addEventListener('click', function () {
     toBottom();
@@ -962,14 +1017,6 @@
   }
   if (window.ResizeObserver) new ResizeObserver(onResize).observe(inbox);
   else window.addEventListener('resize', onResize);
-  mqWide.addEventListener('change', fixDock);
-  window.addEventListener('resize', fixDock);
-
-  // 덮는 패널이 머리줄 바로 아래에서 시작하게 머리줄 실제 높이를 CSS 변수로 넘긴다(좁은 폭에서 두 줄이 된다)
-  var topbar = $('.si-topbar');
-  function syncTop() { doc.documentElement.style.setProperty('--support-inbox-top', topbar.getBoundingClientRect().height + 'px'); }
-  if (window.ResizeObserver) new ResizeObserver(syncTop).observe(topbar);
-  syncTop();
 
   /* ---------- 시작 ---------- */
 
@@ -980,10 +1027,11 @@
         '<span>' + esc(a.name) + '</span><span class="ds-nav__count" data-count-who="' + a.id + '"></span></a></li>';
     }).join('');
 
-    // 빠른 답변 메뉴
+    // 빠른 답변 메뉴 — 제목과 글이 한 낱말로 읽히지 않게 구분을 둔다
     $('#menu-quick').innerHTML = D.quickReplies.map(function (r, i) {
       return '<button class="ds-menu__item" type="button" role="menuitem" data-quick="' + i + '">' +
-        '<span class="si-quick__title">' + esc(r.title) + '</span><span class="si-quick__text">' + esc(r.text) + '</span></button>';
+        '<span class="si-quick__title">' + esc(r.title) + '</span><span class="ds-sr-only">: </span>' +
+        '<span class="si-quick__text">' + esc(r.text) + '</span></button>';
     }).join('');
 
     // 보내기 단축키 안내 — 맥은 ⌘
@@ -1026,15 +1074,17 @@
       DS.url.set({ c: S.current });
     }
     qInput.value = S.q;
-
-    // 터치 화면에서는 단축키 안내를 숨기므로 입력창 설명에서도 뺀다
-    if (matchMedia('(pointer: coarse)').matches) reply.removeAttribute('aria-describedby');
+    replyError(false);
 
     setView();
     syncNav();
-    renderPanel();
     wasSplit = isSplit();
-    load();
+    // 첫 방문이고 패널을 붙이는 폭이면 불러오기 전에 패널을 연다 — 스켈레톤에 패널 자리가 있어
+    // 불러온 순간 칸이 움직이지 않는다(STA-03·CMP-FB-09). 목록이 비는 견본(오류·결과 없음·답할 대화 없음)은 열지 않는다
+    var listWillBeEmpty = MODE === 'error' || MODE === 'empty' || MODE === 'zero';
+    if (S.fresh && openPanelFirst() && isSplit() && !listWillBeEmpty) DS.panel.open(panel, { focus: false });
+    S.fresh = false;
+    load({ fail: MODE === 'error' });
   }
 
   DS.ready(start);

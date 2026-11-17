@@ -45,7 +45,8 @@
     ['바탕', ['surface-canvas', 'surface-default', 'surface-raised', 'surface-subtle', 'surface-hover', 'surface-selected', 'surface-inverse']],
     ['글자', ['fg-default', 'fg-muted', 'fg-disabled', 'fg-accent', 'fg-danger', 'fg-success', 'fg-warning', 'fg-info']],
     ['채움', ['fill-accent', 'fill-accent-hover', 'fill-accent-subtle', 'fill-danger', 'fill-danger-subtle', 'fill-success', 'fill-success-subtle', 'fill-warning', 'fill-warning-subtle', 'fill-info-subtle']],
-    ['선', ['line-subtle', 'line-default', 'line-strong', 'line-control', 'line-focus', 'line-danger']]
+    ['선', ['line-subtle', 'line-default', 'line-strong', 'line-control', 'line-focus', 'line-danger']],
+    ['그래프', ['series-1', 'series-2', 'series-3', 'series-4', 'series-5', 'series-6']]
   ];
 
   var state = new URLSearchParams(location.search).get('state') || '';
@@ -477,7 +478,7 @@
 
     if (state === 'error') {
       DS.banner.show({
-        id: 'load-error', tone: 'danger',
+        id: 'load-error', tone: 'danger', dismissible: false,
         title: COPY.errorTitle, text: COPY.errorText,
         actions: [{ label: COPY.reload, primary: true, onClick: function () { DS.url.set({ state: null }); location.reload(); } }],
         focusNext: '#h-colors'

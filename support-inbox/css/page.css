@@ -9,9 +9,13 @@
   --support-inbox-composer-max: 10rem;              /* 답장 입력창이 커지는 한계 */
   --support-inbox-quick-w: 22rem;                   /* 빠른 답변 메뉴 폭 */
   --support-inbox-quick-max: min(24rem, 60vh);      /* 빠른 답변 메뉴 최대 높이 */
-  --support-inbox-status-min: 3.5rem;               /* 상태 묶음 버튼 한 칸 최소 폭 */
   --support-inbox-wrap-min: 12rem;                  /* 이 폭보다 좁으면 다음 줄로 내리는 글 묶음 */
-  --support-inbox-top: var(--ds-size-topbar);       /* 머리줄 실제 높이 — 좁은 폭에서 두 줄이 되면 page.js 가 잰 값으로 바꾼다 */
+  /* 대화 칸 스켈레톤의 버튼·배지 자리 너비 — 실제 버튼 너비에 맞춘다(머리가 같은 곳에서 줄바꿈되게) */
+  --support-inbox-skel-short: 2.25rem;              /* 배지·라벨 자리 */
+  --support-inbox-skel-status: 6.625rem;            /* "상태 바꾸기" 버튼 자리(106) */
+  --support-inbox-skel-info: 5.875rem;              /* "고객 정보" 버튼 자리(94) */
+  --support-inbox-skel-quick: 7.375rem;             /* "빠른 답변" 버튼 자리(118) */
+  --support-inbox-skel-send: 3.875rem;              /* "보내기" 버튼 자리(62) */
 }
 
 /* ───────── 앱 틀 — 문서 스크롤 대신 칸마다 스크롤한다(설계서 10절 예외) ───────── */
@@ -29,7 +33,8 @@
   overflow: hidden;
 }
 
-@media (min-width: 1024px) {
+/* 붙는 옆 메뉴·옆 패널은 문서가 스크롤하지 않으므로 sticky 대신 그리드 칸 높이를 따른다(kit 과 같은 rem 경계) */
+@media (min-width: 64rem) {
   .si-app > .ds-app__nav {
     position: static;
     height: auto;
@@ -37,40 +42,11 @@
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 80rem) {
   .si-app > .ds-app__panel {
     position: static;
     height: auto;
     min-height: 0;
-  }
-}
-
-/* 덮는 패널은 머리줄 바로 아래에서 시작한다(좁은 폭에서 머리줄이 두 줄이 되어도 안내 줄을 가리지 않게) */
-@media (max-width: 1279px) {
-  .si-app > .ds-app__panel {
-    inset-block-start: var(--support-inbox-top);
-  }
-}
-
-/* 1280 이상인데 글자를 키워 자리가 모자라면 붙이지 않고 덮는다(kit 의 1279 이하 덮는 패널과 같은 모양) */
-@media (min-width: 1280px) {
-  .si-app--panel-over > .ds-app__panel {
-    position: fixed;
-    inset-block: var(--support-inbox-top) 0;
-    inset-inline-end: 0;
-    z-index: var(--ds-z-panel);
-    width: var(--ds-size-panel-overlay);
-    height: auto;
-    border-inline-start: var(--ds-size-hairline) solid var(--ds-color-line-default);
-    box-shadow: var(--ds-shadow-overlay);
-  }
-
-  .si-app--panel-over .ds-app__scrim {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: var(--ds-z-scrim);
-    background: var(--ds-color-surface-overlay);
   }
 }
 
@@ -79,9 +55,8 @@
   min-height: 0;
 }
 
-/* 머리줄 */
+/* 머리줄 — 좁으면 여러 줄(kit). 화면 제목(h1)은 칸 제목(h2·16)보다 한 단계 큰 title(20) */
 .si-topbar {
-  flex-wrap: wrap;
   column-gap: var(--ds-space-2);
   row-gap: 0;
 }
@@ -91,18 +66,14 @@
 }
 
 .si-topbar__title {
-  font-size: var(--ds-text-title-sm-size);
-  line-height: var(--ds-text-title-sm-leading);
-  font-weight: var(--ds-text-title-sm-weight);
+  font-size: var(--ds-text-title-size);
+  line-height: var(--ds-text-title-leading);
+  font-weight: var(--ds-text-title-weight);
+  letter-spacing: var(--ds-text-title-tracking);
 }
 
-.si-topbar__note {
-  color: var(--ds-color-fg-muted);
-  font-size: var(--ds-text-caption-size);
-  line-height: var(--ds-text-caption-leading);
-}
-
-@media (max-width: 767px) {
+/* 가상 데이터 안내(ds-sample-note) — 좁은 폭에서는 머리줄 둘째 줄로 */
+@media (max-width: 47.9375rem) {
   .si-topbar__note {
     order: 10;
     flex-basis: 100%;
@@ -110,7 +81,25 @@
   }
 }
 
-@media (max-width: 479px) {
+/* 아주 좁은 폭 — 첫 줄은 메뉴 + 화면 제목, 둘째 줄은 데이터 안내 + 화면 밝기(세 줄이 되지 않게) */
+@media (max-width: 29.9375rem) {
+  .si-topbar .ds-topbar__spacer {
+    order: 9;
+    flex-basis: 100%;
+  }
+
+  .si-topbar__note {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .si-topbar .ds-segmented {
+    order: 11;
+  }
+}
+
+/* 아주 좁은 폭 — "UI 샘플" 링크·구분 글자·밝기 글자를 숨긴다. 샘플 목록은 옆 메뉴 서랍의 "샘플 목록"으로 간다 */
+@media (max-width: 29.9375rem) {
   .si-topbar__brand,
   .si-topbar__sep,
   .si-theme-text {
@@ -162,7 +151,8 @@
   outline: none;
 }
 
-@container si-inbox (min-width: 40rem) {
+/* 40rem 을 넘어야 두 칸(정확히 40rem — 글자 200% 의 1280 폭 — 은 한 칸). page.js isSplit() 과 같은 값 */
+@container si-inbox (min-width: 40.0625rem) {
   .si-split {
     grid-template-columns: var(--support-inbox-list-w) minmax(0, 1fr);
   }
@@ -180,8 +170,37 @@
     border-inline-end: var(--ds-size-hairline) solid var(--ds-color-line-default);
   }
 
-  .si-back {
+  /* 두 칸이면 목록이 늘 보이므로 뒤로 버튼을 숨긴다(아래 기본 규칙보다 특이도를 높인다) */
+  .si-split .si-back {
     display: none;
+  }
+}
+
+/*
+ * 대화 머리는 대화 칸의 폭으로 접는다. 좁으면(기본) 이름 한 줄 + 동작 메뉴 하나, 넓으면 동작 버튼을 글자와 함께.
+ * 25.25rem — 1280 폭에 고객 정보 패널이 붙었을 때 대화 칸(408px)은 넓은 쪽, 글자 200% 의 한 칸 배치는 좁은 쪽에 든다.
+ */
+.si-chat {
+  container-type: inline-size;
+  container-name: si-chat;
+}
+
+@container si-chat (min-width: 25.25rem) {
+  .si-chat .si-more {
+    display: none;
+  }
+
+  .si-chat .si-chat__actions {
+    display: flex;
+  }
+
+  .si-chat .si-chat__head {
+    flex-wrap: wrap;
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+
+  .si-chat .si-chat__title {
+    white-space: normal;
   }
 }
 
@@ -219,10 +238,8 @@
   font-weight: var(--ds-font-weight-regular);
 }
 
-/* 상태 묶음 버튼 — 좁은 목록 칸에서도 한 줄에 4개가 들어가게 칸을 나눈다 */
+/* 상태 묶음 버튼 — 같은 폭 한 줄 배치는 kit 이 한다. 좁은 목록 칸에 "전체 16"이 한 줄로 들게 안쪽 여백만 줄인다 */
 .si-status {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--support-inbox-status-min), 1fr));
   align-self: stretch;
 }
 
@@ -365,31 +382,21 @@
   justify-content: center;
 }
 
-.si-pane-empty[hidden] {
-  display: none;
-}
-
 /* ───────── 대화 칸 ───────── */
 
+/* 좁은 폭(한 칸)이 기본 — 뒤로(아이콘) · 이름과 상태 · 동작 메뉴(아이콘)를 한 줄에 둔다 */
 .si-chat__head {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--ds-space-2) var(--ds-space-3);
-  padding: var(--ds-space-3) var(--ds-space-4);
+  padding: var(--ds-space-2) var(--ds-space-3);
   border-block-end: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
 }
 
-.si-chat__head[hidden],
-.si-logwrap[hidden],
-.si-composer[hidden],
-.si-closed[hidden] {
-  display: none;
-}
-
-.si-back {
+.si-back,
+.si-more {
   flex: none;
-  margin-inline-start: calc(-1 * var(--ds-space-2));
 }
 
 .si-chat__titles {
@@ -400,10 +407,14 @@
   min-width: 0;
 }
 
+/* 좁은 폭에서는 이름 한 줄(넘치면 말줄임), 두 칸에서는 줄바꿈 */
 .si-chat__title {
+  overflow: hidden;
   font-size: var(--ds-text-title-sm-size);
   line-height: var(--ds-text-title-sm-leading);
   font-weight: var(--ds-text-title-sm-weight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .si-chat__title:focus {
@@ -431,30 +442,34 @@
   line-height: var(--ds-text-body-sm-leading);
 }
 
-.si-meta-item {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-1);
-}
-
 .si-chat__actions {
-  display: flex;
+  display: none;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--ds-space-2);
 }
 
-.si-chat__actions .ds-btn[hidden] {
-  display: none;
+/* 고객 정보 패널이 열려 있으면 여는 버튼도 눌린 모양(바탕 + 굵기) */
+.si-info[aria-expanded="true"] {
+  background: var(--ds-color-surface-selected);
+  font-weight: var(--ds-text-label-strong-weight);
 }
 
-/* 메뉴 — 고른 항목은 체크 표시 */
+/* 메뉴 — 고른 항목은 체크 표시, 묶음 이름은 작은 회색 글 */
 .si-menu-check {
   visibility: hidden;
 }
 
 [aria-checked="true"] > .si-menu-check {
   visibility: visible;
+}
+
+.si-menu-label {
+  padding: var(--ds-space-1) var(--ds-space-2) 0;
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+  font-weight: var(--ds-text-caption-strong-weight);
 }
 
 /* 메시지 흐름 */
@@ -648,42 +663,44 @@
   transform: translateX(-50%);
 }
 
-.si-jump[hidden] {
-  display: none;
-}
-
 /* 답장 입력 */
 .si-composer {
   display: flex;
   flex: none;
   flex-direction: column;
   gap: var(--ds-space-2);
-  padding: var(--ds-space-3) var(--ds-space-4) var(--ds-space-4);
+  padding: var(--ds-space-3) var(--ds-space-4);
   border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
 }
 
+/* 라벨 줄 — 라벨 · 단축키 안내 · 빠른 답변을 한 줄에(좁으면 줄바꿈) */
 .si-composer__bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+}
+
+/* 입력창 오른쪽에 보내기 — 좁은 폭에서도 줄 하나를 아낀다 */
+.si-composer__row {
+  display: flex;
+  align-items: flex-end;
   gap: var(--ds-space-2);
 }
 
 .si-reply {
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: calc(var(--ds-control-height-lg) * 1.5);
   max-height: var(--support-inbox-composer-max);
   resize: none;
 }
 
-.si-composer__foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--ds-space-2) var(--ds-space-3);
+.si-composer__row > .ds-btn {
+  flex: none;
 }
 
 .si-composer__hint {
-  margin-inline-end: auto;
   color: var(--ds-color-fg-muted);
   font-size: var(--ds-text-caption-size);
   line-height: var(--ds-text-caption-leading);
@@ -692,7 +709,7 @@
 /* 터치 화면에서는 단축키 안내를 숨긴다(조작이 될 때만 안내한다) */
 @media (pointer: coarse) {
   .si-composer__hint {
-    visibility: hidden;
+    display: none;
   }
 }
 
@@ -740,17 +757,78 @@
   flex: 1 1 var(--support-inbox-wrap-min);
 }
 
-/* 말풍선 스켈레톤 — 대화 칸 전체를 실제 배치(제목 + 말풍선)대로 채운다 */
+/*
+ * 대화 칸 스켈레톤 — 실제 머리·메시지 흐름·답장 칸과 같은 부품 이름으로 그리므로, 아래는 자리 크기만 정한다.
+ * 막대는 실제 글·버튼과 같은 높이(줄 높이·컨트롤 높이 토큰)를 차지해 불러온 순간 칸이 움직이지 않는다.
+ */
 .si-pane-empty--skel {
   display: flex;
   flex: 1 1 auto;
-  padding: var(--ds-space-4);
+  min-height: 0;
+  padding: 0;
 }
 
 .si-skel {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.si-skel .si-log {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.si-skel-inline {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* 글 막대는 줄 모양 비율, 버튼 자리는 실제 버튼 너비(머리가 같은 곳에서 줄바꿈되게) */
+.si-skel-w-title { width: 45%; }
+.si-skel-w-meta { width: 65%; }
+.si-skel-w-label { width: var(--support-inbox-skel-short); }
+.si-skel-w-status { width: var(--support-inbox-skel-status); }
+.si-skel-w-info { width: var(--support-inbox-skel-info); }
+.si-skel-w-quick { width: var(--support-inbox-skel-quick); }
+
+/* 상태 배지 자리 — 배지와 같은 높이(글 줄 + 위아래 안쪽 여백) */
+.si-skel-badge {
+  flex: none;
+  width: var(--support-inbox-skel-short);
+  height: calc(var(--ds-text-label-sm-size) * var(--ds-text-label-sm-leading) + 2 * var(--ds-space-0-5));
+}
+
+/*
+ * 버튼 자리 — 작은 버튼·보통 버튼·아이콘 버튼과 같은 높이(터치 화면에서는 kit 토큰이 44 로 커진다).
+ * 작은 버튼은 글 한 줄 + 위아래 안쪽 여백 + 테두리가 최소 높이(28)보다 커서 30 이 되므로 둘 중 큰 값.
+ */
+.si-skel-btn {
+  flex: none;
+  height: max(var(--ds-control-height-sm), calc(var(--ds-text-label-size) * var(--ds-text-label-leading) + 2 * var(--ds-space-1) + 2 * var(--ds-size-hairline)));
+  border-radius: var(--ds-control-radius);
+}
+
+.si-skel-send {
+  flex: none;
+  width: var(--support-inbox-skel-send);
+  height: var(--ds-control-height-md);
+  border-radius: var(--ds-control-radius);
+}
+
+.si-skel-icon {
+  flex: none;
+  width: var(--ds-control-height-md);
+  height: var(--ds-control-height-md);
+  border-radius: var(--ds-control-radius);
+}
+
+/* 입력창 자리 — si-reply 의 최소 높이를 그대로 쓴다 */
+.si-skel .si-reply {
+  border-radius: var(--ds-control-radius);
 }
 
 .si-skel-msg {
@@ -839,7 +917,8 @@
 /* ───────── 고대비(강제 색) — 고른 행은 바탕·그림자가 사라지므로 시스템 색 테두리로 남긴다 ───────── */
 
 @media (forced-colors: active) {
-  .si-row[aria-current="true"] {
+  .si-row[aria-current="true"],
+  .si-info[aria-expanded="true"] {
     outline: var(--ds-size-border-strong) solid Highlight;
     outline-offset: calc(-1 * var(--ds-size-border-strong));
   }

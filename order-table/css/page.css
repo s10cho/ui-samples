@@ -1,11 +1,23 @@
 /*
  * 주문 목록 — 샘플 고유 스타일. 클래스는 ot- 로 시작한다.
- * 값은 --ds-* 토큰만 쓴다. 샘플 전용 토큰(--order-table-*)은 없다. 키프레임 이름만 order-table- 로 시작한다.
- * 새로 만든 모양 두 가지(필터 서랍 ot-drawer, 열 고르기 ot-colmenu)는 kit 에 없는 부품이다.
+ * 값은 --ds-* 토큰만 쓴다. kit 에 없는 값은 아래 :root 의 --order-table-* 에 두고 설계서 4절에 이유를 적었다.
+ * 새로 만든 모양 두 가지(필터 서랍 ot-drawer, 열 고르기 ot-colmenu)와 첫 열 고정은 kit 에 없는 부품이다.
+ * 폭 경계는 kit 과 같은 rem(48rem·30rem)이다 — 글자를 키우면 kit 의 카드 쌓기와 함께 바뀐다.
  */
 
+:root {
+  /* 고르기 열 폭 — kit 의 .ds-table__select 폭과 같은 식. 두 번째 열(주문 번호)을 이만큼 띄워 고정한다 */
+  --order-table-select-w: calc(var(--ds-target-min) + 2 * var(--ds-space-2));
+  /* 주문 번호 열 폭 — "20261117-0005"(13자) + 칸 좌우 여백. 고정한 두 열 오른쪽으로 포커스가 숨지 않게 scroll-padding 에도 쓴다 */
+  --order-table-id-w: 9rem;
+  /* 날짜 칸 폭 — 오류 글이 길어도 칸이 늘어나지 않고 글이 줄바꿈한다 */
+  --order-table-date-w: 11rem;
+  /* 좁은 폭에서 화면 아래에 붙는 일괄 작업 줄 높이(2줄 고정 배치). 줄이 붙으면 js/page.js 가 실제 높이로 덮어쓴다 */
+  --order-table-bar-h: calc(2 * var(--ds-control-height-md) + var(--ds-space-2) + 2 * var(--ds-space-3) + var(--ds-size-hairline) + env(safe-area-inset-bottom, 0rem));
+}
+
 /* 머리줄 밝기 고르기 — 아주 좁은 폭에서는 아이콘만 */
-@media (max-width: 479px) {
+@media (max-width: 29.9375rem) {
   .ot-theme-text {
     display: none;
   }
@@ -24,10 +36,11 @@
   min-width: 0;
 }
 
+/* 라벨 윗줄을 맞춘다 — 칸마다 "라벨 + 6 + 32 높이 컨트롤" 꼴이라 위를 맞추면 컨트롤도 같은 줄에 선다 */
 .ot-find {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: var(--ds-space-3) var(--ds-space-4);
 }
 
@@ -39,7 +52,7 @@
 .ot-more {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: var(--ds-space-3) var(--ds-space-4);
   min-width: 0;
 }
@@ -56,14 +69,23 @@
 }
 
 .ot-custom .ds-field {
-  min-width: var(--ds-size-menu-min);
+  inline-size: var(--order-table-date-w);
+}
+
+/* 배송 상태 묶음 — 라벨과 칩 줄 사이를 입력 칸(ds-field)과 같게, 칩 줄 높이를 입력 칸과 같게 */
+.ot-status > legend {
+  margin-block-end: var(--ds-space-1-5);
 }
 
 .ot-status .ds-chips {
+  align-items: center;
+  min-height: var(--ds-control-height-md);
   gap: var(--ds-space-1-5);
 }
 
+/* 개수 자리는 두 자리 폭을 늘 잡아 둔다 — 불러오는 동안(빈 자리)과 불러온 뒤 칩 폭이 같다 */
 .ot-status .ds-chip .ds-count {
+  min-width: calc(2ch + 2 * var(--ds-space-1-5));
   margin-inline-start: var(--ds-space-0-5);
 }
 
@@ -199,10 +221,20 @@
   overflow-wrap: anywhere;
 }
 
-/* 넓은 폭 — 가로로 넘치면 표 틀 안에서 스크롤하고, 주문 번호 열은 왼쪽에 고정한다(CMP-TABLE-02) */
-@media (min-width: 768px) {
+/* 상태 배지가 글줄 기준선에 걸려 줄을 2px 키우지 않게 — 카드에서 스켈레톤 줄과 실제 줄 높이를 같게 한다 */
+.ot-table .ds-badge {
+  vertical-align: top;
+}
+
+/* 넓은 폭 — 가로로 넘치면 표 틀 안에서 스크롤하고, 고르기·주문 번호 두 열은 왼쪽에 고정한다(CMP-TABLE-02) */
+@media (min-width: 48rem) {
   .ot-selall__text {
     display: none;
+  }
+
+  /* 고정한 두 열 오른쪽으로 포커스를 옮겨도 그 밑에 숨지 않게(A11Y-WCAG-06). 위쪽은 kit 이 머리 행만큼 비운다 */
+  .ot-wrap {
+    scroll-padding-inline-start: calc(var(--order-table-select-w) + var(--order-table-id-w));
   }
 
   .ot-table th,
@@ -210,13 +242,29 @@
     white-space: nowrap;
   }
 
-  .ot-table .ot-col-id {
+  .ot-table .ds-table__select {
     position: sticky;
     inset-inline-start: 0;
     z-index: var(--ds-z-raise);
+    width: var(--order-table-select-w);
+    min-width: var(--order-table-select-w);
+    max-width: var(--order-table-select-w);
     background: var(--ds-color-surface-default);
   }
 
+  .ot-table .ot-col-id {
+    position: sticky;
+    inset-inline-start: var(--order-table-select-w);
+    z-index: var(--ds-z-raise);
+    min-width: var(--order-table-id-w);
+    background: var(--ds-color-surface-default);
+  }
+
+  .ot-table--readonly .ot-col-id {
+    inset-inline-start: 0;
+  }
+
+  .ot-table thead th.ds-table__select,
   .ot-table thead th.ot-col-id {
     z-index: var(--ds-z-sticky);
     background: var(--ds-color-surface-subtle);
@@ -228,25 +276,29 @@
 }
 
 /* 좁은 폭 — 표가 카드로 쌓인다(kit ds-table--stack). 주문 번호는 카드 제목 줄 */
-@media (max-width: 767px) {
+@media (max-width: 47.9375rem) {
   .ot-table td.ot-col-id {
-    display: block;
     padding-block-end: var(--ds-space-1);
     font-size: var(--ds-text-title-sm-size);
     line-height: var(--ds-text-title-sm-leading);
   }
 
-  .ot-table--readonly.ds-table--stack tr {
-    padding-inline-start: var(--ds-space-3);
-  }
-
-  .ot-table .ds-table__skeleton .ot-col-id .ds-skeleton {
+  /* 제목 줄 스켈레톤 — 실제 제목 줄(16/22)과 같은 한 줄을 차지한다(kit 막대와 같은 방식: 글자 높이 막대 + 위아래 여백) */
+  .ot-table .ds-table__skeleton td.ot-col-id .ds-skeleton {
     width: 45%;
+    height: var(--ds-text-title-sm-size);
+    margin-block: calc((var(--ds-text-title-sm-size) * var(--ds-text-title-sm-leading) - var(--ds-text-title-sm-size)) / 2);
   }
 
-  /* 찾기 줄 — 검색어만 남기고 기간·배송 상태는 서랍으로 */
+  /* 카드 안 시각은 좁으면 날짜·시각 사이에서 줄을 바꾼다 */
+  .ot-table td[data-col="date"] {
+    white-space: normal;
+  }
+
+  /* 찾기 줄 — 검색어만 남기고 기간·배송 상태는 서랍으로. "필터" 버튼은 검색 칸 아래 끝에 맞춘다 */
   .ot-find {
     flex-wrap: nowrap;
+    align-items: flex-end;
   }
 
   .ot-search-field {
@@ -269,6 +321,52 @@
 
   .ot-count {
     flex: 1 1 100%;
+  }
+
+  /* 고른 주문이 있으면 일괄 작업 줄을 화면 아래에 붙인다 — 표를 내려 봐도 처리 버튼이 손 닿는 곳에 있다.
+     배치는 2줄로 고정한다(위: 고른 건수·고르기 풀기, 아래: 두 버튼 반씩). "처리 중…"으로 글자가 바뀌어도 줄 높이가 그대로다 */
+  .ot-results--picked .ot-bulk {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: var(--ds-z-panel);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "picked unselect" "ship cancel";
+    align-items: center;
+    gap: var(--ds-space-2);
+    padding: var(--ds-space-3) var(--ds-gap-page-x) calc(var(--ds-space-3) + env(safe-area-inset-bottom, 0rem));
+    border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-default);
+    background: var(--ds-color-surface-raised);
+    box-shadow: var(--ds-shadow-overlay);
+  }
+
+  .ot-results--picked .ot-picked {
+    grid-area: picked;
+  }
+
+  .ot-results--picked .ot-bulk__unselect {
+    grid-area: unselect;
+    justify-self: end;
+  }
+
+  .ot-results--picked .ot-bulk__ship {
+    grid-area: ship;
+  }
+
+  .ot-results--picked .ot-bulk__cancel {
+    grid-area: cancel;
+  }
+
+  /* 붙은 줄 자리를 고르기 전부터 비워 둔다 — Tab 으로 아래쪽 카드에 와서 고르는 순간에도 포커스가 줄 밑에 숨지 않게(A11Y-WCAG-06).
+     줄 높이는 --order-table-bar-h(계산값, 줄이 붙으면 js/page.js 가 실제 높이로 바꾼다) */
+  html:has(.ot-bulk) {
+    scroll-padding-block-end: calc(var(--order-table-bar-h) + var(--ds-space-2));
+  }
+
+  /* 붙은 줄이 바닥줄·마지막 카드를 가리지 않게 */
+  .ds-page:has(.ot-results--picked) {
+    padding-block-end: calc(var(--order-table-bar-h) + var(--ds-space-6));
   }
 }
 
@@ -355,20 +453,16 @@
 .ot-foot {
   padding-block-start: var(--ds-space-4);
   border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
-  color: var(--ds-color-fg-muted);
-  font-size: var(--ds-text-body-sm-size);
-  line-height: var(--ds-text-body-sm-leading);
 }
 
 /* 고대비(강제 색) — 고정 칸이 비치지 않게 바탕을 시스템 색으로 */
 @media (forced-colors: active) {
+  .ot-table .ds-table__select,
   .ot-table .ot-col-id {
     background: Canvas;
   }
-}
 
-/* hidden 속성이 위의 display 값보다 늘 이기게 한다(kit 의 [hidden] 규칙보다 이 파일이 뒤에 온다) */
-#app [hidden],
-dialog [hidden] {
-  display: none;
+  .ot-results--picked .ot-bulk {
+    border-block-start-color: CanvasText;
+  }
 }

@@ -25,10 +25,11 @@
     return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
   }
 
+  // 그래프 글은 고정폭 숫자(tabular-nums)로 그린다. canvas 는 그 기능을 쓰지 않으므로 숫자를 모두 "0"으로 바꿔 잰다
   function textWidth(text, size) {
     if (!measureCtx) measureCtx = document.createElement('canvas').getContext('2d');
     measureCtx.font = size + 'px ' + getComputedStyle(document.body).fontFamily;
-    return measureCtx.measureText(text).width;
+    return measureCtx.measureText(String(text).replace(/\d/g, '0')).width;
   }
 
   function niceStep(range, count) {
@@ -43,6 +44,45 @@
     var v = parseFloat(value);
     if (!v) return 12 * rem;
     return /rem$/.test(value.trim()) ? v * rem : v;
+  }
+
+  // x 축 글을 every 칸마다 놓아 본다. 놓일 자리 기준으로 앞 글과 gap 보다 가까우면 ok=false
+  function xLabels(spec, every, x, left, width, fs, gap, compact) {
+    var out = [];
+    var prevEnd = -Infinity;
+    var shown = -1;
+    out.ok = true;
+    for (var i = 0; i < spec.slots; i += every) {
+      var text = spec.xLabel(i, shown, compact);
+      var w = textWidth(text, fs);
+      var cx = x(i);
+      var anchor = 'middle';
+      var x0 = cx - w / 2;
+      // 첫 글이 y 눈금 자리(왼쪽 여백)로 들어가지 않게 그림 영역 왼쪽 끝에 붙인다
+      if (x0 < left) { anchor = 'start'; cx = left; x0 = left; }
+      else if (x0 + w > width) { anchor = 'end'; cx = width; x0 = width - w; }
+      if (x0 < prevEnd + gap) out.ok = false;
+      prevEnd = x0 + w;
+      out.push({ text: text, x: cx, anchor: anchor });
+      shown = i;
+    }
+    return out;
+  }
+
+  // 글 상자(box)가 선(points: [[x, y], …])과 겹치나 — 상자의 x 구간에서 선의 y 범위를 본다
+  function hitsLine(box, points, pad) {
+    for (var k = 0; k + 1 < points.length; k++) {
+      var p = points[k];
+      var q = points[k + 1];
+      var a = Math.max(box.x0, Math.min(p[0], q[0]));
+      var b = Math.min(box.x1, Math.max(p[0], q[0]));
+      if (a > b) continue;
+      var at = function (xx) { return q[0] === p[0] ? p[1] : p[1] + (q[1] - p[1]) * (xx - p[0]) / (q[0] - p[0]); };
+      var ya = at(a);
+      var yb = at(b);
+      if (Math.max(ya, yb) >= box.y0 - pad && Math.min(ya, yb) <= box.y1 + pad) return true;
+    }
+    return false;
   }
 
   /**
@@ -149,7 +189,14 @@
     // 위 여백 + 축 글자 띠 = 2.125rem — page.css 의 --ops-dashboard-chart-band 와 같다(자리를 미리 잡아 둔다)
     var padT = Math.round(fs * 0.75);
     var left = Math.ceil(tickW) + rem * 0.5;
-    var right = rem * 0.5;
+    // 이번 기간 끝값 — 선이 끝 칸에서 끝나면 그림 영역 오른쪽에 자리를 잡아 두 선과 겹치지 않게 한다
+    var curS = this.cur();
+    var li = this.lastIndex();
+    var lv = curS.values[li];
+    var endText = spec.type !== 'bar' && lv !== null && lv !== undefined ? spec.value(lv) : '';
+    var endW = endText ? textWidth(endText, fs) : 0;
+    var endOutside = !!endText && li === spec.slots - 1;
+    var right = endOutside ? Math.ceil(endW + rem * 0.75) : rem * 0.5;
     var bottom = Math.round(rem * 2.125) - padT;
     var pw = Math.max(rem * 6, width - left - right);
     var height = Math.round(padT + plotH + bottom);
@@ -173,35 +220,31 @@
       label.textContent = spec.tick(v, k === ticks.length - 1);
     });
 
-    // x 축 글 — 겹치지 않을 만큼 건너뛴다
-    var widest = 0;
-    for (var i = 0; i < spec.slots; i++) widest = Math.max(widest, textWidth(spec.xLabel(i, -1), fs));
-    var every = 1;
+    // x 축 글 — 실제로 놓일 자리(첫 글은 그림 영역 왼쪽에 붙고, 끝 글은 오른쪽 끝에 붙는다)로 간격을 재서
+    // 글 사이가 0.5rem 보다 좁으면 더 건너뛴다
     var choices = spec.slots > 23 && spec.slots <= 24 ? [1, 2, 3, 4, 6, 12] : [1, 2, 3, 5, 7, 10, 15, 30];
-    for (var c = 0; c < choices.length; c++) {
-      every = choices[c];
-      if (slot * every >= widest + rem * 0.75) break;
+    // 긴 글(11월 2일)로 두 칸 넘게 못 놓으면 짧은 글(11.2)로 다시 놓아 본다
+    var labels = [];
+    var placed = false;
+    for (var pass = 0; pass < 2 && !placed; pass++) {
+      for (var c = 0; c < choices.length; c++) {
+        // 간격 0.5rem + 2px — canvas 로 잰 폭이 SVG 글보다 1px 남짓 좁게 나온다
+        labels = xLabels(spec, choices[c], x, left, width, fs, rem * 0.5 + 2, pass === 1);
+        if (labels.ok && (labels.length > 1 || spec.slots < 2 || pass === 1)) { placed = true; break; }
+      }
     }
     var xg = svg('g', { 'class': 'ops-c-xaxis' }, root);
-    var shown = -1;
-    for (i = 0; i < spec.slots; i += every) {
-      var text = spec.xLabel(i, shown);
-      var w = textWidth(text, fs);
-      var cx = x(i);
-      var anchor = 'middle';
-      // 첫 글이 y 눈금 자리(왼쪽 여백)로 들어가지 않게 그림 영역 왼쪽 끝에 붙인다
-      if (cx - w / 2 < left) { anchor = 'start'; cx = left; }
-      else if (cx + w / 2 > width) { anchor = 'end'; cx = width; }
-      var lab = svg('text', { x: cx, y: padT + plotH + fs + rem * 0.375, 'text-anchor': anchor, 'class': 'ops-c-tick' }, xg);
-      lab.textContent = text;
-      shown = i;
-    }
+    labels.forEach(function (it) {
+      var lab = svg('text', { x: it.x, y: padT + plotH + fs + rem * 0.375, 'text-anchor': it.anchor, 'class': 'ops-c-tick' }, xg);
+      lab.textContent = it.text;
+    });
 
     // 막대 칸 강조(마우스·키보드 위치)
     this.band = svg('rect', { 'class': 'ops-c-band', x: 0, y: padT, width: Math.max(1, slot), height: plotH, visibility: 'hidden' }, root);
 
     var data = svg('g', { 'class': 'ops-c-data' }, root);
-    var cur = this.cur();
+    var cur = curS;
+    var polys = []; // 끝값 글이 피할 선들
 
     if (spec.type === 'bar') {
       var barW = Math.min(24, Math.max(2, slot - 2));
@@ -236,6 +279,7 @@
         runs(s.values).forEach(function (run) {
           var d = run.map(function (p, k) { return (k ? 'L' : 'M') + p[0] + ',' + p[1]; }).join('');
           svg('path', { d: d, 'class': 'ops-c-line ops-c-line--' + s.kind }, data);
+          polys.push(run);
         });
       });
     }
@@ -248,20 +292,45 @@
       tl.textContent = spec.target.label;
     }
 
-    // 이번 기간 끝점과 끝값(선 그래프만)
-    if (spec.type !== 'bar') {
-      var li = this.lastIndex();
-      var lv = cur.values[li];
-      if (lv !== null && lv !== undefined) {
-        svg('circle', { cx: x(li), cy: y(lv), r: 4, 'class': 'ops-c-dot' }, root);
-        var endText = spec.value(lv);
-        var ew = textWidth(endText, fs);
-        var ex = x(li) + rem * 0.5;
-        var ea = 'start';
-        if (ex + ew > width) { ex = x(li) - rem * 0.5; ea = 'end'; }
-        var ey = y(lv) - rem * 0.5;
-        if (ey < fs) ey = y(lv) + fs + rem * 0.25;
-        var et = svg('text', { x: ex, y: ey, 'text-anchor': ea, 'class': 'ops-c-endlabel' }, root);
+    // 이번 기간 끝점과 끝값(선 그래프만). 끝값 글은 두 선·목표선과 겹치지 않는 자리에만 둔다.
+    // 놓을 자리가 없으면 글을 빼고 점만 둔다(값은 툴팁·표·요약 문장에 있다)
+    if (endText) {
+      var lx = x(li);
+      var ly = y(lv);
+      svg('circle', { cx: lx, cy: ly, r: 4, 'class': 'ops-c-dot' }, root);
+      var mid = ly + fs * 0.35;
+      var above = ly - rem * 0.5;
+      var below = ly + fs + rem * 0.25;
+      var cands = endOutside
+        ? [{ x: lx + rem * 0.5, y: mid, anchor: 'start', free: true }]
+        : [
+          { x: lx + rem * 0.5, y: mid, anchor: 'start' },
+          { x: lx + rem * 0.5, y: above, anchor: 'start' },
+          { x: lx + rem * 0.5, y: below, anchor: 'start' },
+          { x: lx - rem * 0.5, y: above, anchor: 'end' },
+          { x: lx - rem * 0.5, y: below, anchor: 'end' },
+          { x: lx + rem * 0.5, y: above - rem, anchor: 'start' },
+          { x: lx + rem * 0.5, y: below + rem, anchor: 'start' },
+          { x: lx - rem * 0.5, y: above - rem, anchor: 'end' }
+        ];
+      var ty0 = spec.target ? y(spec.target.value) : null;
+      var pick = null;
+      for (var k = 0; k < cands.length && !pick; k++) {
+        var cd = cands[k];
+        // 글 상자 — 글꼴의 위·아래 여백까지 잡는다(실제 글 상자보다 작게 재면 선이 글에 닿는다)
+        var box = {
+          x0: (cd.anchor === 'start' ? cd.x : cd.x - endW) - 2,
+          x1: (cd.anchor === 'start' ? cd.x + endW : cd.x) + 2,
+          y0: cd.y - fs,
+          y1: cd.y + fs * 0.35
+        };
+        if (box.x0 < left || box.x1 > width || box.y0 < 0 || box.y1 > padT + plotH) continue;
+        if (!cd.free && polys.some(function (pl) { return hitsLine(box, pl, 4); })) continue;
+        if (!cd.free && ty0 !== null && ty0 >= box.y0 - 4 && ty0 <= box.y1 + 4) continue;
+        pick = cd;
+      }
+      if (pick) {
+        var et = svg('text', { x: pick.x, y: pick.y, 'text-anchor': pick.anchor, 'class': 'ops-c-endlabel' }, root);
         et.textContent = endText;
       }
     }
@@ -332,10 +401,18 @@
     }
     tip.hidden = false;
     var tw = tip.offsetWidth;
+    var th = tip.offsetHeight;
     var gap = g.rem * 0.75;
     var tx = cx + gap;
     if (tx + tw > g.width) tx = Math.max(0, cx - gap - tw);
-    tip.style.transform = 'translate(' + Math.round(tx) + 'px,' + Math.round(g.padT) + 'px)';
+    // 세로 — 그래프 위쪽이 머리줄 밑으로 스크롤돼 있으면 보이는 곳까지 내린다. 그래프 아래로는 나가지 않는다
+    var ty = g.padT;
+    var head = document.querySelector('.ds-app__top');
+    var visibleTop = (head ? head.getBoundingClientRect().bottom : 0) + gap;
+    var plotTop = this.plot.getBoundingClientRect().top;
+    if (plotTop + ty < visibleTop) ty = visibleTop - plotTop;
+    ty = Math.max(0, Math.min(ty, g.height - th));
+    tip.style.transform = 'translate(' + Math.round(tx) + 'px,' + Math.round(ty) + 'px)';
   };
 
   OpsChart.prototype.hide = function () {
@@ -372,18 +449,31 @@
     var self = this;
     var plot = this.plot;
     var focused = false;
+    // Esc 로 닫은 툴팁은 마우스가 같은 칸에 있는 동안 다시 띄우지 않는다(WCAG 1.4.13 — 닫을 수 있어야 한다)
+    var muted = null;
     plot.addEventListener('pointermove', function (e) {
       if (!self.geo) return;
-      self.show(self.indexAt(e.clientX));
+      var i = self.indexAt(e.clientX);
+      if (muted === i) return;
+      muted = null;
+      self.show(i);
     });
     plot.addEventListener('pointerdown', function (e) {
       if (!self.geo) return;
+      muted = null;
       self.show(self.indexAt(e.clientX));
       self.syncAria();
     });
     plot.addEventListener('pointerleave', function () {
+      muted = null;
       if (focused) self.show(self.index);
       else self.hide();
+    });
+    // 마우스로 띄운 툴팁도 포커스와 상관없이 Esc 로 닫는다
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape' || self.tip.hidden) return;
+      muted = self.index;
+      self.hide();
     });
     plot.addEventListener('focus', function () {
       focused = true;
@@ -400,7 +490,7 @@
       else if (k === 'ArrowLeft' || k === 'ArrowDown') { e.preventDefault(); self.move(-1); }
       else if (k === 'Home') { e.preventDefault(); self.move(-1, true); }
       else if (k === 'End') { e.preventDefault(); self.move(1, true); }
-      else if (k === 'Escape' && !self.tip.hidden) { e.preventDefault(); e.stopPropagation(); self.hide(); }
+      else if (k === 'Escape' && !self.tip.hidden) { e.preventDefault(); e.stopPropagation(); muted = self.index; self.hide(); }
     });
   };
 

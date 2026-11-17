@@ -210,6 +210,18 @@ components:
 - 대비: 글자 4.5:1, UI 요소 3:1 이상(`CLR-03`·`CLR-04`). 2026-11-17 에 WCAG 2 공식으로 51쌍을 테마마다 계산했고 모두 통과했다. 가장 낮은 쌍은 `line-control` on `surface-subtle` — 밝은 3.26:1, 어두운 3.78:1(기준 3:1). 본문 `fg-default` on `surface-default` 는 16.20:1 · 15.13:1.
 - 노랑 채움(`fill-warning`) 위에는 어두운 글자를 쓴다(`CLR-11`).
 - 상태는 색만으로 전하지 않는다. 배지는 글자, 고른 행은 체크, 고른 탭은 막대, 켜진 칩은 체크 아이콘을 함께 쓴다(`CLR-05`·`CMP-SEL-04`).
+- 상태 배지(진행 중·완료·반려 등)에는 `ds-badge--accent` 를 쓰지 않는다. 강조색 옅은 채움은 고른 행 바탕과 같아 고른 행에서 묻힌다. 상태는 `--info`·`--success`·`--warning`·`--danger`·기본 배지로 나눈다. `--accent` 는 "새 글"처럼 상태가 아닌 표시에만 쓴다.
+
+### 그래프 색
+
+| 토큰 | 밝은 UI | 어두운 UI |
+|---|---|---|
+| `--ds-color-series-1` ~ `-6` | `#2a78d6` · `#eb6834` · `#1baf7a` · `#eda100` · `#e87ba4` · `#008300` | `#3987e5` · `#d95926` · `#199e70` · `#c98500` · `#d55181` · `#0ca30c` |
+
+- 강조색(`fill-accent`)은 그래프에 쓰지 않는다. 그래프는 계열 색을 1번부터 고정 순서로 쓰고, 필터로 계열 수가 바뀌어도 남은 계열의 색을 바꾸지 않는다. 7번째 계열은 새 색을 만들지 않고 "그 밖"으로 묶는다.
+- 2026-11-17 dataviz 검증기로 밝은 바탕(`#ffffff`·`#f8f9fa`)과 어두운 바탕(`#17181a`·`#111213`)에서 밝기 띠·채도·색각 구분·정상 시각 구분을 모두 통과했다.
+- 밝은 UI 에서 3·4·5번은 바탕 대비가 3:1 미만이다(2.05~2.82). 그래서 계열이 2개 이상이면 범례를 늘 두고, 4개 이하는 선·막대 끝에 이름을 직접 적거나 표 보기를 함께 둔다. 숫자·이름 글자는 계열 색이 아니라 글자 토큰(`fg-default`·`fg-muted`)으로 쓴다.
+- 상태 색(성공·경고·위험)을 계열 색으로 쓰지 않는다.
 - 웹은 테마에 맞춰 `color-scheme` 을 바꾸고(`tokens.css` 가 한다) `<meta name="theme-color">` 를 본문 바탕과 맞춘다(`js/ds.js` 가 한다, `CLR-DARK-10`).
 
 ### 테마 고르기
@@ -260,7 +272,8 @@ components:
 | 묶음 안 / 묶음 사이 | `--ds-gap-stack`(8) / `--ds-gap-section`(24). 묶음 사이를 더 넓게 둔다(`SPC-04`) |
 | 페이지 좌우 여백 | `--ds-gap-page-x`: 24, 767 이하 16 |
 | 본문 최대 너비 | `--ds-size-content-max` 1280 · 읽는 글 `--ds-size-reading-max` 640 · 입력 칸 `--ds-size-field-max` 480 |
-| 웹 폭 경계 | 480 · 768 · 1024 · 1280 |
+| 웹 폭 경계 | 480 · 768 · 1024 · 1280 — CSS 에서는 rem(30 · 48 · 64 · 80)으로 쓴다. 브라우저 글자 크기를 키우면 경계도 넓어져 옆 메뉴는 서랍, 옆 패널은 덮는 패널이 된다 |
+| 머리줄 높이 | `js/ds.js` 가 실제 머리줄 높이를 `--ds-app-top` 에 적는다(두 줄이 되어도 맞다). 붙는 옆 메뉴·옆 패널·`--page` 표 머리·문서 스크롤 여백이 이 값을 쓴다. 없으면 `--ds-size-topbar` |
 | 컨트롤·행 높이 | compact: 28 · 32 · 40, 표·목록 행 40(스켈레톤 행도 40). comfortable: 36 · 48 · 56, 행 56. 터치 화면(compact): 컨트롤 28·32·40 → 모두 44, 표 행 56 |
 | 누르는 영역 넓히기 | 작은 체크박스(표 고르기 칸)는 `label.ds-hit` 로 감싼다. 보이는 상자 16, 누르는 영역 24(터치 44). 행 높이는 늘지 않는다 |
 | 누르는 영역 | 마우스 24 이상, 터치 44 이상(`SPC-07`·`CMP-BTN-04`) |
@@ -299,7 +312,7 @@ components:
 
 - 안쪽 요소의 반경은 바깥보다 크지 않다(`SHP-02`). 예: 메뉴 8 안의 항목 4.
 - 테두리 1px(`--ds-size-hairline`), 강조 선 2px(`--ds-size-border-strong`), 포커스 링 2px + 간격 2px(`--ds-size-focus-ring`·`--ds-size-focus-offset`, `SHP-09`).
-- 아이콘: `js/ds.js` 의 선 아이콘 39종(24×24, 선 1.75, 끝 둥글게). 크기 14·16·20(`--ds-icon-size-*`). `DS.icon('search')` 또는 `<svg class="ds-icon"><use href="#ds-i-search"></use></svg>`. 이모지를 아이콘으로 쓰지 않는다.
+- 아이콘: `js/ds.js` 의 선 아이콘 40종(24×24, 선 1.75, 끝 둥글게). 크기 14·16·20(`--ds-icon-size-*`). `DS.icon('search')` 또는 `<svg class="ds-icon"><use href="#ds-i-search"></use></svg>`. 이모지를 아이콘으로 쓰지 않는다.
 - 느낌표 아이콘(`error`)은 오류에만 쓴다. 경고 배너는 정보 아이콘(`info`)을 쓰고 제목 글로 경고임을 알린다(`CMP-FB-06`).
 - 관련 위키: `wiki/foundations/shape-elevation.md`(`SHP`) · `wiki/foundations/iconography.md`(`ICN`)
 
@@ -310,22 +323,22 @@ components:
 
 | 부품 | 클래스 | 변형 | 동작(`js/ds.js`) | 관련 위키 |
 |---|---|---|---|---|
-| 앱 틀 | `ds-app` `ds-topbar` `ds-sidenav` `ds-nav__link` `ds-panel` | `--panel` | 서랍 `[data-ds-nav-toggle]`, 옆 패널 `[data-ds-panel="id"]` · `DS.panel` | `LAY-07` `CMP-NAV` `CMP-TABLE-05` |
+| 앱 틀 | `ds-app` `ds-topbar` `ds-sidenav` `ds-nav__link` `ds-panel` `ds-sample-note` | `--panel` · `--bare`(옆 메뉴 없음) | 서랍 `[data-ds-nav-toggle]`, 옆 패널 `[data-ds-panel="id"]` · `DS.panel` | `LAY-07` `CMP-NAV` `CMP-TABLE-05` |
 | 페이지 머리 | `ds-page` `ds-page__head` `ds-breadcrumb` `ds-section` `ds-toolbar` | — | — | `CMP-NAV-13` |
 | 버튼 | `ds-btn` | `--primary` `--danger` `--ghost` · `--sm` `--lg` `--icon` `--block` | `DS.busy(btn, true)` | `CMP-BTN` |
 | 분할 버튼·메뉴 | `ds-split` `ds-menu-anchor` `ds-menu` `ds-menu__item` | `--danger` | `[aria-haspopup="menu"]` 화살표·Esc | `CMP-BTN-02` |
 | 입력 | `ds-field` `ds-input` `ds-select` `ds-textarea` `ds-search` | `--wide` | — | `CMP-INPUT` |
 | 선택 | `ds-check` `ds-switch` `ds-segmented` `ds-fieldset` `ds-options` | `--row` | 묶음 버튼 화살표 이동 | `CMP-SEL` |
-| 표 | `ds-table-wrap` `ds-table` `ds-sort` `ds-table__select` `ds-hit` `ds-num` | 틀 `--scroll`(긴 표: 높이 제한 + 안에서 스크롤, 머리가 틀 위에 붙음) · `--page`(페이지 스크롤: 머리가 머리줄 아래에 붙음, 가로로 넘치지 않는 표만) · 표 `--stack`(767 이하에서 행을 쌓고, 머리는 전체 고르기 + 정렬 버튼 띠로 남긴다) | 정렬 머리 `DS.sort`, 화면에서 정렬 `data-ds-sort-client`, 주소 `data-url-key` | `CMP-TABLE` |
-| 탭 | `ds-tabs` `ds-tab` `ds-tabpanel` | — | 화살표·Home·End, 주소 `data-url-key` | `CMP-NAV-12` |
-| 배지·개수·칩 | `ds-badge` `ds-count` `ds-chip` | 배지 `--accent` `--info` `--success` `--warning` `--danger` · 칩 `--input` | `.ds-chip[aria-pressed]` 를 누르면 켜고 끄고 `ds:toggle` 을 보낸다 | `CMP-SEL-08` `CMP-SEL-09` |
-| 알림 배너 | `ds-banner-slot` `ds-banner` | `--success` `--warning` `--danger` | `DS.banner.show` · `dismiss` | `CMP-FB` `STA-09` |
-| 빈 상태 | `ds-empty` | `--center` | — | `STA` |
+| 표 | `ds-table-wrap` `ds-table` `ds-sort` `ds-table__select` `ds-hit` `ds-num` | 틀 `--scroll`(긴 표: 높이 제한 + 안에서 스크롤, 머리가 틀 위에 붙고 포커스가 머리 아래로 숨지 않게 `scroll-padding`) · `--page`(페이지 스크롤: 머리가 머리줄 아래에 붙음, 가로로 넘치지 않는 표만) · 표 `--stack`(767 이하에서 행을 카드로 쌓는다. `data-label` 칸은 이름 + 값, 없는 칸은 카드 너비를 다 쓴다. 고르기 칸이 있을 때만 왼쪽 자리를 둔다. 정렬·고르기가 없으면 머리 띠를 숨긴다. 고른 카드는 카드 전체를 칠한다. `tbody th` 도 칸처럼 쌓인다) | 정렬 머리 `DS.sort`, 화면에서 정렬 `data-ds-sort-client`, 주소 `data-url-key` | `CMP-TABLE` `A11Y-WCAG-06` |
+| 탭 | `ds-tabs` `ds-tab` `ds-tabpanel` `ds-tab__dot` | 저장 안 한 변경 점 `.ds-tab__dot`(+ `.ds-sr-only` 글) | 화살표·Home·End, 주소 `data-url-key`, 바꾸기 전 취소 `ds:tabbeforechange`, 고른 탭을 탭 줄 안으로 스크롤 | `CMP-NAV-12` |
+| 배지·개수·칩 | `ds-badge` `ds-count` `ds-chip` | 배지 `--accent`(상태가 아닌 표시만) `--info` `--success` `--warning` `--danger` · 칩 `--input` | `.ds-chip[aria-pressed]` 를 누르면 켜고 끄고 `ds:toggle` 을 보낸다 | `CMP-SEL-08` `CMP-SEL-09` |
+| 알림 배너 | `ds-banner-slot` `ds-banner` | `--success` `--warning` `--danger` | `DS.banner.show({ …, dismissible:false, scroll:false })` · `dismiss` | `CMP-FB` `STA-09` |
+| 빈 상태 | `ds-empty` | `--center` · `--error`(불러오기 오류: 문장 + 다시 불러오기) · `--inline`(묶음·카드 안 작은 빈 상태) | — | `STA` |
 | 로딩 | `ds-skeleton` `ds-spinner` `ds-progress` `ds-loading` | 스켈레톤 `--short` `--medium` `--title` `--value` `--circle` · 멈춘 견본 `.is-static` | `DS.busy` · `DS.loadingTimer`(둘 다 0.3초 지연·0.4초 유지) | `CMP-FB-07`~`10` `MOT-07` `MOT-14` |
 | 대화상자 | `<dialog class="ds-dialog">` | `--sm` | `DS.dialog.open` · `[data-ds-dialog]` · `[data-ds-close]` | `CMP-OVL` |
 | 페이지 나누기 | `ds-pagination` | 480 이하 "3 / 13쪽" | — | `CMP-TABLE-09` |
 | 툴팁 | `[data-ds-tip="…"]` | — | 마우스 올림·포커스·Esc. 스크롤하면 마우스 툴팁은 닫고 포커스 툴팁은 따라간다 | WCAG 1.4.13 |
-| 카드·지표·목록 | `ds-card` `ds-grid` `ds-stat` `ds-list` `ds-dl` `ds-avatar` `ds-steps` | `ds-card--flush` | — | `SHP-06` `CMP-LIST` |
+| 카드·지표·목록 | `ds-card` `ds-grid` `ds-stat` `ds-list` `ds-dl` `ds-avatar` `ds-steps` | `ds-card--flush` · `ds-card--danger`(위험 구역) · 끝난 단계 `data-state="done"`(`.is-done` 도 됨) | — | `SHP-06` `CMP-LIST` |
 
 ### 스크립트(`js/ds.js`)
 
@@ -333,11 +346,11 @@ components:
 
 | 하는 일 | 속성으로 연결 | 함수·이벤트 |
 |---|---|---|
-| live 영역 알림 | `#ds-live`(status) · `#ds-live-alert`(alert)를 처음부터 둔다. 없으면 시작할 때 만든다 | `DS.announce(text, { assertive })` |
+| live 영역 알림 | `#ds-live`(status) · `#ds-live-alert`(alert)를 처음부터 둔다. 없으면 시작할 때 만든다 | `DS.announce(text, { assertive, clearAfter })` — 새 알림을 보내면 다른 영역의 낡은 문장을 비우고, 보낸 문장도 `clearAfter`(기본 7초) 뒤에 비운다 |
 | 알림 배너 | `.ds-banner-slot`, 닫기 `[data-ds-dismiss]`, 다음 포커스 `data-focus-next`, 겹치는 안내 `data-replaces` | `DS.banner.show({ id, tone, title, text, actions, focusNext, replaces })` · `DS.banner.dismiss(el)` · `ds:banner-dismiss` |
 | 주소 상태 | 탭·묶음 버튼·표의 `data-url-key` | `DS.url.get(key)` · `DS.url.set({ key: 값 })`(값이 비면 지움, 기록은 늘리지 않음) · `DS.url.onChange(fn)` |
-| 대화상자 | 여는 버튼 `[data-ds-dialog="id"]`, 닫는 버튼 `[data-ds-close="값"]`, 첫 포커스 `[data-ds-initial-focus]`, 가림막 눌러 닫기 `data-ds-light-dismiss` | `DS.dialog.open(dlg, opener)` · `DS.dialog.close(dlg, 값)` — Tab 가두기, Esc, 연 요소로 포커스 |
-| 탭·묶음 버튼 | `role="tablist"` + `role="tab"`(`aria-controls`), `role="radiogroup"` + `role="radio"`(`data-value`) | 화살표·Home·End, `ds:tabchange` · `ds:change` |
+| 대화상자(열 때 `returnValue` 를 비운다) | 여는 버튼 `[data-ds-dialog="id"]`, 닫는 버튼 `[data-ds-close="값"]`, 첫 포커스 `[data-ds-initial-focus]`, 가림막 눌러 닫기 `data-ds-light-dismiss` | `DS.dialog.open(dlg, opener)` · `DS.dialog.close(dlg, 값)` — Tab 가두기, Esc, 연 요소로 포커스 |
+| 탭·묶음 버튼 | `role="tablist"` + `role="tab"`(`aria-controls`), `role="radiogroup"` + `role="radio"`(`data-value`) | 화살표·Home·End, `ds:tabchange` · `ds:change`. 탭은 바꾸기 전에 `ds:tabbeforechange`(취소 가능, detail `{ tab, from, value }`)를 보내고, `DS.tabs.select(tab)` 은 취소되면 `false` 를 돌려준다. 고른 탭은 탭 줄 안으로 스크롤한다 |
 | 정렬 머리 | `<th><button class="ds-sort" data-key="이름">` | `DS.sort.apply(table, key, dir)` · `ds:sort` — 화면낭독기에 "건수 오름차순으로 정렬했어요" |
 | 툴팁 | `data-ds-tip="글"` | 마우스 올림 0.4초 뒤·키보드 포커스에 뜨고, 툴팁 위로 옮겨도 남고, Esc 로 닫힌다. 스크롤·창 크기 바뀜에 마우스로 띄운 툴팁은 닫히고, 키보드 포커스로 띄운 툴팁은 남아 자리만 다시 잡는다 |
 | 메뉴 | `aria-haspopup="menu"` + `aria-controls`, 항목 `role="menuitem"` | ↓↑ Home End Esc, 바깥 누르면 닫힘 |
@@ -345,9 +358,10 @@ components:
 | 옆 패널 | 여는 버튼 `[data-ds-panel="패널 id"]`(+ `aria-controls` · `aria-expanded`), 닫는 버튼 `[data-ds-panel-close]`, 패널 `.ds-app__panel[data-url-key][data-url-value]` | `DS.panel.open(panel, { opener })` · `DS.panel.close(panel)` · `DS.panel.toggle(panel)` · `ds:panel-open` · `ds:panel-close` — 열림을 주소에 남기고(`?panel=값`) 다시 열면 되살린다. 1279 이하에서 덮을 때는 뒤를 `inert` 로 하고 가림막을 깔며 포커스를 패널로 옮긴다. Esc·가림막으로 닫고, 닫으면 연 버튼으로 돌아간다 |
 | 테마 | `[data-ds-theme-control]`(묶음 버튼이나 select) | `DS.theme.set('light' 또는 'dark' 또는 'system')` · `ds:themechange` |
 | 글꼴 | — | `DS.fonts.ensureText(text)` — page subset 에 없는 글자가 있으면 다이나믹 서브셋을 붙인다(입력 글자도 본다) |
-| 로딩 | 버튼 `data-busy-label="저장 중…"` | `DS.busy(btn, true)` 는 바로 다시 누르지 못하게 막고(`data-ds-pending`), 0.3초가 지나도 안 끝났을 때만 회전 표시와 글자를 보인다. `DS.busy(btn, false)` 는 보였던 경우 0.4초를 채운 뒤 되돌리고 Promise 를 돌려준다(`.then(결과 보이기)`). `DS.busy(btn, true, { delay: 0 })` 로 바로 보일 수 있다. 영역 로딩은 `DS.loadingTimer(onShow, onHide)`(같은 지연·유지). 로딩 버튼은 변형 색을 유지한다 |
-| 아이콘 | `<svg class="ds-icon"><use href="#ds-i-이름"></use></svg>` | `DS.icon('이름')` · `DS.icons`(이름 목록) |
-| 그 밖 | `aria-disabled="true"` 요소는 눌러도 동작하지 않는다(포커스·툴팁은 받는다) | `DS.focusNext(el)` · `DS.ready(fn)` |
+| 로딩 | 버튼 `data-busy-label="저장 중…"` | `DS.busy(btn, true)` 는 바로 다시 누르지 못하게 막고(`data-ds-pending`), 0.3초가 지나도 안 끝났을 때만 회전 표시와 글자를 보인다. `DS.busy(btn, false)` 는 보였던 경우 0.4초를 채운 뒤 되돌리고 Promise 를 돌려준다(`.then(결과 보이기)`). `DS.busy(btn, true, { delay: 0 })` 로 바로 보일 수 있다. 끝나면 처리 전 `aria-disabled` 값으로 되돌린다. 처리 중인 제출 버튼이 있는 폼은 Enter 로도 다시 제출되지 않는다(submit 단계에서 막는다). 영역 로딩은 `DS.loadingTimer(onShow, onHide)`(같은 지연·유지). 로딩 버튼은 변형 색을 유지한다 |
+| 아이콘 | `<svg class="ds-icon"><use href="#ds-i-이름"></use></svg>` | `DS.icon('이름')`(문자열) · `DS.iconEl('이름')`(요소) · `DS.icons`(이름 목록, 40종 — `minus` 포함) |
+| 여러 줄 입력 | `form` 안 `textarea` | ⌘/Ctrl+Enter 로 `form.requestSubmit()`(`CMP-INPUT-13`). 샘플이 먼저 처리해 `preventDefault()` 했으면 건너뛴다. `data-ds-no-submit-shortcut` 을 칸이나 폼에 달면 끈다 |
+| 그 밖 | `aria-disabled="true"` 요소는 눌러도 동작하지 않는다(포커스·툴팁은 받는다). `[hidden]` 은 샘플 CSS 의 `display` 보다 늘 이긴다(base.css, 특이도 2·1·0) — 샘플은 `[hidden]` 을 다시 선언하지 않는다 | `DS.focusNext(el)` · `DS.ready(fn)` |
 
 - 부품 모음 페이지가 상태를 멈춰 보여 줄 때만 `.is-hover` · `.is-focus` · `.is-selected` · `.is-current` · `.is-disabled` 를 쓴다. 업무 화면 샘플은 쓰지 않는다.
 
@@ -366,7 +380,7 @@ components:
 | 묶음 버튼 | ○ | ○ | ○ | ○ | — | — | — | ○ `aria-checked` | ○ |
 | 표 | ○ | ○ 행 | ○ | — | — | ○ 스켈레톤 행(높이 같음) | ○ 빈 행 | ○ 고른 행(고르기 칸이 체크되면 저절로, `.is-selected` 도 됨) | ○ |
 | 정렬 머리 | ○ | ○ | ○ | — | — | — | — | ○ `aria-sort` | ○ |
-| 탭 | ○ | ○ | ○ | — | — | — | — | ○ `aria-selected` | ○ |
+| 탭 | ○ | ○ | ○ | — | — | — | — | ○ `aria-selected` · 저장 안 한 변경 점 | ○ |
 | 칩 | ○ | ○ | ○ | ○ | — | — | — | ○ `aria-pressed` | ○ |
 | 알림 배너 | ○ | — | ○ 안의 버튼 | — | ○ `--danger` | — | — | — | ○ |
 | 페이지 나누기 | ○ | ○ | ○ | ○ | — | — | — | ○ `aria-current` | ○ |
@@ -407,6 +421,9 @@ components:
 | 토큰 변수만 쓴다. 새 값이 필요하면 이 문서와 `tokens.css` 에 먼저 더한다 | hex·px·`rgb()` 를 샘플 CSS 에 쓴다(정적 점검 W1~W3), `!important`, 숫자 z-index |
 | 움직임은 `transform`·`opacity` 만 쓴다. 색·너비는 바로 바꾼다(`MOT-05`) | 마우스 올림 색 전환, 진행 막대 너비 애니메이션 |
 | 5초 넘게 보이는 회전 표시·스켈레톤 견본은 `.is-static` 으로 멈춘다. 스켈레톤은 4번(4.8초)만 옅어진다(`MOT-14`) | 멈춤 수단 없이 계속 도는 표시 |
+| 불러오기 오류는 결과 자리에 남긴다: `ds-empty--error`(문장 + "다시 불러오기")를 그 자리에 두거나, 다시 불러오기가 든 배너를 `dismissible:false` 로 띄운다 | 닫을 수 있는 배너 하나에만 "다시 불러오기"를 둔다(닫으면 막다른 화면) |
+| 스켈레톤은 최종 배치의 모든 칸을 그린다 — 붙는 옆 패널, 쌓인 카드(고르기 자리·칸 이름 자리), 머리의 주 버튼 자리, 표 머리 행까지(`STA-03`·`CMP-FB-09`) | 본문 목록만 스켈레톤으로 그리고 나머지 칸을 비운다 |
+| 다시 불러오기에도 `DS.loadingTimer` 를 쓴다(0.3초 안에 끝나면 아무것도 보이지 않는다) | 다시 불러오기를 누르자마자 스켈레톤을 그린다 |
 | 「필터 초기화」처럼 테두리 없는 글자 버튼(`ds-btn--ghost`)은 도구 줄·표 머리 같은 묶음 안에서만 쓴다 | 본문 한가운데 홀로 둔 ghost 버튼(버튼인지 알아보기 어렵다, `CMP-BTN-12`) |
 | 움직임 줄이기 설정에서 위치·크기 움직임을 뺀다(`CMP-OVL-12`) | 보라·남보라 그라데이션, 그라데이션 글자, 튀는 움직임, 반짝이는 스켈레톤(`SLOP-01`·`SLOP-11`·`CMP-FB-10`) |
 
@@ -465,6 +482,10 @@ components:
 | `MOT-14` 5초 넘는 움직임 멈춤 | 적용 | 스켈레톤 4번, 견본은 `.is-static`, 움직임 줄이기에서 회전 표시 멈춤 |
 | `WRT-TONE-01` 해요체 | 적용 | 이 문서·설계서는 한다체(사람이 읽는 개발 문서) |
 | `WRT-FMT-01` 아라비아 숫자 | 적용 | 제스처 이름 예외 |
+| `A11Y-WCAG-06` 포커스가 가려지지 않게 | 적용 | `ds-table-wrap--scroll` 에 머리 행 높이만큼 `scroll-padding`, `--page` 표가 있으면 문서 스크롤 여백에 머리 행 높이를 더한다. 첫 열 고정 변형은 아직 없다 |
+| `CMP-INPUT-13` ⌘/Ctrl+Enter 제출 | 적용 | `js/ds.js` 가 기본으로 한다. `data-ds-no-submit-shortcut` 으로 끈다 |
+| `STA-07` 빈 화면 도움말 링크 | 예외 | 이 저장소에는 도움말 문서가 없다. 빈 상태는 "설명 + 채우는 행동"으로 만들고, 가리킬 곳이 없는 가짜 도움말 링크를 두지 않는다(2026-11-17 오케스트레이터 결정, 샘플 4개에서 지적) |
+| `PAT-FORM-11` 떠나기 전 경고 | 조건부 예외 | 입력을 이 창의 `sessionStorage` 에 바로 저장해 같은 탭의 이동·새로고침·뒤로 가기에서 잃지 않으면 경고 대신 쓸 수 있다. 화면에 "이 창을 닫기 전까지 남아요"처럼 범위를 알린다(2026-11-17 채점자 판단, 오케스트레이터 결정) |
 | `SLOP-12` 지어낸 이름·주소·번호 금지 | 부분 적용 | 샘플은 데이터 자체가 가상이다. 아래 「샘플 데이터」 규칙을 지키면 허용한다 |
 
 ## 샘플 데이터
@@ -475,11 +496,13 @@ components:
 | 지킬 것 | 이유 |
 |---|---|
 | 가상 데이터는 샘플의 `js/data.js`(또는 `js/data-*.js`) 한 곳에만 둔다 | 화면 코드와 섞이지 않게. 자동 점검이 이 파일만 예외로 본다 |
-| 화면의 바닥줄이나 머리줄에 "가상의 샘플 데이터입니다"를 한 줄 둔다 | 보는 사람이 실제 정보로 오해하지 않게 |
+| 화면의 바닥줄이나 머리줄에 "가상의 샘플 데이터입니다"를 한 줄 둔다. 자리는 `.ds-sample-note`(작은 회색 글 + 정보 아이콘) | 보는 사람이 실제 정보로 오해하지 않게 |
 | 이메일은 `@example.com` 만 쓴다 | 예시용으로 예약된 도메인이다 |
 | 전화번호는 `010-0000-0000` 꼴처럼 누가 봐도 가짜인 값만 쓴다 | 실제 번호와 겹치지 않게 |
 | 실존 회사·브랜드·인물 이름을 쓰지 않는다 | 사칭으로 읽히지 않게 |
 | lorem ipsum, "홍길동", "John Doe" 같은 판에 박힌 자리 채움은 쓰지 않는다 | 이것은 예외가 아니다. `SLOP-12` 그대로 막는다 |
+| 사람 이름은 흔한 성 + 두 음절 이름을 섞어 짓는다(예: 김서윤·박도현·이하은). 가나다·라마바·사아자처럼 자모 순서로 짓지 않는다. 회사는 "○○상사"·"△△공방" 꼴 가상 이름으로 하고 실존 회사와 겹치는지 검색해 본다 | 자모 순서 이름은 두 채점에서 자리 채움처럼 읽힌다는 지적을 받았다 |
+| 스켈레톤을 보이는 흉내 로딩은 1초를 넘게 둔다(예: 1.2~1.5초). 1초 안에 끝나는 흉내 로딩은 스켈레톤·회전 표시 없이 바로 결과를 보인다 | `STA-01`(1초 안에 끝나는 로딩에 스켈레톤 금지). 예약 흐름 0.7초 흉내 로딩이 필수 위반이었다 |
 
 ## 기존 샘플과의 관계
 
@@ -518,7 +541,7 @@ components:
 | 어두운 UI | 밝게 기본 + 어둡게·시스템 선택, 저장 키 `ds-theme` | `CLR-DARK-01`·`CLR-DARK-02` |
 | 토큰 원본 형식 | CSS 파일 하나(`tokens.css`) | 빌드 없는 조립 구조(`docs/platform.md`). `TOK-01` 예외 |
 | 스크립트 형식 | 일반 스크립트 하나(`js/ds.js`, 전역 `DS`) | 파일로 열기(`file://`)에서 ES 모듈이 막힌다 |
-| 아이콘 | kit 자체 선 아이콘 39종(손으로 그림) | 외부 아이콘 세트 라이선스 표기를 늘리지 않는다 |
+| 아이콘 | kit 자체 선 아이콘 40종(손으로 그림) | 외부 아이콘 세트 라이선스 표기를 늘리지 않는다 |
 | 경고 아이콘 | 정보 아이콘 + 제목 글 | `CMP-FB-06`(느낌표는 오류만) |
 | 좁은 폭 표 | 가로 스크롤 기본, `ds-table--stack` 선택 | 열 비교가 중요한 표는 쌓으면 비교가 어렵다 |
 | 토스트 | kit 에 두지 않는다 | `CMP-FB-01`. 결과는 화면이나 배너로 보인다 |

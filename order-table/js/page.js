@@ -30,13 +30,14 @@
   var DATA = window.ORDER_DATA || { today: '2026-11-17', orders: [] };
   var STATE = new URLSearchParams(location.search).get('state') || '';
   var PER_PAGE = 20;
-  var LOAD_MS = 700;
-  var WORK_MS = 900;
+  // 흉내 지연 — 스켈레톤·회전 표시를 보이는 흉내 로딩은 1초를 넘게 둔다(DESIGN.md 「샘플 데이터」, STA-01)
+  var LOAD_MS = 1300;
+  var WORK_MS = 1200;
   var SEARCH_WAIT = 250;
   var COLS_KEY = 'order-table-hidden-cols';
 
   var SHIP = {
-    ready: { label: '배송준비', tone: 'accent' },
+    ready: { label: '배송준비', tone: 'warning' }, // 상태 배지에 accent 톤을 쓰지 않는다(DESIGN.md) — 처리할 일이 남은 상태
     shipping: { label: '배송중', tone: 'info' },
     done: { label: '배송완료', tone: 'success' },
     canceled: { label: '취소완료', tone: '' }
@@ -73,7 +74,7 @@
     errorText: '연결이 잠시 끊겼어요. 다시 불러오면 걸어 둔 조건 그대로 보여요.',
     reload: '다시 불러오기',
     failText: '연결이 잠시 끊겼어요. 고른 주문은 그대로 있으니 다시 해 보세요.',
-    retry: '다시 하기',
+    working: '처리가 끝나면 누를 수 있어요',
     readonlyTitle: '보기 권한만 있어요',
     readonlyText: '배송 처리와 주문 취소는 주문 처리 권한이 있어야 해요. 관리자에게 권한을 요청해 주세요.',
     cleared: '필터를 모두 지웠어요',
@@ -89,6 +90,7 @@
   var failed = STATE === 'error';
   var readonly = STATE === 'readonly';
   var failNext = STATE === 'bulk-error';
+  var working = false; // 일괄 작업 처리 중
   var filters = { q: '', period: 'all', from: '', to: '', status: [] };
   var sort = { key: DEFAULT_SORT.key, dir: DEFAULT_SORT.dir };
   var page = 1;
@@ -286,7 +288,8 @@
     var tr = el('tr', 'ds-table__skeleton');
     tr.setAttribute('aria-hidden', 'true');
     if (!readonly) tr.appendChild(cell(null, 'ds-table__select')).appendChild(el('span', 'ds-skeleton'));
-    tr.appendChild(cell(null, 'ot-col-id')).appendChild(el('span', 'ds-skeleton'));
+    // 제목 칸은 ds-table__primary — 쌓은 카드에서 kit 이 칸 이름 막대를 그리지 않는다
+    tr.appendChild(cell(null, 'ds-table__primary ot-col-id')).appendChild(el('span', 'ds-skeleton'));
     DATA_COLS.forEach(function (col) {
       var td = cell(col, col === 'items' || col === 'amount' ? 'ds-num' : null);
       td.appendChild(el('span', 'ds-skeleton ' + SKELETON_WIDTH[col]));
@@ -299,12 +302,17 @@
     var tr = el('tr', 'ds-table__empty');
     var td = el('td');
     td.colSpan = columnCount();
-    var box = el('div', 'ds-empty ds-empty--center');
-    box.insertAdjacentHTML('afterbegin', DS.icon(kind === 'none' ? 'inbox' : 'search', 'ds-empty__icon'));
+    var box = el('div', 'ds-empty ds-empty--center' + (kind === 'error' ? ' ds-empty--error' : ''));
+    box.insertAdjacentHTML('afterbegin', DS.icon(kind === 'none' ? 'inbox' : kind === 'error' ? 'error' : 'search', 'ds-empty__icon'));
     var title;
     var text;
     var action;
-    if (kind === 'none') {
+    if (kind === 'error') {
+      // 불러오기 오류는 결과 자리에 남긴다(닫히는 배너에만 두지 않는다 — DESIGN.md)
+      title = COPY.errorTitle;
+      text = COPY.errorText;
+      action = COPY.reload;
+    } else if (kind === 'none') {
       title = COPY.noneTitle;
       text = COPY.noneText;
       action = COPY.noneAction;
@@ -322,7 +330,8 @@
     var acts = el('div', 'ds-empty__actions');
     var btn = el('button', 'ds-btn', action);
     btn.type = 'button';
-    btn.id = kind === 'none' ? 'btn-recheck' : 'btn-empty-clear';
+    btn.id = kind === 'none' ? 'btn-recheck' : kind === 'error' ? 'btn-reload' : 'btn-empty-clear';
+    if (kind === 'error') btn.className = 'ds-btn ds-btn--primary';
     acts.appendChild(btn);
     box.appendChild(acts);
     td.appendChild(box);
@@ -334,6 +343,7 @@
   function renderTable() {
     var body = ui.body;
     body.textContent = '';
+    if (failed) { body.appendChild(emptyRow('error')); return; }
     if (skeleton) {
       for (var i = 0; i < 8; i++) body.appendChild(skeletonRow());
       return;
@@ -373,9 +383,10 @@
       chip.setAttribute('aria-pressed', filters.status.indexOf(k) >= 0 ? 'true' : 'false');
       var n = $('[data-count]', chip);
       var sr = $('[data-count-sr]', chip);
+      // 불러오는 동안에는 빈 개수 자리를 남겨 칩 폭이 바뀌지 않게 한다. 불러오지 못했으면 개수 자리를 뺀다
       n.textContent = loaded ? String(facet[k]) : '';
-      n.hidden = !loaded;
-      sr.textContent = loaded ? ', ' + count(facet[k]) : '';
+      n.hidden = failed;
+      sr.textContent = loaded ? ' ' + count(facet[k]) : '';
     });
   }
 
@@ -408,7 +419,7 @@
     var n = items.filter(function (it) { return it.key !== 'q'; }).length;
     ui.filterN.hidden = !n;
     ui.filterN.textContent = String(n);
-    ui.filterNsr.textContent = n ? ', ' + n + '개 걸림' : '';
+    ui.filterNsr.textContent = n ? ' ' + n + '개 걸림' : '';
     DS.fonts.ensureText(ui.activeList.textContent);
   }
 
@@ -416,7 +427,7 @@
     var total = orders.length;
     if (!loaded) {
       ui.title.textContent = '주문';
-      ui.countMeta.textContent = COPY.loadingShort;
+      ui.countMeta.textContent = failed ? '' : COPY.loadingShort;
       return;
     }
     ui.title.textContent = '주문 ' + count(view.length);
@@ -434,16 +445,50 @@
     }
   }
 
+  /* 좁은 폭에서 화면 아래에 붙은 일괄 작업 줄 — 문서 순서도 화면 순서에 맞춰 결과 영역 끝(쪽 나누기 뒤)으로 옮긴다.
+     넓은 폭이나 고른 주문이 없으면 결과 도구 줄의 원래 자리로 돌린다. 줄 안에 포커스가 있었으면 옮긴 뒤 그 자리에 다시 둔다 */
+  function placeBulk() {
+    if (!ui.bulk || !ui.resultbar) return;
+    var bottom = !!(narrow && narrow.matches) && ui.results.classList.contains('ot-results--picked');
+    var home = bottom ? ui.results : ui.resultbar;
+    if (ui.bulk.parentNode !== home) {
+      var active = doc.activeElement;
+      var had = ui.bulk.contains(active);
+      if (bottom) ui.results.appendChild(ui.bulk);
+      else ui.resultbar.insertBefore(ui.bulk, ui.colPick);
+      if (had && active.isConnected) active.focus({ preventScroll: true });
+    }
+    if (bottom) requestAnimationFrame(keepFocusAboveBar);
+  }
+
+  /* 붙은 줄의 실제 높이를 스크롤 여백(--order-table-bar-h)에 넘기고, 포커스된 요소가 줄 밑에 있으면 끌어올린다(A11Y-WCAG-06) */
+  function keepFocusAboveBar() {
+    if (!ui.results.classList.contains('ot-results--picked') || getComputedStyle(ui.bulk).position !== 'fixed') return;
+    var bar = ui.bulk.getBoundingClientRect();
+    var rem = parseFloat(getComputedStyle(doc.documentElement).fontSize) || 16;
+    doc.documentElement.style.setProperty('--order-table-bar-h', (bar.height / rem) + 'rem');
+    var active = doc.activeElement;
+    if (!active || active === doc.body || ui.bulk.contains(active)) return;
+    var r = active.getBoundingClientRect();
+    // 포커스 링(두께 + 간격)까지 줄 위에 보여야 한다
+    var ring = rem * 0.25;
+    if (r.bottom + ring > bar.top) active.scrollIntoView({ block: 'nearest' });
+  }
+
   function renderBulk() {
     if (readonly) return;
     var n = selectedCount();
     ui.picked.hidden = !n;
     ui.picked.textContent = count(n) + ' 고름';
     ui.unselect.hidden = !n;
+    // 좁은 폭에서 고른 주문이 있으면 일괄 작업 줄을 화면 아래에 붙인다(page.css)
+    ui.results.classList.toggle('ot-results--picked', n > 0);
+    placeBulk();
     var ship = plan('ship');
     var cancel = plan('cancel');
-    setDisabled(ui.ship, !n ? COPY.pickFirst : !ship.ok.length ? COPY.noShip : '');
-    setDisabled(ui.cancel, !n ? COPY.pickFirst : !cancel.ok.length ? COPY.noCancel : '');
+    // 처리 중이면 다른 버튼은 이유와 함께 막는다. 처리 중인 버튼은 kit(DS.busy)이 맡는다
+    if (working !== 'ship') setDisabled(ui.ship, working ? COPY.working : !n ? COPY.pickFirst : !ship.ok.length ? COPY.noShip : '');
+    if (working !== 'cancel') setDisabled(ui.cancel, working ? COPY.working : !n ? COPY.pickFirst : !cancel.ok.length ? COPY.noCancel : '');
     if (doc.activeElement === ui.ship || doc.activeElement === ui.cancel) DS.tooltip.hide();
   }
 
@@ -526,7 +571,7 @@
     $$('input[data-col]', ui.colMenu).forEach(function (box) {
       box.checked = hiddenCols.indexOf(box.getAttribute('data-col')) < 0;
     });
-    ui.colsLabel.textContent = hiddenCols.length ? '열 ' + hiddenCols.length + '개 숨김' : COPY.colsDefault;
+    ui.colsLabel.textContent = hiddenCols.length ? COPY.colsDefault + ' · ' + hiddenCols.length + '개 숨김' : COPY.colsDefault;
   }
 
   /* 데이터·조건이 바뀌면 모두 다시 그린다. 고르기는 지금 조건에 맞는 주문만 남긴다 */
@@ -638,8 +683,7 @@
   var pendingKind = null;
 
   function openConfirm(kind, opener) {
-    // 다른 일괄 작업이 처리 중이면(kit 의 data-ds-pending) 새로 열지 않는다
-    if (ui.ship.hasAttribute('data-ds-pending') || ui.cancel.hasAttribute('data-ds-pending')) return;
+    if (working) return; // 일괄 작업이 처리 중이면 새로 열지 않는다
     var p = plan(kind);
     if (!p.ok.length) return;
     pendingKind = kind;
@@ -673,7 +717,9 @@
   function run(kind) {
     var btn = bulkButton(kind);
     var p = plan(kind);
-    if (!p.ok.length) return;
+    if (!p.ok.length || working) return;
+    working = kind;
+    renderBulk(); // 다른 버튼은 이유("처리가 끝나면 누를 수 있어요")와 함께 막는다
     DS.busy(btn, true);
     ui.wrap.setAttribute('aria-busy', 'true');
     DS.announce('처리 중이에요');
@@ -683,6 +729,7 @@
       // 응답을 받았다. 처리 중 표시는 kit 이 0.3초 뒤에 띄우고 0.4초는 남긴다.
       // 결과(표·배너)는 DS.busy 해제가 끝난 뒤(.then) 보인다 — 버튼 글자와 결과가 엇갈리지 않게
       DS.busy(btn, false).then(function () {
+        working = false;
         ui.wrap.removeAttribute('aria-busy');
         if (fail) {
           renderAll();
@@ -690,7 +737,7 @@
             id: 'bulk-result', tone: 'danger',
             title: kind === 'ship' ? '배송 처리를 하지 못했어요' : '주문을 취소하지 못했어요',
             text: COPY.failText,
-            actions: [{ label: COPY.retry, primary: true, onClick: function () { run(kind); } }],
+            actions: [{ label: (kind === 'ship' ? '배송 처리' : '주문 취소') + ' 다시 하기', primary: true, onClick: function () { run(kind); } }],
             focusNext: '#' + btn.id
           });
           return;
@@ -736,7 +783,8 @@
 
   /* ---------- 필터 서랍(767 이하) ---------- */
 
-  var narrow = window.matchMedia ? matchMedia('(max-width: 767px)') : null;
+  // kit 의 쌓기 경계(47.9375rem)와 같게 — 글자를 키우면 함께 바뀐다
+  var narrow = window.matchMedia ? matchMedia('(max-width: 47.9375rem)') : null;
 
   function openDrawer() {
     ui.drawerBody.appendChild(ui.more);
@@ -868,8 +916,18 @@
         ui.q.focus();
         return;
       }
+      // 다시 불러오는 동안 누른 버튼이 스켈레톤으로 바뀐다 — 포커스를 보이는 결과 제목으로 먼저 옮긴다
       if (e.target.closest('#btn-recheck')) {
+        ui.title.focus();
         load({ done: function () { DS.announce(orders.length ? '주문 ' + count(orders.length) + '을 불러왔어요' : COPY.noneAgain); var b = $('#btn-recheck'); if (b) b.focus(); } });
+        return;
+      }
+      if (e.target.closest('#btn-reload')) {
+        failed = false;
+        STATE = '';
+        DS.url.set({ state: null });
+        ui.title.focus();
+        load();
       }
     });
 
@@ -963,9 +1021,16 @@
       ui.period.focus();
     });
     if (narrow) {
-      var onWidth = function () { if (!narrow.matches && ui.drawer.open) DS.dialog.close(ui.drawer); };
+      var onWidth = function () {
+        if (!narrow.matches && ui.drawer.open) DS.dialog.close(ui.drawer);
+        if (!readonly) placeBulk();
+      };
       if (narrow.addEventListener) narrow.addEventListener('change', onWidth);
     }
+    // 화면 높이·글자 크기가 바뀌면 붙은 줄 높이를 다시 잰다
+    window.addEventListener('resize', function () {
+      if (!readonly && ui.results.classList.contains('ot-results--picked')) requestAnimationFrame(keepFocusAboveBar);
+    });
   }
 
   /* ---------- 시작 ---------- */
@@ -988,6 +1053,7 @@
       activeList: $('#active-list'),
       clearAll: $('#btn-clear-all'),
       results: $('#results'),
+      resultbar: $('.ot-resultbar'),
       title: $('#results-title'),
       countMeta: $('#count-meta'),
       bulk: $('#bulk'),
@@ -1018,7 +1084,8 @@
 
     // 자리 표시 글은 가상 데이터에서 예시 값을 가져온다(데이터는 data.js 한 곳에만)
     var sample = DATA.orders[0];
-    if (sample) ui.q.placeholder = '예: ' + sample.id + '…';
+    // 주문 번호 앞 8자리(주문일)만 보인다 — 320 폭에서도 잘리지 않고, 그 날짜의 주문을 찾는 예시가 된다
+    if (sample) ui.q.placeholder = '예: ' + sample.id.slice(0, 8) + '…';
 
     if (readonly) {
       ui.table.classList.add('ot-table--readonly');
@@ -1034,26 +1101,10 @@
     // 정렬 머리 — 주소에 없으면 기본 정렬(주문일 내림차순)을 조용히 표시한다
     DS.sort.apply(ui.table, sort.key, sort.dir, { fromUrl: true, silent: true });
 
+    // 불러오기 오류 — 결과 자리(표 몸통)에 오류 상태와 "다시 불러오기"를 남긴다. 닫히는 배너는 쓰지 않는다
     if (failed) {
-      ui.results.hidden = true;
-      renderControls();
-      renderChips();
-      renderActive();
-      DS.banner.show({
-        id: 'load-error', tone: 'danger',
-        title: COPY.errorTitle, text: COPY.errorText,
-        actions: [{
-          label: COPY.reload, primary: true,
-          onClick: function () {
-            failed = false;
-            STATE = '';
-            DS.url.set({ state: null });
-            ui.results.hidden = false;
-            load();
-          }
-        }],
-        focusNext: '#results-title'
-      });
+      renderAll();
+      DS.announce(COPY.errorTitle + '. ' + COPY.errorText, { assertive: true });
       return;
     }
 

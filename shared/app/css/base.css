@@ -12,7 +12,8 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   /* 고정 머리줄 아래로 포커스·앵커가 숨지 않게(CMP-NAV-15) */
-  scroll-padding-top: calc(var(--ds-size-topbar) + var(--ds-space-4));
+  /* --ds-app-top 은 js/ds.js 가 잰 실제 머리줄 높이(두 줄이 되어도 맞다). 없으면 토큰 값 */
+  scroll-padding-top: calc(var(--ds-app-top, var(--ds-size-topbar)) + var(--ds-space-4));
 }
 
 body {
@@ -50,7 +51,8 @@ p {
   text-wrap: pretty;
 }
 
-ul[class], ol[class] {
+/* 리셋은 :where() 로 특이도를 0 으로 둔다 — 샘플 CSS 의 목록·링크 스타일이 늘 이긴다 */
+:where(ul[class], ol[class]) {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -74,8 +76,7 @@ button {
   cursor: pointer;
 }
 
-button:disabled,
-[aria-disabled="true"] {
+:where(button:disabled, [aria-disabled="true"]) {
   cursor: not-allowed;
 }
 
@@ -85,7 +86,7 @@ a {
   text-underline-offset: 0.2em;
 }
 
-a:hover {
+:where(a:hover) {
   text-decoration-thickness: var(--ds-size-border-strong);
 }
 
@@ -245,6 +246,12 @@ time {
 
 .ds-text-muted {
   color: var(--ds-color-fg-muted);
+}
+
+/* hidden 속성은 샘플 CSS 의 display 값보다 늘 이긴다.
+   !important 대신 id 두 개만큼 특이도(2·1·0)를 준다(정적 점검 W10). 샘플은 [hidden] 을 다시 선언하지 않아도 된다 */
+[hidden]:not(#ds-hidden-a):not(#ds-hidden-b) {
+  display: none;
 }
 
 /* 고대비(강제 색) 모드 — 포커스 링은 시스템 색으로 남긴다 */

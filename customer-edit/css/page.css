@@ -1,16 +1,18 @@
 /*
  * 고객 상세와 편집 — 이 화면만 쓰는 배치(ce-). 부품은 kit(css/components.css)에서 오고 값은 토큰 변수만 쓴다.
- * 숨김(hidden)으로 켜고 끄는 요소에는 display 를 주지 않는다. 맨 아래 [hidden] 줄이 이기게 둔다.
+ * 폭 경계는 kit 과 같이 rem 으로 쓴다(29.9375rem = 479px, 47.9375rem = 767px).
  */
 
 :root {
   /* 오른쪽 열(변경 기록)의 최소 폭. kit 에 열 폭 토큰이 없어 카드 격자 한 칸 최소 폭(256)을 그대로 쓴다 */
   --customer-edit-side-min: var(--ds-size-card-min);
+  /* 스켈레톤의 주 버튼 자리 너비 — "고객 정보 고치기" 버튼 폭(약 142)에 맞춘다. kit 에 버튼 너비 토큰이 없다 */
+  --customer-edit-skeleton-btn: 9rem;
 }
 
 /* ---------- 머리줄 ---------- */
 
-@media (max-width: 479px) {
+@media (max-width: 29.9375rem) {
   .ce-theme-text {
     display: none;
   }
@@ -70,11 +72,6 @@
   border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
 }
 
-.ce-block,
-.ce-group {
-  scroll-margin-top: calc(var(--ds-size-topbar) + var(--ds-space-4));
-}
-
 @container (min-width: 56rem) {
   .ce-layout__grid {
     display: grid;
@@ -94,16 +91,26 @@
 
 /* ---------- 보기 — 기본 정보 ---------- */
 
-/* 형식만 보고 뜻을 아는 값(전화·이메일·주소)은 라벨 없이 값만 조금 크게(PAT-DETAIL-02) */
+/* 형식만 보고 뜻을 아는 값(전화·이메일·주소)은 라벨 없이 값만 조금 크게(PAT-DETAIL-02).
+   줄마다 누르는 영역 높이(마우스 24, 터치 44)를 둔다 — 전화·이메일 링크가 그 높이를 다 쓴다(SPC-07) */
 .ce-contact {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-1);
   font-size: var(--ds-text-title-sm-size);
   line-height: var(--ds-text-title-sm-leading);
 }
 
+.ce-contact > li {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--ds-target-min);
+}
+
 .ce-contact a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--ds-target-min);
+  min-inline-size: var(--ds-target-min);
   overflow-wrap: anywhere;
 }
 
@@ -121,17 +128,6 @@
   white-space: pre-line;
 }
 
-/* 묶음 안 빈 상태 — 묶음 제목(h2)보다 한 단계 낮춘다 */
-.ce-block .ds-empty__title {
-  font-size: var(--ds-text-label-size);
-  line-height: var(--ds-text-label-leading);
-  font-weight: var(--ds-text-label-strong-weight);
-}
-
-.ce-block .ds-empty__actions {
-  margin-block-start: var(--ds-space-1);
-}
-
 .ce-meta {
   color: var(--ds-color-fg-muted);
   font-size: var(--ds-text-body-sm-size);
@@ -140,25 +136,10 @@
 
 /* ---------- 최근 주문 ---------- */
 
-.ce-orders td:first-child {
+/* 주문 번호·주문일은 하이픈에서 끊지 않는다(글자 200% 에서 표 틀 안 가로 스크롤로 본다) */
+.ce-orders td:nth-child(-n + 2) {
   font-variant-numeric: tabular-nums;
-}
-
-@media (max-width: 767px) {
-  /* 정렬 버튼이 없는 표라 쌓은 머리 띠가 비어 보인다. 화면에서만 숨기고 화면낭독기에는 남긴다 */
-  .ce-orders thead {
-    position: absolute;
-    width: var(--ds-size-hairline);
-    height: var(--ds-size-hairline);
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  /* 고르기 칸이 없어 왼쪽 들여쓰기를 줄인다 */
-  .ce-orders .ds-table--stack tr {
-    padding-inline-start: var(--ds-space-3);
-  }
+  white-space: nowrap;
 }
 
 /* ---------- 변경 기록 ---------- */
@@ -170,6 +151,10 @@
 
 .ce-history .ds-list__title {
   font-weight: var(--ds-text-body-weight);
+}
+
+.ce-history .ds-list__aside {
+  white-space: nowrap;
 }
 
 /* ---------- 편집 폼 ---------- */
@@ -204,10 +189,13 @@
   margin-block-start: var(--ds-space-1);
 }
 
+/* 칸 이름 링크 — 짧은 이름("이메일")도 누르는 영역 24(터치 44)를 채운다 */
 .ce-summary__list a {
   display: inline-flex;
   align-items: center;
-  min-height: var(--ds-target-min);
+  justify-content: center;
+  min-block-size: var(--ds-target-min);
+  min-inline-size: var(--ds-target-min);
   color: var(--ds-color-fg-danger);
   font-weight: var(--ds-text-label-weight);
 }
@@ -227,18 +215,65 @@
   line-height: var(--ds-text-body-sm-leading);
 }
 
-/* ---------- 불러오는 중 ---------- */
+/* ---------- 불러오는 중 — 막대가 실제 글줄 높이를 차지해 내용이 들어와도 자리가 움직이지 않게 ---------- */
 
 .ce-skeleton {
+  /* 막대가 흉내 내는 글줄 — 기본은 본문. 아래에서 묶음 제목·연락처·목록 줄마다 바꾼다 */
+  --customer-edit-sk-size: var(--ds-text-body-size);
+  --customer-edit-sk-leading: var(--ds-text-body-leading);
   display: flex;
   flex-direction: column;
   gap: var(--ds-gap-section);
 }
 
-.ce-skeleton__head {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
+/* 표 칸 안 막대는 kit 이 맞춘다. 그 밖의 막대는 글자 크기 높이 + 줄 높이만큼 위아래 여백 */
+.ce-skeleton :not(td) > .ds-skeleton {
+  height: var(--customer-edit-sk-size);
+  margin-block: calc((var(--customer-edit-sk-leading) * var(--customer-edit-sk-size) - var(--customer-edit-sk-size)) / 2);
+}
+
+.ce-skeleton .ds-page__titles > .ds-skeleton--title {
+  --customer-edit-sk-size: var(--ds-text-title-size);
+  --customer-edit-sk-leading: var(--ds-text-title-leading);
+}
+
+.ce-skeleton .ce-sk-heading,
+.ce-skeleton .ce-contact .ds-skeleton {
+  --customer-edit-sk-size: var(--ds-text-title-sm-size);
+  --customer-edit-sk-leading: var(--ds-text-title-sm-leading);
+}
+
+.ce-skeleton .ce-sk-reading {
+  --customer-edit-sk-leading: var(--ds-text-body-reading-leading);
+}
+
+.ce-skeleton .ds-list__title.ds-skeleton {
+  --customer-edit-sk-size: var(--ds-text-label-size);
+  --customer-edit-sk-leading: var(--ds-text-label-leading);
+}
+
+.ce-skeleton .ds-list__meta.ds-skeleton,
+.ce-skeleton .ds-list__aside.ds-skeleton {
+  --customer-edit-sk-size: var(--ds-text-body-sm-size);
+  --customer-edit-sk-leading: var(--ds-text-body-sm-leading);
+}
+
+.ce-skeleton .ds-list__aside.ds-skeleton {
+  inline-size: var(--ds-space-16);
+}
+
+.ce-skeleton .ds-page__actions > .ce-skeleton__btn {
+  inline-size: var(--customer-edit-skeleton-btn);
+  height: var(--ds-control-height-md);
+  margin-block: 0;
+  border-radius: var(--ds-control-radius);
+}
+
+/* 메모 한 줄은 좁은 폭에서만 두 줄이 된다 */
+@container (min-width: 32rem) {
+  .ce-skeleton .ce-sk-narrow {
+    display: none;
+  }
 }
 
 /* ---------- 없는 고객 · 바닥줄 ---------- */
@@ -257,16 +292,8 @@
 .ce-footnote {
   padding-block-start: var(--ds-space-4);
   border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
-  color: var(--ds-color-fg-muted);
-  font-size: var(--ds-text-body-sm-size);
-  line-height: var(--ds-text-body-sm-leading);
 }
 
 .ce-noscript {
   padding: var(--ds-space-6) var(--ds-gap-page-x);
-}
-
-/* hidden 속성이 위의 display 값보다 이기게 맨 끝에 둔다 */
-[hidden] {
-  display: none;
 }

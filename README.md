@@ -9,6 +9,13 @@
 <!-- samples:start -->
 | 폴더 | 바로 보기 | 내용 | 검수 |
 |---|---|---|---|
+| `design-system/` | https://s10cho.github.io/ui-samples/design-system/ | 부품 모음 — 디자인 시스템. 업무 화면 샘플이 함께 쓰는 버튼·입력·표·탭·대화상자 같은 부품을 한 화면에 모았습니다. | 88.25 |
+| `support-inbox/` | https://s10cho.github.io/ui-samples/support-inbox/ | 상담 인박스. 고객 대화 목록과 대화창, 고객 정보를 한 화면에서 다룹니다. | 93.75 |
+| `order-table/` | https://s10cho.github.io/ui-samples/order-table/ | 주문 목록. 주문을 정렬·필터·검색하고, 여러 건을 골라 한꺼번에 처리합니다. | 94.5 |
+| `customer-edit/` | https://s10cho.github.io/ui-samples/customer-edit/ | 고객 상세와 편집. 고객 정보를 보고 편집 모드에서 고칩니다. | 85.75 |
+| `settings/` | https://s10cho.github.io/ui-samples/settings/ | 설정. 계정·알림·보안·팀 설정을 탭으로 나눴습니다. | 90.75 |
+| `ops-dashboard/` | https://s10cho.github.io/ui-samples/ops-dashboard/ | 운영 대시보드. 지표 카드와 추세 그래프, 알림 목록을 보여 줍니다. | 90 |
+| `booking-flow/` | https://s10cho.github.io/ui-samples/booking-flow/ | 예약 흐름. 날짜·시간 고르기부터 정보 입력, 확인, 완료까지 여러 단계로 예약합니다. | 88.25 |
 | `island-park/` | https://s10cho.github.io/ui-samples/island-park/ | 바다 위 놀이공원. 바다 위 섬 하나에 놀이공원 명소 5곳을 3D로 보여 줍니다. | 94.5 |
 | `city-night/` | https://s10cho.github.io/ui-samples/city-night/ | 강을 낀 작은 도시. 강을 사이에 둔 가상의 작은 도시 한 블록을 3D로 보여 줍니다. | 93.25 |
 | `ski-mountain/` | https://s10cho.github.io/ui-samples/ski-mountain/ | 겨울 산 스키장. 눈 덮인 가상의 산에 만든 스키장을 3D로 보여 줍니다. | 89.5 |

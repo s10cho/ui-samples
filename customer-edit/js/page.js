@@ -72,6 +72,8 @@
     discardText: function (n) { return '저장하지 않은 칸 ' + n + '개가 원래 값으로 돌아가요.'; },
     discard: '고친 내용 버리기',
     discardLeave: '고친 내용 버리고 나가기',
+    discardReload: '고친 내용 버리고 새로 불러오기',
+    discardReloadText: function (n) { return '저장하지 않은 칸 ' + n + '개가 새로 불러온 값으로 바뀌어요.'; },
     historyGrade: function (from, to) { return '등급을 ' + from + '에서 ' + withTo(to) + ' 바꿨어요'; },
     historyFew: function (labels) { return withObject(labels.join(', ')) + ' 고쳤어요'; },
     historyMany: function (first, n) { return first + ' 등 칸 ' + n + '개를 고쳤어요'; }
@@ -103,10 +105,13 @@
 
   /* ---------- 날짜·숫자 ---------- */
 
+  // 날짜·시각 글은 손으로 잇지 않고 Intl 로 만든다(WRT-FMT-08). 데이터 날짜는 시간대 없는 날이라 UTC 로 읽는다
+  var dayFmt = new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', timeZone: 'UTC' });
+  var fullDayFmt = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+  var momentFmt = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   function proseDate(iso) {
-    var p = iso.split('-');
-    var sameYear = p[0] === DATA.today.slice(0, 4);
-    return (sameYear ? '' : Number(p[0]) + '년 ') + Number(p[1]) + '월 ' + Number(p[2]) + '일';
+    var sameYear = iso.slice(0, 4) === DATA.today.slice(0, 4);
+    return (sameYear ? dayFmt : fullDayFmt).format(new Date(iso + 'T00:00:00Z'));
   }
   var won = window.Intl ? new Intl.NumberFormat('ko-KR') : null;
   function money(n) { return (won ? won.format(n) : String(n)) + '원'; }
@@ -257,8 +262,9 @@
       main.appendChild(meta);
       var t = doc.createElement('time');
       t.className = 'ds-list__aside';
-      t.dateTime = h.now ? new Date().toISOString() : h.date;
-      t.textContent = h.now ? COPY.justNow : h.date;
+      t.dateTime = h.at ? h.at.toISOString() : h.date;
+      t.textContent = h.at ? COPY.justNow : h.date;
+      if (h.at) t.title = momentFmt.format(h.at);   // "방금"의 정확한 시각(WRT-FMT-09)
       li.appendChild(main);
       li.appendChild(t);
       list.appendChild(li);
@@ -544,11 +550,11 @@
 
   function askDiscard(action, opener) {
     pending = action;
-    var dlg = $('#dlg-discard');
-    dlg.returnValue = '';
-    $('#dlg-discard-desc').textContent = COPY.discardText(dirtyKeys().length);
-    $('#btn-discard').textContent = action.type === 'link' ? COPY.discardLeave : COPY.discard;
-    DS.dialog.open(dlg, opener || doc.activeElement);
+    var n = dirtyKeys().length;
+    $('#dlg-discard-desc').textContent = action.type === 'reload' ? COPY.discardReloadText(n) : COPY.discardText(n);
+    $('#btn-discard').textContent = action.type === 'link' ? COPY.discardLeave
+      : action.type === 'reload' ? COPY.discardReload : COPY.discard;
+    DS.dialog.open($('#dlg-discard'), opener || doc.activeElement);
   }
 
   function wireLeaveGuard() {
@@ -560,6 +566,10 @@
       if (act.type === 'link') {
         allowLeave = true;
         location.href = act.href;
+        return;
+      }
+      if (act.type === 'reload') {
+        applyStale();
         return;
       }
       leaveEdit();
@@ -657,7 +667,7 @@
     customer.phone = prettyPhone(customer.phone);
     customer.updatedBy = DATA.currentTeam;
     customer.updatedJustNow = true;
-    log.unshift({ text: historyText(keys, before, values), team: DATA.currentTeam, now: true });
+    log.unshift({ text: historyText(keys, before, values), team: DATA.currentTeam, at: new Date() });
     leaveEdit(function () {
       el.btnEdit.focus();
       DS.banner.show({
@@ -723,7 +733,7 @@
           onClick: function () {
             try { history_.replaceState(history_.state, '', urlWith({ state: null })); } catch (e) { /* 그대로 둔다 */ }
             STATE = '';
-            load(900, true);
+            load(1300, true);   // 스켈레톤을 보이는 흉내 로딩은 1초를 넘게(STA-01)
           }
         }],
         focusNext: '#main'
@@ -760,22 +770,35 @@
     if (STATE === 'stale') showStale();
   }
 
+  /** 다른 팀이 바꾼 값을 받아 화면에 반영한다. 편집 중이면 폼도 새 값으로 바꾸고 고친 칸 수를 다시 센다 */
+  function applyStale() {
+    var c = DATA.staleChange;
+    customer.grade = c.grade;
+    customer.updatedAt = c.updatedAt;
+    customer.updatedBy = c.updatedBy;
+    customer.updatedJustNow = false;
+    log.unshift(JSON.parse(JSON.stringify(c.history)));
+    if (editing) {
+      fillForm(customer);
+      clearErrors();
+      updateDirty();
+    }
+    renderAll();
+    DS.banner.dismiss('#stale-banner', { focusNext: editing ? '#f-name' : '#btn-edit' });
+    DS.announce(COPY.staleDone);
+  }
+
   function showStale() {
     DS.banner.show({
       id: 'stale-banner', tone: 'warning',
       title: COPY.staleTitle, text: COPY.staleText,
       actions: [{
         label: COPY.staleReload,
-        onClick: function () {
-          var c = DATA.staleChange;
-          customer.grade = c.grade;
-          customer.updatedAt = c.updatedAt;
-          customer.updatedBy = c.updatedBy;
-          customer.updatedJustNow = false;
-          log.unshift(JSON.parse(JSON.stringify(c.history)));
-          if (editing) fillForm(customer);
-          renderAll();
-          DS.announce(COPY.staleDone);
+        onClick: function (banner) {
+          // 고친 칸이 있으면 버릴지 먼저 묻는다. 답을 받을 때까지 배너는 남긴다
+          if (editing && dirtyKeys().length) askDiscard({ type: 'reload' }, $('.ds-banner__actions .ds-btn', banner));
+          else applyStale();
+          return false;
         }
       }],
       focusNext: '#btn-edit'

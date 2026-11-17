@@ -15,7 +15,7 @@
  * kit·build 는 <slug>/sample.config.json 이 있으면 그 값이 samples.json 보다 이긴다.
  * 그래서 샘플을 공용 뼈대로 옮기는 작업은 samples.json 을 건드리지 않아도 된다.
  *
- * 저장소 루트의 index.html·assets/·LICENSE·LICENSE-CONTENT.md·.nojekyll 도 복사한다.
+ * 저장소 루트의 index.html·404.html·assets/·LICENSE·LICENSE-CONTENT.md·.nojekyll 도 복사한다.
  * 샘플 폴더 안의 docs/ui/review/ 는 배포하지 않는다(검수 화면은 저장소에서만 본다).
  * 로컬 확인: node tools/build-site.mjs && python3 -m http.server 8000 --directory _site
  */
@@ -44,7 +44,7 @@ const copy = (from, to) => { if (existsSync(from)) cpSync(from, to, { recursive:
 if (!only) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
-  for (const f of ['index.html', 'LICENSE', 'LICENSE-CONTENT.md', '.nojekyll']) copy(join(root, f), join(out, f));
+  for (const f of ['index.html', '404.html', 'LICENSE', 'LICENSE-CONTENT.md', '.nojekyll']) copy(join(root, f), join(out, f));
   copy(join(root, 'assets'), join(out, 'assets'));
 }
 

@@ -3,7 +3,7 @@
  * 값은 --ds-* 토큰만 쓴다. 토큰에 없는 값은 아래 --ops-dashboard-* 에 두고 설계서 4절에 이유를 적었다.
  */
 :root {
-  --ops-dashboard-series-1: #2a78d6;      /* 그래프 이번 기간 — dataviz 팔레트 1번(밝게). 강조색과 역할을 나눈다 */
+  /* 그래프 색은 kit 토큰 --ds-color-series-1(이번 기간)을 쓴다. 강조색은 그래프에 쓰지 않는다(DESIGN.md) */
   --ops-dashboard-wash-opacity: 0.1;      /* 이번 기간 선 아래 옅은 면 */
   --ops-dashboard-refetch-opacity: 0.55;  /* 다시 불러오는 동안 이전 그림을 옅게 남긴다 */
   --ops-dashboard-chart-h: 12rem;         /* 그래프 그림 높이(축 글자 띠 별도) */
@@ -12,10 +12,6 @@
   --ops-dashboard-alerts-max: 40rem;      /* 넓은 폭 알림 목록 최대 높이 */
   --ops-dashboard-meter-w: 4rem;          /* 목표 진행 막대 길이 */
   --ops-dashboard-date-w: 14rem;          /* 날짜 칸 최대 너비(입력 칸 480 은 날짜에 너무 넓다) */
-}
-
-[data-theme="dark"] {
-  --ops-dashboard-series-1: #3987e5;      /* dataviz 팔레트 1번(어둡게) */
 }
 
 /* ───────── 페이지 머리 — 갱신 상태 ───────── */
@@ -137,8 +133,12 @@
     grid-area: trends;
   }
 
+  /* 두 열일 때 알림 틀은 스크롤해도 머리줄 아래에 붙어 있다 — 그래프를 보는 동안 알림이 빈 열로 남지 않게.
+     높이는 보이는 화면 안(최대 40rem)으로 줄이고 목록만 안에서 스크롤한다 */
   .ops-dash:not(.is-blank) .ops-alerts {
-    max-height: var(--ops-dashboard-alerts-max);
+    position: sticky;
+    top: calc(var(--ds-app-top, var(--ds-size-topbar)) + var(--ds-space-4));
+    max-height: min(var(--ops-dashboard-alerts-max), calc(100dvh - var(--ds-app-top, var(--ds-size-topbar)) - var(--ds-space-8)));
   }
 }
 
@@ -192,26 +192,14 @@
   line-height: var(--ds-text-body-sm-leading);
 }
 
+/* 목표 진행 막대 — kit ds-progress 의 트랙·막대를 줄 안에 짧게 둔다. 막대는 그래프와 같은 계열 색 */
 .ops-meter {
-  display: inline-block;
   flex: none;
   width: var(--ops-dashboard-meter-w);
-  height: var(--ds-size-progress);
-  overflow: hidden;
-  border-radius: var(--ds-radius-pill);
-  background: var(--ds-color-surface-hover);
 }
 
-.ops-meter__bar {
-  display: block;
-  width: var(--ops-meter, 0%);
-  height: 100%;
-  border-radius: inherit;
-  background: var(--ops-dashboard-series-1);
-}
-
-.ops-kpi .ds-skeleton + .ds-skeleton {
-  margin-block-start: var(--ds-space-2);
+.ops-meter > .ds-progress__bar {
+  background: var(--ds-color-series-1);
 }
 
 /* ───────── 알림 ───────── */
@@ -234,7 +222,6 @@
 }
 
 .ops-alerts__tabs {
-  position: relative; /* 탭 안 화면에서 숨긴 글(.ds-sr-only)이 탭 띠 밖으로 새어 페이지를 넓히지 않게(공용 부품 보고) */
   flex: none;
   padding-inline: var(--ds-space-2);
 }
@@ -277,10 +264,6 @@
   .ops-alert > .ds-list__main {
     flex-basis: 100%;
   }
-}
-
-.ops-alert .ds-skeleton {
-  margin-block: var(--ds-space-1);
 }
 
 .ops-alerts__empty {
@@ -369,7 +352,7 @@
   width: var(--ds-space-4);
   height: var(--ds-size-border-strong);
   border-radius: var(--ds-radius-pill);
-  background: var(--ops-dashboard-series-1);
+  background: var(--ds-color-series-1);
 }
 
 .ops-key--prev {
@@ -408,6 +391,37 @@
 .ops-chart__skel {
   height: calc(var(--ops-dashboard-chart-h) + var(--ops-dashboard-chart-band));
   border-radius: var(--ds-container-radius);
+}
+
+/* 스켈레톤 줄 — 담긴 글 줄(p·li)의 줄 높이(1lh)를 그대로 차지해 내용이 들어와도 높이가 같다 */
+.ops-skel-line {
+  display: inline-block;
+  width: calc(var(--ds-space-16) * 2.5);
+  max-width: 100%;
+  height: 1lh;
+  vertical-align: top;
+}
+
+.ds-stat__label > .ops-skel-line,
+.ops-skel-legend {
+  width: var(--ds-space-16);
+}
+
+.ds-stat__value > .ops-skel-line {
+  width: calc(var(--ds-space-16) + var(--ds-space-8));
+}
+
+/* 배지 한 줄(배지 글 줄 + 위아래 안쪽 여백) 높이 */
+.ops-skel-badge {
+  width: calc(var(--ds-space-16) * 2);
+  height: calc(var(--ds-text-label-sm-size) * var(--ds-text-label-sm-leading) + var(--ds-space-0-5) * 2);
+}
+
+/* 행 안 "확인 처리" 버튼 자리 */
+.ops-skel-btn {
+  flex: none;
+  width: calc(var(--ds-space-16) + var(--ds-space-2));
+  height: var(--ds-control-height-sm);
 }
 
 .ops-chart__fail {
@@ -500,7 +514,7 @@
 }
 
 .ops-c-line--cur {
-  stroke: var(--ops-dashboard-series-1);
+  stroke: var(--ds-color-series-1);
 }
 
 .ops-c-line--prev {
@@ -508,12 +522,12 @@
 }
 
 .ops-c-wash {
-  fill: var(--ops-dashboard-series-1);
+  fill: var(--ds-color-series-1);
   fill-opacity: var(--ops-dashboard-wash-opacity);
 }
 
 .ops-c-bar {
-  fill: var(--ops-dashboard-series-1);
+  fill: var(--ds-color-series-1);
 }
 
 .ops-c-bar--over {
@@ -553,7 +567,7 @@
 .ops-c-mark {
   stroke: var(--ds-color-surface-default);
   stroke-width: 2;
-  fill: var(--ops-dashboard-series-1);
+  fill: var(--ds-color-series-1);
 }
 
 .ops-c-mark--prev {
@@ -576,7 +590,7 @@
 }
 
 /* 아주 좁은 폭 — 화면 밝기 글자는 숨기고 아이콘과 툴팁만 남긴다 */
-@media (max-width: 479px) {
+@media (max-width: 29.9375rem) {
   .ops-theme-text {
     display: none;
   }
@@ -585,8 +599,7 @@
 /* 고대비(강제 색) 모드 — 그래프 색을 시스템 색으로 바꾸고, 지표 칸 구분선을 테두리로 남긴다 */
 @media (forced-colors: active) {
   .ops-c,
-  .ops-key,
-  .ops-meter__bar {
+  .ops-key {
     forced-color-adjust: none;
   }
 
@@ -611,8 +624,11 @@
     stroke: Highlight;
   }
 
+  /* 앞 기간 선은 눈금선(GrayText)·목표선(긴 점선)과 구분되게 글자색 둥근 점선으로 */
   .ops-c-line--prev {
-    stroke: GrayText;
+    stroke: CanvasText;
+    stroke-dasharray: 1 4;
+    stroke-linecap: round;
   }
 
   .ops-c-wash {
@@ -623,8 +639,7 @@
   .ops-c-dot,
   .ops-c-mark,
   .ops-key,
-  .ops-key--bar,
-  .ops-meter__bar {
+  .ops-key--bar {
     fill: Highlight;
     background: Highlight;
   }
@@ -635,10 +650,20 @@
     background: CanvasText;
   }
 
-  .ops-c-mark--prev,
+  /* 범례 견본도 실제 앞 기간 선(글자색 점선)과 같은 꼴로 */
+  .ops-c-mark--prev {
+    fill: CanvasText;
+  }
+
   .ops-key--prev {
-    fill: GrayText;
-    background: GrayText;
+    height: 0;
+    background: none;
+    border-block-start: var(--ds-size-border-strong) dotted CanvasText;
+  }
+
+  /* 목표 진행 막대는 부품의 고대비 색(Highlight)을 따른다 */
+  .ops-meter > .ds-progress__bar {
+    background: Highlight;
   }
 
   .ops-c-dot,
@@ -664,14 +689,8 @@
     outline: var(--ds-size-hairline) solid CanvasText;
   }
 
-  .ops-meter,
   .ops-tip,
   .ops-state {
     border: var(--ds-size-hairline) solid CanvasText;
   }
-}
-
-/* hidden 속성이 이긴다 — 위에서 display 를 준 요소(.ops-custom 등)도 숨길 때는 숨긴다 */
-[hidden] {
-  display: none;
 }

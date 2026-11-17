@@ -16,7 +16,7 @@
     /* 기본 고객 */
     customer: {
       id: 'C-0001',
-      name: '가나다 상사',
+      name: '누리별상사',
       phone: '010-0000-0000',
       email: 'contact@example.com',
       postcode: '00000',
@@ -51,7 +51,7 @@
     /* ?state=empty — 메모·주문이 없는 새 고객 */
     emptyCustomer: {
       id: 'C-0002',
-      name: '라마바 공방',
+      name: '초록바늘 공방',
       phone: '010-0000-0000',
       email: 'hello@example.com',
       postcode: '00000',

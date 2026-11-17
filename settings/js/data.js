@@ -9,10 +9,10 @@ window.SETTINGS_DATA = {
 
   team: { name: '운영 1팀' },
 
-  me: { id: 'm1', name: '가나다', email: 'ganada@example.com', lang: 'ko', tz: 'Asia/Seoul' },
+  me: { id: 'm1', name: '김서윤', email: 'seoyun.kim@example.com', lang: 'ko', tz: 'Asia/Seoul' },
 
   // ?state=dirty · ?state=save-fail 에서 저장하지 않은 채 바꿔 둔 값
-  dirtyPreset: { name: '가나다라', tz: 'Europe/London' },
+  dirtyPreset: { name: '김서연', tz: 'Europe/London' },
 
   notify: {
     assign: { mail: true, app: true, sms: false },
@@ -38,14 +38,14 @@ window.SETTINGS_DATA = {
   ],
 
   members: [
-    { id: 'm1', name: '가나다', email: 'ganada@example.com', role: 'owner', seen: '2026-11-17T14:41' },
-    { id: 'm2', name: '라마바', email: 'ramaba@example.com', role: 'admin', seen: '2026-11-17T11:20' },
-    { id: 'm3', name: '사아자', email: 'saaja@example.com', role: 'editor', seen: '2026-11-16T18:03' },
-    { id: 'm4', name: '차카타', email: 'chakata@example.com', role: 'editor', seen: '2026-11-14T10:05' },
-    { id: 'm5', name: '파하가', email: 'pahaga@example.com', role: 'viewer', seen: '2026-11-09T16:40' },
-    { id: 'm6', name: '나다라', email: 'nadara@example.com', role: 'viewer', seen: '', invited: true }
+    { id: 'm1', name: '김서윤', email: 'seoyun.kim@example.com', role: 'owner', seen: '2026-11-17T14:41' },
+    { id: 'm2', name: '박도현', email: 'dohyun.park@example.com', role: 'admin', seen: '2026-11-17T11:20' },
+    { id: 'm3', name: '이하은', email: 'haeun.lee@example.com', role: 'editor', seen: '2026-11-16T18:03' },
+    { id: 'm4', name: '최준호', email: 'junho.choi@example.com', role: 'editor', seen: '2026-11-14T10:05' },
+    { id: 'm5', name: '정민서', email: 'minseo.jung@example.com', role: 'viewer', seen: '2026-11-09T16:40' },
+    { id: 'm6', name: '강지우', email: 'jiwoo.kang@example.com', role: 'viewer', seen: '', invited: true }
   ],
 
-  // ?state=no-permission — 나는 편집자, 팀 소유자는 라마바
+  // ?state=no-permission — 나는 편집자, 팀 소유자는 박도현
   noPermission: { roles: { m1: 'editor', m2: 'owner' } }
 };

@@ -214,7 +214,7 @@
               <section class="ds-section ce-block" id="memo" aria-labelledby="h-memo">
                 <h2 class="ds-section__title" id="h-memo">메모</h2>
                 <p class="ds-text-body-reading ce-memo" id="v-memo"></p>
-                <div class="ds-empty" id="memo-empty" hidden>
+                <div class="ds-empty ds-empty--inline" id="memo-empty" hidden>
                   <p class="ds-empty__title">아직 메모가 없어요</p>
                   <p class="ds-empty__text">응대할 때 알아 둘 내용을 남기면 팀이 함께 봐요.</p>
                   <div class="ds-empty__actions">
@@ -225,7 +225,7 @@
                 </div>
               </section>
 
-              <section class="ds-section ce-block" id="orders" aria-labelledby="h-orders">
+              <section class="ds-section ce-block" id="orders">
                 <div class="ds-section__head">
                   <h2 class="ds-section__title" id="h-orders">최근 주문</h2>
                   <p class="ce-meta" id="orders-desc"></p>
@@ -245,12 +245,9 @@
                     <tbody id="orders-body"></tbody>
                   </table>
                 </div>
-                <div class="ds-empty" id="orders-empty" hidden>
+                <div class="ds-empty ds-empty--inline" id="orders-empty" hidden>
                   <p class="ds-empty__title">아직 주문이 없어요</p>
-                  <p class="ds-empty__text">주문이 들어오면 최근 5건이 여기에 보여요.</p>
-                  <div class="ds-empty__actions">
-                    <a class="ds-btn" href="../order-table/index.html">주문 목록 열기</a>
-                  </div>
+                  <p class="ds-empty__text">주문은 고객이 직접 하거나 주문 화면에서 받아요. 주문이 들어오면 최근 5건이 여기에 보여요.</p>
                 </div>
               </section>
             </div>
@@ -264,37 +261,51 @@
           </div>
         </div>
 
-        <!-- 불러오는 중 — 실제 배치와 같은 모양 -->
+        <!-- 불러오는 중 — 실제 배치의 모든 칸(머리의 주 버튼 자리, 표 머리 행 포함)을 같은 부품·같은 줄 높이로 그린다 -->
         <div class="ce-skeleton" id="skeleton" aria-hidden="true" hidden>
-          <div class="ce-skeleton__head">
-            <span class="ds-skeleton ds-skeleton--title"></span>
-            <span class="ds-skeleton ds-skeleton--medium"></span>
+          <div class="ds-page__head">
+            <div class="ds-page__titles">
+              <span class="ds-skeleton ds-skeleton--title"></span>
+              <span class="ds-skeleton ds-skeleton--medium"></span>
+            </div>
+            <div class="ds-page__actions"><span class="ds-skeleton ce-skeleton__btn"></span></div>
           </div>
           <div class="ce-layout">
             <div class="ce-layout__grid">
               <div class="ce-main">
                 <div class="ds-section ce-block">
-                  <span class="ds-skeleton ds-skeleton--short"></span>
-                  <span class="ds-skeleton ds-skeleton--medium"></span>
-                  <span class="ds-skeleton ds-skeleton--medium"></span>
-                  <span class="ds-skeleton"></span>
-                  <span class="ds-skeleton ds-skeleton--short"></span>
+                  <span class="ds-skeleton ds-skeleton--short ce-sk-heading"></span>
+                  <ul class="ce-contact">
+                    <li><span class="ds-skeleton ds-skeleton--short"></span></li>
+                    <li><span class="ds-skeleton ds-skeleton--short"></span></li>
+                    <li><span class="ds-skeleton ds-skeleton--medium"></span></li>
+                  </ul>
+                  <dl class="ds-dl">
+                    <dt><span class="ds-skeleton ds-skeleton--medium"></span></dt><dd><span class="ds-skeleton ds-skeleton--short"></span></dd>
+                    <dt><span class="ds-skeleton ds-skeleton--medium"></span></dt><dd><span class="ds-skeleton ds-skeleton--short"></span></dd>
+                    <dt><span class="ds-skeleton ds-skeleton--medium"></span></dt><dd><span class="ds-skeleton ds-skeleton--short"></span></dd>
+                  </dl>
                 </div>
                 <div class="ds-section ce-block">
-                  <span class="ds-skeleton ds-skeleton--short"></span>
-                  <span class="ds-skeleton"></span>
-                  <span class="ds-skeleton ds-skeleton--medium"></span>
+                  <span class="ds-skeleton ds-skeleton--short ce-sk-heading"></span>
+                  <div>
+                    <span class="ds-skeleton ce-sk-reading"></span>
+                    <span class="ds-skeleton ds-skeleton--medium ce-sk-reading ce-sk-narrow"></span>
+                  </div>
                 </div>
                 <div class="ds-section ce-block">
-                  <span class="ds-skeleton ds-skeleton--short"></span>
-                  <div class="ds-table-wrap">
-                    <table class="ds-table">
+                  <div class="ds-section__head"><span class="ds-skeleton ds-skeleton--short ce-sk-heading"></span></div>
+                  <div class="ds-table-wrap ce-orders">
+                    <table class="ds-table ds-table--stack">
+                      <thead>
+                        <tr><th scope="col">주문 번호</th><th scope="col">주문일</th><th scope="col">상품</th><th scope="col" class="ds-num">금액</th><th scope="col">상태</th></tr>
+                      </thead>
                       <tbody>
-                        <tr class="ds-table__skeleton"><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
-                        <tr class="ds-table__skeleton"><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
-                        <tr class="ds-table__skeleton"><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
-                        <tr class="ds-table__skeleton"><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
-                        <tr class="ds-table__skeleton"><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
+                        <tr class="ds-table__skeleton"><td class="ds-table__primary"><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
+                        <tr class="ds-table__skeleton"><td class="ds-table__primary"><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
+                        <tr class="ds-table__skeleton"><td class="ds-table__primary"><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
+                        <tr class="ds-table__skeleton"><td class="ds-table__primary"><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
+                        <tr class="ds-table__skeleton"><td class="ds-table__primary"><span class="ds-skeleton"></span></td><td><span class="ds-skeleton"></span></td><td><span class="ds-skeleton ds-skeleton--medium"></span></td><td class="ds-num"><span class="ds-skeleton ds-skeleton--medium"></span></td><td><span class="ds-skeleton ds-skeleton--short"></span></td></tr>
                       </tbody>
                     </table>
                   </div>
@@ -302,11 +313,13 @@
               </div>
               <div class="ce-side">
                 <div class="ds-section ce-block">
-                  <span class="ds-skeleton ds-skeleton--short"></span>
-                  <span class="ds-skeleton"></span>
-                  <span class="ds-skeleton ds-skeleton--medium"></span>
-                  <span class="ds-skeleton"></span>
-                  <span class="ds-skeleton ds-skeleton--medium"></span>
+                  <span class="ds-skeleton ds-skeleton--short ce-sk-heading"></span>
+                  <ol class="ds-list ce-history">
+                    <li class="ds-list__row"><span class="ds-list__main"><span class="ds-skeleton ds-list__title ds-skeleton--medium"></span><span class="ds-skeleton ds-list__meta ds-skeleton--short"></span></span><span class="ds-skeleton ds-list__aside"></span></li>
+                    <li class="ds-list__row"><span class="ds-list__main"><span class="ds-skeleton ds-list__title ds-skeleton--medium"></span><span class="ds-skeleton ds-list__meta ds-skeleton--short"></span></span><span class="ds-skeleton ds-list__aside"></span></li>
+                    <li class="ds-list__row"><span class="ds-list__main"><span class="ds-skeleton ds-list__title ds-skeleton--medium"></span><span class="ds-skeleton ds-list__meta ds-skeleton--short"></span></span><span class="ds-skeleton ds-list__aside"></span></li>
+                    <li class="ds-list__row"><span class="ds-list__main"><span class="ds-skeleton ds-list__title ds-skeleton--medium"></span><span class="ds-skeleton ds-list__meta ds-skeleton--short"></span></span><span class="ds-skeleton ds-list__aside"></span></li>
+                  </ol>
                 </div>
               </div>
             </div>
@@ -324,7 +337,7 @@
         </section>
 
         <footer class="ce-footnote">
-          <p>이 화면의 고객·주문·팀은 가상의 샘플 데이터예요.</p>
+          <p class="ds-sample-note"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-info"></use></svg>이 화면의 고객·주문·팀은 가상의 샘플 데이터예요.</p>
         </footer>
       </div>
     </main>

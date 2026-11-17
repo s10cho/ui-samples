@@ -53,6 +53,7 @@
 /* 머리줄 */
 .ds-topbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--ds-space-2);
   min-height: var(--ds-size-topbar);
@@ -195,8 +196,8 @@
   border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
 }
 
-/* 넓은 폭(1024 이상) — 옆 메뉴를 늘 보인다 */
-@media (min-width: 1024px) {
+/* 넓은 폭(64rem = 기본 글자에서 1024 이상) — 옆 메뉴를 늘 보인다. 글자를 200% 로 키우면 서랍이 된다 */
+@media (min-width: 64rem) {
   .ds-app {
     grid-template-columns: var(--ds-size-sidebar) minmax(0, 1fr);
     grid-template-areas: "top top" "nav main";
@@ -205,8 +206,8 @@
   .ds-app__nav {
     grid-area: nav;
     position: sticky;
-    top: var(--ds-size-topbar);
-    height: calc(100dvh - var(--ds-size-topbar));
+    top: var(--ds-app-top, var(--ds-size-topbar));
+    height: calc(100dvh - var(--ds-app-top, var(--ds-size-topbar)));
   }
 
   .ds-topbar .ds-topbar__menu {
@@ -215,7 +216,7 @@
 }
 
 /* 좁은 폭(1023 이하) — 옆 메뉴는 머리줄 메뉴 버튼으로 여는 서랍이 된다. 메뉴 항목은 줄이지 않는다(CMP-NAV-11) */
-@media (max-width: 1023px) {
+@media (max-width: 63.9375rem) {
   .ds-app__nav {
     position: fixed;
     inset-block: 0;
@@ -249,8 +250,8 @@
   }
 }
 
-/* 옆 패널 — 1280 이상은 본문 옆에 붙고, 그보다 좁으면 오른쪽에서 덮는다 */
-@media (min-width: 1280px) {
+/* 옆 패널 — 80rem(기본 글자에서 1280) 이상은 본문 옆에 붙고, 그보다 좁으면 오른쪽에서 덮는다 */
+@media (min-width: 80rem) {
   .ds-app--panel {
     grid-template-columns: var(--ds-size-sidebar) minmax(0, 1fr) var(--ds-size-panel);
     grid-template-areas: "top top top" "nav main panel";
@@ -259,13 +260,13 @@
   .ds-app__panel {
     grid-area: panel;
     position: sticky;
-    top: var(--ds-size-topbar);
-    height: calc(100dvh - var(--ds-size-topbar));
+    top: var(--ds-app-top, var(--ds-size-topbar));
+    height: calc(100dvh - var(--ds-app-top, var(--ds-size-topbar)));
     border-inline-start: var(--ds-size-hairline) solid var(--ds-color-line-default);
   }
 }
 
-@media (max-width: 1279px) {
+@media (max-width: 79.9375rem) {
   .ds-app[data-panel-overlay] .ds-app__scrim {
     display: block;
     position: fixed;
@@ -276,13 +277,47 @@
 
   .ds-app__panel {
     position: fixed;
-    inset-block: var(--ds-size-topbar) 0;
+    inset-block: var(--ds-app-top, var(--ds-size-topbar)) 0;
     inset-inline-end: 0;
     z-index: var(--ds-z-panel);
     width: var(--ds-size-panel-overlay);
     border-inline-start: var(--ds-size-hairline) solid var(--ds-color-line-default);
     box-shadow: var(--ds-shadow-overlay);
   }
+}
+
+/* 옆 메뉴 없는 앱 틀(ds-app--bare) — 머리줄 + 본문(+ 옆 패널). 메뉴 버튼도 숨긴다 */
+.ds-app--bare .ds-topbar__menu {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .ds-app.ds-app--bare {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "top" "main";
+  }
+}
+
+@media (min-width: 80rem) {
+  .ds-app.ds-app--bare.ds-app--panel {
+    grid-template-columns: minmax(0, 1fr) var(--ds-size-panel);
+    grid-template-areas: "top top" "main panel";
+  }
+}
+
+/* 가상 데이터 안내 자리 — 머리줄·바닥줄에 "가상의 샘플 데이터예요" 같은 한 줄 */
+.ds-sample-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-text-caption-size);
+  line-height: var(--ds-text-caption-leading);
+}
+
+.ds-sample-note .ds-icon {
+  width: var(--ds-icon-size-sm);
+  height: var(--ds-icon-size-sm);
 }
 
 /* ───────── 2. 페이지 머리 · 묶음 · 경로 · 도구 줄 ───────── */
@@ -589,6 +624,7 @@
   display: flex;
   flex-direction: column;
   min-width: var(--ds-size-menu-min);
+  max-width: min(var(--ds-size-reading-max), calc(100vw - 2 * var(--ds-space-4)));
   padding: var(--ds-space-1);
   border: var(--ds-size-hairline) solid var(--ds-color-line-default);
   border-radius: var(--ds-container-radius);
@@ -616,7 +652,7 @@
   line-height: var(--ds-text-label-leading);
   text-align: start;
   text-decoration: none;
-  white-space: nowrap;
+  overflow-wrap: break-word;
 }
 
 .ds-menu__item:hover,
@@ -904,6 +940,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--ds-space-2);
+  min-inline-size: var(--ds-target-min);
   min-height: var(--ds-target-min);
   cursor: pointer;
 }
@@ -912,8 +949,8 @@
   position: absolute;
   inset-inline-start: 0;
   top: 50%;
-  width: var(--ds-size-switch-w);
-  height: var(--ds-size-switch-h);
+  width: max(var(--ds-size-switch-w), var(--ds-target-min));
+  height: max(var(--ds-size-switch-h), var(--ds-target-min));
   margin: 0;
   opacity: 0;
   transform: translateY(-50%);
@@ -977,9 +1014,11 @@
 
 /* 묶음 버튼 — 2~7개 중 하나를 바로 고른다(CMP-SEL-03). role="radiogroup" + role="radio" */
 .ds-segmented {
-  display: inline-flex;
+  display: inline-grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
   align-self: flex-start;
-  flex-wrap: wrap;
+  max-width: 100%;
   gap: var(--ds-space-0-5);
   padding: var(--ds-space-0-5);
   border: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
@@ -991,6 +1030,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   gap: var(--ds-space-1-5);
   min-width: var(--ds-target-min);
   min-height: var(--ds-control-height-sm);
@@ -1043,6 +1083,8 @@
 .ds-table-wrap--scroll {
   max-height: var(--ds-size-table-max);
   overscroll-behavior: contain;
+  /* 포커스를 옮겨 스크롤할 때 붙은 머리 행 아래로 숨지 않게(A11Y-WCAG-06) */
+  scroll-padding-block-start: calc(var(--ds-row-height) + var(--ds-size-hairline));
 }
 
 /* 페이지와 함께 스크롤하는 표 — 틀을 스크롤 영역으로 만들지 않아 머리가 머리줄 아래에 붙는다.
@@ -1052,7 +1094,12 @@
 }
 
 .ds-table-wrap--page .ds-table thead th {
-  top: var(--ds-size-topbar);
+  top: var(--ds-app-top, var(--ds-size-topbar));
+}
+
+/* 페이지 스크롤 표가 있으면 문서 스크롤 여백에 머리 행 높이도 더한다(A11Y-WCAG-06) */
+html:has(.ds-table-wrap--page) {
+  scroll-padding-top: calc(var(--ds-app-top, var(--ds-size-topbar)) + var(--ds-row-height) + var(--ds-space-2));
 }
 
 .ds-table {
@@ -1106,6 +1153,10 @@
   background: var(--ds-color-fill-accent-subtle);
 }
 
+.ds-table tbody tr:is(.is-selected, :has(> .ds-table__select input:checked)) .ds-badge--accent {
+  background: var(--ds-color-surface-default);
+}
+
 .ds-table .ds-num {
   text-align: end;
   white-space: nowrap;
@@ -1118,6 +1169,10 @@
 
 .ds-table__select {
   width: calc(var(--ds-target-min) + 2 * var(--ds-space-2));
+}
+
+.ds-table :is(th, td).ds-table__select {
+  padding-inline: max(var(--ds-space-3), calc((var(--ds-target-min) - var(--ds-size-check)) / 2 + var(--ds-space-0-5)));
 }
 
 /* 누르는 영역 넓히기 — 작은 체크박스를 label.ds-hit 로 감싼다. 보이는 상자는 16, 누르는 영역은 24(터치 44).
@@ -1211,23 +1266,34 @@ th[aria-sort="descending"] .ds-sort__up {
 
 .ds-table__skeleton > td .ds-skeleton {
   height: var(--ds-text-body-size);
+  margin-block: calc((var(--ds-text-body-size) * var(--ds-text-body-leading) - var(--ds-text-body-size)) / 2);
+}
+
+.ds-table__skeleton > td.ds-table__select .ds-skeleton {
+  width: var(--ds-size-check);
+  height: var(--ds-size-check);
 }
 
 .ds-table__skeleton > td.ds-num .ds-skeleton {
   margin-inline-start: auto;
 }
 
-/* 좁은 폭에서 행을 카드처럼 쌓는다 — 칸마다 data-label 에 열 이름을 둔다.
-   머리줄은 전체 고르기와 정렬 버튼만 남긴 띠가 된다(정렬하지 않는 열 이름은 숨긴다) */
-@media (max-width: 767px) {
+/* 좁은 폭에서 행을 카드처럼 쌓는다(767 이하, rem 기준).
+   - data-label 이 있는 칸: 왼쪽에 칸 이름, 오른쪽에 값이 한 덩어리로 흐른다(글과 요소가 섞여도 줄이 밀리지 않는다)
+   - data-label 이 없는 칸(제목 칸 등): 카드 너비를 다 쓴다
+   - 고르기 칸: 카드 왼쪽 위에 누르는 영역(24, 터치 44)만큼 자리를 두고 놓는다. 고르기 칸이 없으면 자리도 없다
+   - 머리줄: 전체 고르기와 정렬 버튼만 남긴 띠. 둘 다 없으면 화면에서 숨긴다(표 구조는 남는다)
+   - 스켈레톤 행: 실제 카드와 같은 격자(고르기 자리 + 칸 이름 자리 + 왼쪽 정렬 값) */
+@media (max-width: 47.9375rem) {
   .ds-table--stack,
   .ds-table--stack thead,
   .ds-table--stack tbody,
   .ds-table--stack tr,
-  .ds-table--stack td {
+  .ds-table--stack :is(td, tbody th) {
     display: block;
   }
 
+  /* 머리 띠 */
   .ds-table--stack thead tr {
     display: flex;
     flex-wrap: wrap;
@@ -1252,19 +1318,27 @@ th[aria-sort="descending"] .ds-sort__up {
     display: none;
   }
 
+  .ds-table--stack thead:not(:has(.ds-sort, .ds-table__select input)) {
+    position: absolute;
+    width: var(--ds-size-hairline);
+    height: var(--ds-size-hairline);
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
   .ds-table--stack thead th.ds-table__select {
     display: flex;
     align-items: center;
     min-height: var(--ds-target-min);
-    padding-inline-end: var(--ds-space-1);
-  }
-
-  .ds-table--stack td > * {
-    justify-self: start;
   }
 
   .ds-table--stack thead .ds-num .ds-sort {
     flex-direction: row;
+  }
+
+  /* 쌓으면 누르는 영역을 음수 여백 없이 온전히 놓는다 — 옆 정렬 버튼·제목 칸과 겹치지 않는다 */
+  .ds-table--stack .ds-table__select .ds-hit {
+    margin: 0;
   }
 
   /* 쌓은 표는 페이지와 함께 스크롤한다(작은 창 안에 가두지 않는다) */
@@ -1272,30 +1346,60 @@ th[aria-sort="descending"] .ds-sort__up {
     max-height: none;
   }
 
-  .ds-table--stack tr {
+  /* 카드 */
+  .ds-table--stack tbody tr {
     position: relative;
-    padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-3) var(--ds-space-10);
+    padding: var(--ds-space-3);
     border-block-end: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
+  }
+
+  .ds-table--stack tbody tr:has(> .ds-table__select) {
+    padding-inline-start: calc(var(--ds-space-1) + var(--ds-target-min) + var(--ds-space-2));
   }
 
   .ds-table--stack tbody tr:last-child {
     border-block-end: 0;
   }
 
-  .ds-table--stack td {
-    display: grid;
-    grid-template-columns: minmax(0, var(--ds-size-dl-key)) minmax(0, 1fr);
-    gap: var(--ds-space-2);
+  /* 마우스 올림·고른 카드 — 칸이 아니라 카드 전체를 칠한다 */
+  .ds-table--stack tbody tr:is(:hover, .is-hover) {
+    background: var(--ds-color-surface-subtle);
+  }
+
+  .ds-table--stack tbody tr:is(.is-selected, :has(> .ds-table__select input:checked)) {
+    background: var(--ds-color-fill-accent-subtle);
+  }
+
+  .ds-table--stack tbody tr:is(:hover, .is-hover, .is-selected, :has(> .ds-table__select input:checked)) > * {
+    background: transparent;
+  }
+
+  /* 칸 */
+  .ds-table--stack :is(td, tbody th) {
+    position: relative;
     height: auto;
     padding: var(--ds-space-0-5) 0;
     border: 0;
+    text-align: start;
   }
 
-  .ds-table--stack td[data-label]::before {
+  /* 칸 이름 열 — 글자를 키워 카드가 좁아져도 카드 너비의 40% 를 넘지 않는다 */
+  .ds-table--stack :is(td, tbody th)[data-label] {
+    padding-inline-start: calc(min(var(--ds-size-dl-key), 40%) + var(--ds-space-2));
+  }
+
+  /* 칸 이름 — 본문 굵기(제목 칸의 굵기를 물려받지 않는다) */
+  .ds-table--stack :is(td, tbody th)[data-label]::before {
     content: attr(data-label);
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: var(--ds-space-0-5);
+    width: min(var(--ds-size-dl-key), 40%);
     color: var(--ds-color-fg-muted);
     font-size: var(--ds-text-body-sm-size);
-    line-height: var(--ds-text-body-leading);
+    line-height: calc(var(--ds-text-body-size) * var(--ds-text-body-leading));
+    font-weight: var(--ds-text-body-weight);
+    overflow-wrap: break-word;
   }
 
   .ds-table--stack td.ds-num {
@@ -1304,28 +1408,59 @@ th[aria-sort="descending"] .ds-sort__up {
 
   .ds-table--stack td.ds-table__select {
     position: absolute;
-    inset-inline-start: var(--ds-space-3);
-    inset-block-start: var(--ds-space-3);
-    display: block;
+    inset-inline-start: var(--ds-space-1);
+    inset-block-start: max(0rem, calc(var(--ds-space-3) + (var(--ds-text-body-size) * var(--ds-text-body-leading) - var(--ds-target-min)) / 2));
     width: auto;
+    padding: 0;
   }
 
   .ds-table--stack td.ds-table__actions {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-start;
+    gap: var(--ds-space-2);
     width: auto;
-    padding-block-start: var(--ds-space-2);
+    padding-block: var(--ds-space-2) var(--ds-space-0-5);
   }
 
-  .ds-table--stack .ds-table__empty > td,
-  .ds-table--stack .ds-table__skeleton > td {
-    display: block;
+  .ds-table--stack .ds-table__empty > td {
+    padding: var(--ds-space-8) var(--ds-space-4);
+  }
+
+  /* 스켈레톤 카드 */
+  .ds-table--stack .ds-table__skeleton > td.ds-num .ds-skeleton {
+    margin-inline-start: 0;
+  }
+
+  .ds-table--stack .ds-table__skeleton > td.ds-table__select .ds-skeleton {
+    margin: calc((var(--ds-target-min) - var(--ds-size-check)) / 2);
+  }
+
+  .ds-table--stack .ds-table__skeleton > :is(td, th):not([data-label]):not(.ds-table__select):not(.ds-table__actions):not(.ds-table__primary) {
+    padding-inline-start: calc(min(var(--ds-size-dl-key), 40%) + var(--ds-space-2));
+  }
+
+  /* data-label 이 없는 스켈레톤 칸에도 칸 이름 자리 막대를 그린다(제목 칸 .ds-table__primary 는 빼고) */
+  .ds-table--stack .ds-table__skeleton > :is(td, th):not([data-label]):not(.ds-table__select):not(.ds-table__actions):not(.ds-table__primary)::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: calc(var(--ds-space-0-5) + (var(--ds-text-body-size) * var(--ds-text-body-leading) - var(--ds-text-body-sm-size)) / 2);
+    width: calc(min(var(--ds-size-dl-key), 40%) * 0.6);
+    height: var(--ds-text-body-sm-size);
+    border-radius: var(--ds-radius-xs);
+    background: var(--ds-color-surface-hover);
+  }
+
+  .ds-table--stack .ds-table__skeleton > td.ds-table__actions:empty {
+    min-height: calc(var(--ds-control-height-sm) + var(--ds-space-2) + var(--ds-space-0-5));
   }
 }
 
 /* ───────── 7. 탭 — 선택은 막대와 글자색으로. 고른 탭은 주소에 남긴다(CMP-NAV-12) ───────── */
 
 .ds-tabs {
+  position: relative;
   display: flex;
   gap: var(--ds-space-1);
   overflow-x: auto;
@@ -1337,7 +1472,9 @@ th[aria-sort="descending"] .ds-sort__up {
   display: inline-flex;
   flex: none;
   align-items: center;
+  justify-content: center;
   gap: var(--ds-space-1-5);
+  min-inline-size: var(--ds-target-min);
   min-height: var(--ds-control-height-lg);
   padding: var(--ds-space-1) var(--ds-space-3);
   border: 0;
@@ -1365,6 +1502,16 @@ th[aria-sort="descending"] .ds-sort__up {
 
 .ds-tab:focus-visible {
   outline-offset: calc(-1 * var(--ds-size-focus-ring));
+}
+
+/* 탭의 "저장 안 한 변경" 점 — 옆에 화면낭독기용 글(예: <span class="ds-sr-only">저장 안 한 변경 있음</span>)을 함께 둔다.
+   색은 fg-warning(밝은 바탕 7:1 이상). 테두리로 그려 고대비 모드에서도 남는다 */
+.ds-tab__dot {
+  flex: none;
+  width: 0;
+  height: 0;
+  border: var(--ds-space-1) solid var(--ds-color-fg-warning);
+  border-radius: var(--ds-radius-pill);
 }
 
 .ds-tabpanel {
@@ -1606,6 +1753,31 @@ th[aria-sort="descending"] .ds-sort__up {
   max-width: var(--ds-size-reading-max);
 }
 
+/* 불러오기 오류 — 결과 자리에 남긴다(문장 + 다시 불러오기). 닫을 수 있는 배너 하나에만 다시 불러오기를 두지 않는다 */
+.ds-empty--error .ds-empty__icon {
+  color: var(--ds-color-fg-danger);
+}
+
+/* 작은 빈 상태 — 묶음·카드 안. 제목이 묶음 제목보다 작다 */
+.ds-empty--inline {
+  gap: var(--ds-space-1);
+}
+
+.ds-empty--inline .ds-empty__icon {
+  width: var(--ds-icon-size-lg);
+  height: var(--ds-icon-size-lg);
+}
+
+.ds-empty--inline .ds-empty__title {
+  font-size: var(--ds-text-label-size);
+  line-height: var(--ds-text-label-leading);
+  font-weight: var(--ds-text-label-strong-weight);
+}
+
+.ds-empty--inline .ds-empty__actions {
+  margin-block-start: var(--ds-space-1);
+}
+
 .ds-empty--center {
   align-items: center;
   margin-inline: auto;
@@ -1722,6 +1894,7 @@ th[aria-sort="descending"] .ds-sort__up {
 }
 
 .ds-progress__bar {
+  display: block;
   width: var(--ds-progress, 0%);
   height: 100%;
   border-radius: inherit;
@@ -1769,11 +1942,11 @@ th[aria-sort="descending"] .ds-sort__up {
   color: var(--ds-color-fg-on-accent);
 }
 
-.ds-steps__item.is-done {
+.ds-steps__item:is(.is-done, [data-state="done"]) {
   color: var(--ds-color-fg-default);
 }
 
-.ds-steps__item.is-done .ds-steps__mark {
+.ds-steps__item:is(.is-done, [data-state="done"]) .ds-steps__mark {
   border-color: var(--ds-color-fill-accent);
   background: var(--ds-color-fill-accent-subtle);
   color: var(--ds-color-fg-accent);
@@ -1807,7 +1980,16 @@ th[aria-sort="descending"] .ds-sort__up {
 }
 
 .ds-card--flush > .ds-card__head {
-  padding: var(--ds-space-3) var(--ds-space-4) 0;
+  padding: var(--ds-space-4) var(--ds-space-4) 0;
+}
+
+/* 위험 구역 카드 — 되돌리기 어려운 동작(삭제·초기화)을 모은다 */
+.ds-card--danger {
+  border-color: var(--ds-color-line-danger);
+}
+
+.ds-card--danger .ds-card__title {
+  color: var(--ds-color-fg-danger);
 }
 
 .ds-card__title {
@@ -1961,7 +2143,7 @@ button.ds-list__row {
   min-width: 0;
 }
 
-@media (max-width: 479px) {
+@media (max-width: 29.9375rem) {
   .ds-dl {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
@@ -2130,7 +2312,7 @@ button.ds-list__row {
 }
 
 /* 아주 좁은 폭 — 앞·뒤 버튼과 "3 / 13쪽"만 남긴다 */
-@media (max-width: 479px) {
+@media (max-width: 29.9375rem) {
   .ds-pagination__list > li:not(.ds-pagination__edge) {
     display: none;
   }
@@ -2182,7 +2364,10 @@ button.ds-list__row {
   .ds-btn:is(:disabled, [aria-disabled="true"]):not([aria-busy="true"]),
   .ds-chip:is(:disabled, [aria-disabled="true"]),
   .ds-pagination__page:is(:disabled, [aria-disabled="true"], .is-disabled),
-  .ds-segmented__item:is(:disabled, [aria-disabled="true"]) {
+  .ds-segmented__item:is(:disabled, [aria-disabled="true"]),
+  .ds-input:disabled,
+  .ds-select > select:disabled,
+  .ds-textarea:disabled {
     border-color: GrayText;
     color: GrayText;
   }
@@ -2240,9 +2425,35 @@ button.ds-list__row {
   .ds-skeleton {
     border: var(--ds-size-hairline) solid GrayText;
   }
+
+  /* 아이콘 색 규칙(.ds-banner--danger .ds-banner__icon 등)과 같은 특이도로, 뒤에 두어 이긴다 */
+  .ds-banner .ds-banner__icon,
+  .ds-empty .ds-empty__icon {
+    color: CanvasText;
+  }
+
+  /* 오류 입력은 보통 입력과 다르게 — 두꺼운 점선 */
+  .ds-input[aria-invalid="true"],
+  .ds-select > select[aria-invalid="true"],
+  .ds-textarea[aria-invalid="true"] {
+    border-width: var(--ds-size-border-strong);
+    border-style: dashed;
+  }
 }
 
-/* hidden 속성은 위의 display 값보다 이긴다. 샘플 CSS 도 이 줄 뒤에서 display 를 덮어쓰지 않는다 */
+/* 고대비 + 쌓은 표 — 고른 카드는 카드 둘레로 */
+@media (forced-colors: active) and (max-width: 47.9375rem) {
+  .ds-table--stack tbody tr:is(.is-selected, :has(> .ds-table__select input:checked)) {
+    outline: var(--ds-size-border-strong) solid Highlight;
+    outline-offset: calc(-1 * var(--ds-size-border-strong));
+  }
+
+  .ds-table--stack tbody tr:is(.is-selected, :has(> .ds-table__select input:checked)) > * {
+    border-block: 0;
+  }
+}
+
+/* hidden 속성 — base.css 의 높은 특이도 규칙이 샘플 CSS 까지 이긴다. 이 줄은 kit 안 순서를 위한 보조다 */
 [hidden],
 .ds-table tr[hidden] {
   display: none;

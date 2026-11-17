@@ -169,9 +169,9 @@
             <span class="ds-toolbar__spacer"></span>
             <div class="ot-bulk" id="bulk" role="group" aria-label="고른 주문 처리">
               <span class="ot-picked" id="picked" hidden></span>
-              <button class="ds-btn ds-btn--ghost" type="button" id="btn-unselect" hidden>고르기 풀기</button>
-              <button class="ds-btn ds-btn--primary" type="button" id="btn-ship" aria-disabled="true" data-ds-tip="주문을 먼저 골라 주세요" data-busy-label="처리 중…">배송 처리…</button>
-              <button class="ds-btn" type="button" id="btn-cancel" aria-disabled="true" data-ds-tip="주문을 먼저 골라 주세요" data-busy-label="처리 중…">주문 취소…</button>
+              <button class="ds-btn ds-btn--ghost ot-bulk__unselect" type="button" id="btn-unselect" hidden>고르기 풀기</button>
+              <button class="ds-btn ds-btn--primary ot-bulk__ship" type="button" id="btn-ship" aria-disabled="true" data-ds-tip="주문을 먼저 골라 주세요" data-busy-label="처리 중…">배송 처리…</button>
+              <button class="ds-btn ot-bulk__cancel" type="button" id="btn-cancel" aria-disabled="true" data-ds-tip="주문을 먼저 골라 주세요" data-busy-label="처리 중…">주문 취소…</button>
             </div>
             <div class="ot-colpick" id="colpick">
               <button class="ds-btn" type="button" id="btn-cols" aria-expanded="false" aria-controls="col-menu">
@@ -194,7 +194,7 @@
             </div>
           </div>
 
-          <div class="ds-table-wrap ds-table-wrap--scroll" id="table-wrap" role="region" aria-label="주문 목록 표" tabindex="0">
+          <div class="ds-table-wrap ds-table-wrap--scroll ot-wrap" id="table-wrap" role="region" aria-label="주문 목록 표" tabindex="0">
             <table class="ds-table ds-table--stack ot-table" id="orders" data-url-key="sort">
               <caption class="ds-sr-only">주문 목록</caption>
               <thead>
@@ -222,7 +222,7 @@
         </section>
 
         <footer class="ot-foot">
-          <p>가상의 샘플 데이터예요. 새로고침하면 처리한 내용이 처음으로 돌아가요.</p>
+          <p class="ds-sample-note"><svg class="ds-icon" aria-hidden="true"><use href="#ds-i-info"></use></svg>가상의 샘플 데이터예요. 새로고침하면 처리한 내용이 처음으로 돌아가요.</p>
         </footer>
       </div>
     </main>

@@ -38,10 +38,9 @@
         "부품마다 기본·포커스·비활성·오류·로딩 상태와 어두운 화면을 볼 수 있습니다."
       ],
       "switch": "밝게 ↔ 어둡게",
-      "score": "",
+      "score": "88.25",
       "spec": "docs/ui/design-system.md",
-      "report": "docs/ui/review/design-system/20261117-report.md",
-      "draft": true
+      "report": "docs/ui/review/design-system/20261117-report.md"
     },
     {
       "slug": "support-inbox",
@@ -54,10 +53,9 @@
         "상태·담당자로 거르고, 빠른 답변을 골라 보낼 수 있습니다."
       ],
       "switch": "목록 ↔ 대화(좁은 폭)",
-      "score": "",
+      "score": "93.75",
       "spec": "docs/ui/support-inbox.md",
-      "report": "docs/ui/review/support-inbox/20261117-report.md",
-      "draft": true
+      "report": "docs/ui/review/support-inbox/20261117-report.md"
     },
     {
       "slug": "order-table",
@@ -70,10 +68,9 @@
         "좁은 폭에서는 표가 카드로 바뀝니다."
       ],
       "switch": "표 ↔ 카드(폭)",
-      "score": "",
+      "score": "94.5",
       "spec": "docs/ui/order-table.md",
-      "report": "docs/ui/review/order-table/20261117-report.md",
-      "draft": true
+      "report": "docs/ui/review/order-table/20261117-report.md"
     },
     {
       "slug": "customer-edit",
@@ -86,10 +83,9 @@
         "입력 검증, 저장 중·저장됨·실패, 변경 버리기 확인을 다룹니다."
       ],
       "switch": "보기 ↔ 편집",
-      "score": "",
+      "score": "85.75",
       "spec": "docs/ui/customer-edit.md",
-      "report": "docs/ui/review/customer-edit/20261117-report.md",
-      "draft": true
+      "report": "docs/ui/review/customer-edit/20261117-report.md"
     },
     {
       "slug": "settings",
@@ -102,10 +98,9 @@
         "저장하지 않은 변경 알림과 위험 구역 확인 대화상자가 있습니다."
       ],
       "switch": "탭 4개",
-      "score": "",
+      "score": "90.75",
       "spec": "docs/ui/settings.md",
-      "report": "docs/ui/review/settings/20261117-report.md",
-      "draft": true
+      "report": "docs/ui/review/settings/20261117-report.md"
     },
     {
       "slug": "ops-dashboard",
@@ -118,10 +113,9 @@
         "기간을 바꾸고, 그래프마다 표로도 볼 수 있습니다."
       ],
       "switch": "그래프 ↔ 표",
-      "score": "",
+      "score": "90",
       "spec": "docs/ui/ops-dashboard.md",
-      "report": "docs/ui/review/ops-dashboard/20261117-report.md",
-      "draft": true
+      "report": "docs/ui/review/ops-dashboard/20261117-report.md"
     },
     {
       "slug": "booking-flow",
@@ -134,10 +128,9 @@
         "뒤로 가도 입력이 남고, 단계가 주소에 남습니다."
       ],
       "switch": "단계 4개",
-      "score": "",
+      "score": "88.25",
       "spec": "docs/ui/booking-flow.md",
-      "report": "docs/ui/review/booking-flow/20261117-report.md",
-      "draft": true
+      "report": "docs/ui/review/booking-flow/20261117-report.md"
     },
     {
       "slug": "island-park",

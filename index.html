@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>UI 샘플</title>
-  <meta name="description" content="정적 웹 페이지로 만든 화면 샘플 모음입니다. 3D 장면 6개, 2D 그림판 3개가 있습니다.">
+  <meta name="description" content="정적 웹 페이지로 만든 화면 샘플 모음입니다. 업무 화면 7개, 3D 장면 6개, 2D 그림판 3개가 있습니다.">
   <link rel="icon" href="data:,">
   <style>
     :root {
@@ -167,6 +167,147 @@
       <h1>UI 샘플</h1>
       <p><span>정적 웹 페이지로 만든 화면 샘플을 모았습니다. 서버 없이 브라우저에서 바로 열립니다.</span><span>모든 샘플은 화면 폭에 맞춰 바뀝니다. 그림에 마우스를 올리면 다른 상태가 보입니다.</span></p>
     </header>
+    <section class="group" aria-labelledby="group-app">
+      <div class="group__head">
+        <h2 id="group-app">업무 화면</h2>
+        <p>목록·상세·폼·대시보드처럼 실제 서비스에서 쓰는 화면입니다. 공용 디자인 시스템(DESIGN.md) 위에서 만들었습니다.</p>
+      </div>
+      <ol class="samples">
+        <li class="sample">
+          <a class="sample__thumb" href="design-system/" tabindex="-1" aria-hidden="true">
+            <img src="assets/design-system-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/design-system-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">부품 모음 — 디자인 시스템</h3>
+            <p class="sample__desc"><span>업무 화면 샘플이 함께 쓰는 버튼·입력·표·탭·대화상자 같은 부품을 한 화면에 모았습니다.</span><span>부품마다 기본·포커스·비활성·오류·로딩 상태와 어두운 화면을 볼 수 있습니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>밝게 ↔ 어둡게</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/design-system/docs/ui/review/design-system/20261117-report.md">독립 검수 88.25점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="design-system/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/design-system">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/design-system/docs/ui/design-system.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="support-inbox/" tabindex="-1" aria-hidden="true">
+            <img src="assets/support-inbox-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/support-inbox-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">상담 인박스</h3>
+            <p class="sample__desc"><span>고객 대화 목록과 대화창, 고객 정보를 한 화면에서 다룹니다.</span><span>상태·담당자로 거르고, 빠른 답변을 골라 보낼 수 있습니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>목록 ↔ 대화(좁은 폭)</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/support-inbox/docs/ui/review/support-inbox/20261117-report.md">독립 검수 93.75점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="support-inbox/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/support-inbox">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/support-inbox/docs/ui/support-inbox.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="order-table/" tabindex="-1" aria-hidden="true">
+            <img src="assets/order-table-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/order-table-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">주문 목록</h3>
+            <p class="sample__desc"><span>주문을 정렬·필터·검색하고, 여러 건을 골라 한꺼번에 처리합니다.</span><span>좁은 폭에서는 표가 카드로 바뀝니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>표 ↔ 카드(폭)</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/order-table/docs/ui/review/order-table/20261117-report.md">독립 검수 94.5점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="order-table/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/order-table">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/order-table/docs/ui/order-table.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="customer-edit/" tabindex="-1" aria-hidden="true">
+            <img src="assets/customer-edit-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/customer-edit-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">고객 상세와 편집</h3>
+            <p class="sample__desc"><span>고객 정보를 보고 편집 모드에서 고칩니다.</span><span>입력 검증, 저장 중·저장됨·실패, 변경 버리기 확인을 다룹니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>보기 ↔ 편집</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/customer-edit/docs/ui/review/customer-edit/20261117-report.md">독립 검수 85.75점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="customer-edit/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/customer-edit">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/customer-edit/docs/ui/customer-edit.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="settings/" tabindex="-1" aria-hidden="true">
+            <img src="assets/settings-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/settings-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">설정</h3>
+            <p class="sample__desc"><span>계정·알림·보안·팀 설정을 탭으로 나눴습니다.</span><span>저장하지 않은 변경 알림과 위험 구역 확인 대화상자가 있습니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>탭 4개</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/settings/docs/ui/review/settings/20261117-report.md">독립 검수 90.75점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="settings/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/settings">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/settings/docs/ui/settings.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="ops-dashboard/" tabindex="-1" aria-hidden="true">
+            <img src="assets/ops-dashboard-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/ops-dashboard-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">운영 대시보드</h3>
+            <p class="sample__desc"><span>지표 카드와 추세 그래프, 알림 목록을 보여 줍니다.</span><span>기간을 바꾸고, 그래프마다 표로도 볼 수 있습니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>그래프 ↔ 표</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/ops-dashboard/docs/ui/review/ops-dashboard/20261117-report.md">독립 검수 90점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="ops-dashboard/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/ops-dashboard">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/ops-dashboard/docs/ui/ops-dashboard.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+        <li class="sample">
+          <a class="sample__thumb" href="booking-flow/" tabindex="-1" aria-hidden="true">
+            <img src="assets/booking-flow-day.webp" width="960" height="600" alt="" loading="lazy">
+            <img class="is-alt" src="assets/booking-flow-night.webp" width="960" height="600" alt="" loading="lazy">
+          </a>
+          <div class="sample__body">
+            <h3 class="sample__name">예약 흐름</h3>
+            <p class="sample__desc"><span>날짜·시간 고르기부터 정보 입력, 확인, 완료까지 여러 단계로 예약합니다.</span><span>뒤로 가도 입력이 남고, 단계가 주소에 남습니다.</span></p>
+            <dl class="facts">
+              <div><dt>전환</dt><dd>단계 4개</dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/booking-flow/docs/ui/review/booking-flow/20261117-report.md">독립 검수 88.25점 · 합격</a></dd></div>
+            </dl>
+            <div class="actions">
+              <a class="btn" href="booking-flow/">샘플 열기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/booking-flow">코드 보기</a>
+              <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/booking-flow/docs/ui/booking-flow.md">화면 설계서</a>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </section>
     <section class="group" aria-labelledby="group-3d">
       <div class="group__head">
         <h2 id="group-3d">3D 장면</h2>

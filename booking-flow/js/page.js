@@ -14,10 +14,10 @@
 
   var STORE_DRAFT = 'booking-flow:draft';
   var STORE_DONE = 'booking-flow:done';
-  var LOAD_MS = 700;    // 예약 현황 받기 흉내
+  var LOAD_MS = 1200;   // 예약 현황 받기 흉내 — 스켈레톤을 보이려면 1초를 넘긴다(STA-01, DESIGN.md 「샘플 데이터」)
   var SUBMIT_MS = 1500; // 예약 확정 흉내
 
-  var TITLES = ['', '공간과 시간 고르기', '예약자 정보 입력', '예약 내용 확인', '예약을 마쳤어요'];
+  var TITLES = ['', '공간과 시간 고르기', '예약자 정보 입력', '예약 내용 확인', '예약을 확정했어요'];
   var NEXT_LABEL = ['', '예약자 정보 입력하기', '예약 내용 확인하기'];
   var WEEK = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
   var WEEK_SHORT = ['일', '월', '화', '수', '목', '금', '토'];
@@ -27,7 +27,6 @@
     loading: '예약 현황을 불러오는 중이에요',
     loadErrTitle: '예약 현황을 불러오지 못했어요',
     loadErrText: '연결이 잠시 끊겼어요. 다시 불러오면 날짜와 시간을 고를 수 있어요.',
-    reload: '다시 불러오기',
     failTitle: '고른 시간이 방금 마감됐어요',
     failText: '다른 분이 먼저 예약했어요. 다른 시간을 골라도 나머지 입력은 그대로 남아요.',
     pickOther: '다른 시간 고르기',
@@ -43,7 +42,9 @@
     monthDay: '{m}월 {d}일',
     slotBooked: '예약됨',
     slotPast: '지난 시간',
+    slotOverlap: '예약과 겹침',
     pickDateFirst: '날짜를 고르면 시작 시간이 보여요.',
+    slotWait: '예약 현황을 불러오면 시작 시간이 보여요.',
     fullTitle: '{d}은 예약이 다 찼어요',
     fullText: '가장 가까운 빈 날로 옮길 수 있어요.',
     fullAction: '가장 가까운 빈 날 고르기',
@@ -149,12 +150,14 @@
     var booked = bookedList(spaceId, k);
     var past = false;
     var taken = false;
+    var overlap = false;
     for (var i = h; i < h + dur; i++) {
       var s = hourState(k, i, booked);
       if (s === 'past') past = true;
-      else if (s === 'booked') taken = true;
+      else if (s === 'booked') { if (i === h) taken = true; else overlap = true; }
     }
-    return past ? 'past' : taken ? 'booked' : 'free';
+    // 지난 시간 · 시작 시가 예약됨 · 시작은 비었지만 이용 시간 안에 예약이 있음
+    return past ? 'past' : taken ? 'booked' : overlap ? 'overlap' : 'free';
   }
 
   function startOptions(spaceId, k, dur) {
@@ -331,7 +334,8 @@
       var isDone = n < ui.step;
       if (n === ui.step) li.setAttribute('aria-current', 'step');
       else li.removeAttribute('aria-current');
-      li.classList.toggle('is-done', isDone);
+      if (isDone) li.setAttribute('data-state', 'done');
+      else li.removeAttribute('data-state');
       mark.innerHTML = isDone ? DS.icon('check', 'ds-icon--sm') : String(n);
       $('.bf-steps__done', li).textContent = isDone ? COPY.done : '';
     });
@@ -449,7 +453,11 @@
 
   function renderWhen() {
     var busy = !ui.loaded && !ui.loadFailed;
-    $('#grp-when').setAttribute('aria-busy', busy ? 'true' : 'false');
+    var when = $('#grp-when');
+    when.setAttribute('aria-busy', busy ? 'true' : 'false');
+    // 스켈레톤은 0.3초가 지나야 보인다(STA-02). 그 전에는 같은 자리만 잡는다
+    if (busy && ui.skeleton) when.setAttribute('data-skeleton', '');
+    else when.removeAttribute('data-skeleton');
     renderCalendar();
     renderSlots();
   }
@@ -459,12 +467,16 @@
     var inView = function (k) { return k && k.slice(0, 7) === v; };
     if (inView(ui.calFocus)) return ui.calFocus;
     if (inView(draft.date)) return draft.date;
-    if (inView(todayKey)) return todayKey;
-    return v + '-01';
+    // 고른 날이 없으면 이 달의 첫 고를 수 있는 날 — 고를 수 없는 오늘로 포커스를 보내지 않는다
+    var days = new Date(ui.view.getFullYear(), ui.view.getMonth() + 1, 0).getDate();
+    for (var d = 1; d <= days; d++) {
+      var k = v + '-' + pad(d);
+      if (k >= todayKey && dayStatus(draft.space, k) === 'ok') return k;
+    }
+    return inView(todayKey) ? todayKey : v + '-01';
   }
 
   function renderCalendar() {
-    var grid = $('#cal-grid');
     var body = $('#cal-body');
     var prev = $('#cal-prev');
     var next = $('#cal-next');
@@ -472,55 +484,68 @@
     $('#cal-month').textContent = monthLabel(ui.view);
     $('#cal-note').hidden = true;
 
-    if (!ui.loaded) {
-      grid.hidden = true;
-      $('#cal-legend').hidden = true;
-      $('#cal-wait').hidden = !ui.loadFailed;
-      var skel = $('#cal-skeleton');
-      skel.hidden = !ui.skeleton;
-      if (ui.skeleton && !skel.firstChild) skel.innerHTML = new Array(36).join('<span class="ds-skeleton"></span>');
-      [prev, next].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); });
-      return;
-    }
-
-    grid.hidden = false;
-    $('#cal-skeleton').hidden = true;
-    $('#cal-wait').hidden = true;
-    $('#cal-legend').hidden = false;
-
     var y = ui.view.getFullYear();
     var m = ui.view.getMonth();
     var days = new Date(y, m + 1, 0).getDate();
     var offset = new Date(y, m, 1).getDay();
+
+    var sheet = $('#cal-sheet');
+    if (!ui.loaded) {
+      [prev, next].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); });
+      // 받는 동안 — 실제 달력과 같은 표·같은 칸 높이의 스켈레톤(CMP-FB-09). 0.3초 전에는 자리만 잡고 보이지 않는다.
+      // 불러오기 오류 — 같은 표·범례 자리는 보이지 않게 남기고 그 위에 오류 상태를 겹친다(자리 높이가 같다)
+      body.innerHTML = rows(offset, days, function () {
+        return '<td><span class="ds-skeleton bf-skel bf-cal__skel" aria-hidden="true"></span></td>';
+      });
+      setSheetOff(sheet, ui.loadFailed);
+      $('#cal-error').hidden = !ui.loadFailed;
+      return;
+    }
+
+    $('#cal-error').hidden = true;
+    setSheetOff(sheet, false);
+
     var focusKey = pickFocusKey();
-    var cells = [];
-    var i;
-    for (i = 0; i < offset; i++) cells.push('<td></td>');
-    for (var d = 1; d <= days; d++) {
+    DS.tooltip.hide();
+    body.innerHTML = rows(offset, days, function (d) {
       var k = y + '-' + pad(m + 1) + '-' + pad(d);
       var status = dayStatus(draft.space, k);
       var reason = reasonOf(status);
       // 이름은 보이는 숫자를 그대로 품게 글로 만든다 — "11월 [20]일 금요일, 예약이 다 찼어요"(WCAG 2.5.3)
       var tail = '일 ' + WEEK[(offset + d - 1) % 7] + (k === todayKey && status !== 'today' ? ', ' + COPY.today : '') + (reason ? ', ' + reason : '');
       var label = (m + 1) + '월 ' + d + tail;
-      cells.push('<td><button class="bf-cal__day" type="button" data-date="' + k + '"' +
+      return '<td><button class="bf-cal__day" type="button" data-date="' + k + '"' +
         ' tabindex="' + (k === focusKey ? '0' : '-1') + '"' +
         ' aria-pressed="' + (k === draft.date ? 'true' : 'false') + '"' +
         (k === todayKey ? ' aria-current="date"' : '') +
         (reason ? ' aria-disabled="true" data-status="' + status + '" data-ds-tip="' + esc(label) + '"' : '') +
-        '><span class="ds-sr-only">' + (m + 1) + '월 </span>' + d + '<span class="ds-sr-only">' + esc(tail) + '</span></button></td>');
-    }
-    while (cells.length % 7) cells.push('<td></td>');
-    var html = '';
-    for (i = 0; i < cells.length; i += 7) html += '<tr>' + cells.slice(i, i + 7).join('') + '</tr>';
-    DS.tooltip.hide();
-    body.innerHTML = html;
+        '><span class="ds-sr-only">' + (m + 1) + '월 </span>' + d + '<span class="ds-sr-only">' + esc(tail) + '</span></button></td>';
+    });
 
     var atFirst = ui.view.getTime() <= firstMonth.getTime();
     var atLast = ui.view.getTime() >= lastMonth.getTime();
     setNavOff(prev, atFirst, COPY.prevMonth, COPY.prevOff);
     setNavOff(next, atLast, COPY.nextMonth, COPY.nextOff);
     if (hadFocus) focusDay(focusKey);
+  }
+
+  /** 달력 몸통 — 빈칸 + 날짜 칸(cell(d)) 을 7칸씩 줄로 묶는다. 로딩 스켈레톤과 실제 달력이 같은 줄 수를 쓴다 */
+  function rows(offset, days, cell) {
+    var cells = [];
+    var i;
+    for (i = 0; i < offset; i++) cells.push('<td></td>');
+    for (var d = 1; d <= days; d++) cells.push(cell(d));
+    while (cells.length % 7) cells.push('<td></td>');
+    var html = '';
+    for (i = 0; i < cells.length; i += 7) html += '<tr>' + cells.slice(i, i + 7).join('') + '</tr>';
+    return html;
+  }
+
+  function setSheetOff(sheet, off) {
+    sheet.classList.toggle('bf-cal__sheet--off', off);
+    sheet.inert = off;
+    if (off) sheet.setAttribute('aria-hidden', 'true');
+    else sheet.removeAttribute('aria-hidden');
   }
 
   function setNavOff(btn, off, label, reason) {
@@ -594,11 +619,28 @@
     return '<p class="bf-note">' + (icon ? DS.icon('info') : '') + '<span>' + esc(text) + '</span></p>';
   }
 
+  /** 이 이용 시간의 시작 시간 타일 수만큼 칸을 만든다(스켈레톤·자리 잡기 공용) */
+  function slotCells(cls) {
+    return new Array(D.close - D.open - draft.dur + 2).join('<span class="' + cls + '"></span>');
+  }
+
+  /**
+   * 날짜가 있을 때의 결과 자리(마감·이어진 시간 없음) — 내용 높이만큼만 둔다.
+   * 결과에 따라 시작 시간 자리가 스켈레톤보다 줄어든다(설계서 상태 표의 2회차 결정)
+   */
+  function slotFrame(inner) {
+    // 결과가 마감·이어진 시간 없음이면 내용 높이만큼만 둔다. 타일 격자 높이로 채우면 글자 200% 에서 빈 상자가 1.5화면 남는다(2회차 지적)
+    return '<div class="bf-slot-over">' + inner + '</div>';
+  }
+
   function renderSlots() {
     var area = $('#slot-area');
     if (!ui.loaded) {
-      if (ui.skeleton) area.innerHTML = '<div class="bf-slot-skeleton" aria-hidden="true">' + new Array(7).join('<span class="ds-skeleton"></span>') + '</div>';
-      else area.innerHTML = ''; // 불러오기 실패 안내는 날짜 자리에 한 번만 둔다
+      // 불러오기 오류 — 오류 상태는 날짜 자리에 한 번만 두고, 여기에는 무엇이 언제 보이는지만 적는다
+      if (ui.loadFailed) { area.innerHTML = slotNote(COPY.slotWait); return; }
+      // 받는 동안 — 날짜가 없으면 받은 뒤와 같은 안내 글(데이터가 아니다), 있으면 타일 수만큼 스켈레톤
+      if (!draft.date) area.innerHTML = slotNote(COPY.pickDateFirst);
+      else area.innerHTML = '<div class="bf-options bf-options--slot" aria-hidden="true">' + slotCells('ds-skeleton bf-skel bf-slot-skel') + '</div>';
       return;
     }
     if (!draft.date) { area.innerHTML = slotNote(COPY.pickDateFirst); return; }
@@ -606,9 +648,9 @@
     var status = dayStatus(draft.space, draft.date);
     if (status !== 'ok') {
       var title = status === 'today' ? COPY.reasonToday : fill(COPY.fullTitle, { d: monthDay(draft.date) });
-      area.innerHTML = '<div class="bf-slot-empty"><div class="ds-empty">' + DS.icon('calendar', 'ds-empty__icon') +
+      area.innerHTML = slotFrame('<div class="bf-state-box"><div class="ds-empty">' + DS.icon('calendar', 'ds-empty__icon') +
         '<p class="ds-empty__title">' + esc(title) + '</p><p class="ds-empty__text">' + esc(COPY.fullText) + '</p>' +
-        '<div class="ds-empty__actions"><button class="ds-btn" type="button" id="nearest">' + esc(COPY.fullAction) + '</button></div></div></div>';
+        '<div class="ds-empty__actions"><button class="ds-btn" type="button" id="nearest">' + esc(COPY.fullAction) + '</button></div></div></div>');
       return;
     }
 
@@ -617,7 +659,7 @@
     if (ui.startCleared) html += slotNote(COPY.startCleared, true).replace('<p class="bf-note"', '<p class="bf-note" id="start-cleared"');
     if (ui.taken && ui.taken.space === draft.space && ui.taken.date === draft.date) html += slotNote(COPY.takenNote + ui.taken.label, true);
     if (!opts.some(function (o) { return o.state === 'free'; })) {
-      area.innerHTML = html + slotNote(fill(COPY.noFit, { n: draft.dur }));
+      area.innerHTML = html + slotFrame(slotNote(fill(COPY.noFit, { n: draft.dur })));
       return;
     }
     html += '<div class="bf-options bf-options--slot">' + opts.map(function (o) {
@@ -626,7 +668,7 @@
       return '<label class="bf-option bf-option--slot"><input class="bf-option__input" type="radio" name="start" value="' + o.h + '"' +
         (checked ? ' checked' : '') + (off ? ' disabled' : '') + '>' +
         '<span class="bf-option__body"><span class="bf-option__title ds-num">' + hhmm(o.h) + '</span>' +
-        (off ? '<span class="bf-option__meta">' + (o.state === 'past' ? COPY.slotPast : COPY.slotBooked) + '</span>' : '') +
+        (off ? '<span class="bf-option__meta">' + (o.state === 'past' ? COPY.slotPast : o.state === 'overlap' ? COPY.slotOverlap : COPY.slotBooked) + '</span>' : '') +
         '</span>' + DS.icon('check', 'bf-option__check') + '</label>';
     }).join('') + '</div>';
     area.innerHTML = html;
@@ -696,7 +738,9 @@
     });
 
     $('#cal-body').addEventListener('click', function (e) {
-      var btn = e.target.closest('.bf-cal__day');
+      // 칸(td)의 둥근 모서리 바깥을 눌러도 그 날짜로 친다 — 누름 영역 = 칸 전체(SPC-07)
+      var cell = e.target.closest('td');
+      var btn = e.target.closest('.bf-cal__day') || (cell && $('.bf-cal__day', cell));
       if (!btn) return;
       var k = btn.getAttribute('data-date');
       ui.calFocus = k;
@@ -735,6 +779,11 @@
     });
 
     $('#cal-prev').addEventListener('click', function () { changeMonth(-1); });
+    $('#reload').addEventListener('click', function () {
+      ui.loadFailed = false;
+      startLoad();
+      focusTarget($('#grp-date')); // 누른 버튼이 사라지므로 날짜 묶음으로 포커스를 옮긴다
+    });
     $('#cal-next').addEventListener('click', function () { changeMonth(1); });
 
     $('#dur').addEventListener('ds:change', function (e) {
@@ -872,6 +921,13 @@
 
     $('#form-2').addEventListener('submit', function (e) {
       e.preventDefault();
+      // 휴대전화 칸에서 Enter 로 바로 보내도 칸을 떠날 때처럼 010-0000-0000 꼴로 맞춘다
+      var phone = $('#f-phone');
+      if (!fieldError('phone')) {
+        phone.value = formatPhone(phone.value);
+        draft.phone = phone.value;
+        save();
+      }
       if (!checkStep2(true)) return;
       go(3, { push: true });
     });
@@ -921,7 +977,6 @@
       focusNext: '#h-step-3',
       actions: [{
         label: COPY.pickOther,
-        primary: true,
         onClick: function () {
           draft.start = null;
           ui.startCleared = false;
@@ -1056,15 +1111,9 @@
 
   /* ---------- 예약 현황 받기(흉내) ---------- */
 
+  // 불러오기 오류는 닫히는 배너가 아니라 날짜 자리에 남긴다(ds-empty--error, DESIGN.md)
   function showLoadError() {
-    DS.banner.show({
-      id: 'bf-load',
-      tone: 'danger',
-      title: COPY.loadErrTitle,
-      text: COPY.loadErrText,
-      focusNext: '#h-step-1',
-      actions: [{ label: COPY.reload, primary: true, onClick: function () { ui.loadFailed = false; startLoad(); } }]
-    });
+    if (ui.step === 1) DS.announce(COPY.loadErrTitle + ' ' + COPY.loadErrText, { assertive: true });
   }
 
   function startLoad() {
@@ -1075,7 +1124,7 @@
     var timer = DS.loadingTimer(function () {
       ui.skeleton = true;
       if (ui.step === 1) renderWhen();
-      DS.announce(COPY.loading);
+      if (ui.step === 1) DS.announce(COPY.loading); // 다른 단계의 알림(확정 실패 배너 등)을 지우지 않게 1단계에서만
     }, function () {
       ui.skeleton = false;
       ui.loaded = ok;

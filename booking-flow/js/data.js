@@ -57,7 +57,7 @@
       space: 'room-l',
       dur: 2,
       people: 4,
-      name: '가나다',
+      name: '정하윤',
       phone: '010-0000-0000',
       email: 'booking@example.com',
       request: '화이트보드 마커를 준비해 주세요.'

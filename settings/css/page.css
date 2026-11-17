@@ -1,10 +1,11 @@
 /*
  * 설정 샘플 고유 꾸밈 — kit(tokens·base·components) 다음에 부른다.
  * 값은 --ds-* 토큰만 쓴다. 클래스는 settings- 로 시작한다.
+ * 폭 경계는 kit 과 같은 rem(30rem = 480, 48rem = 768)을 쓴다 — 글자를 키우면 좁은 배치로 바뀐다.
  */
 
 /* 아주 좁은 폭 — 화면 밝기 고르기는 아이콘만(이름은 툴팁과 aria-label 로) */
-@media (max-width: 479px) {
+@media (max-width: 29.9375rem) {
   .settings-theme-text {
     display: none;
   }
@@ -18,18 +19,9 @@
   min-width: 0;
 }
 
-/* 탭 줄은 넘치면 그 줄만 가로로 스크롤한다(kit). 끝에서 탭이 잘려 보이지 않게 끝 여백을 둔다 */
-.settings-body > .ds-tabs {
-  scroll-padding-inline: var(--ds-space-4);
-}
-
-/* 저장 안 한 변경이 있는 탭의 점 — 글자 대신 쓰지 않는다. 화면낭독기는 탭 안의 숨긴 글을 읽는다 */
-.settings-tab-dot {
-  flex: none;
-  width: var(--ds-space-2);
-  height: var(--ds-space-2);
-  border-radius: var(--ds-radius-pill);
-  background: var(--ds-color-fill-warning);
+/* 저장 안 한 변경 점(kit .ds-tab__dot)은 자리를 늘 차지하고 보이기만 바꾼다 — 점이 생겨도 탭이 밀리지 않게 */
+.ds-tab:not([data-dirty]) > .ds-tab__dot {
+  visibility: hidden;
 }
 
 .settings-panel__body {
@@ -77,6 +69,13 @@
   font-weight: var(--ds-text-label-strong-weight);
 }
 
+/* 방해 금지 시간 — 시작·끝 두 칸과 그 둘의 오류 글 한 줄 */
+.settings-time-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+}
+
 .settings-time-row {
   display: flex;
   flex-wrap: wrap;
@@ -100,6 +99,11 @@
 .settings-matrix thead th + th,
 .settings-matrix tbody td {
   width: calc(var(--ds-space-16) + var(--ds-space-12));
+}
+
+/* 스위치 칸 이름(메일·앱·문자)은 쌓은 행에서만 보인다. 넓은 표에서는 열 머리가 이름이다 */
+.settings-channel {
+  display: none;
 }
 
 .settings-switch-note {
@@ -145,8 +149,9 @@
   gap: var(--ds-space-1) var(--ds-space-2);
 }
 
+/* 이메일은 칸이 모자랄 때만 끊는다(점·@ 마다 잘게 쪼개지 않게) */
 .settings-person .ds-table__sub {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .settings-role-cell {
@@ -160,46 +165,38 @@
   min-width: calc(var(--ds-space-16) + var(--ds-space-12));
 }
 
-/* 좁은 폭 — 행을 쌓는다. 이 화면의 표는 고르기 열이 없어 왼쪽 자리를 비우지 않는다 */
-@media (max-width: 767px) {
-  .settings-table.ds-table--stack tr {
-    padding-inline-start: var(--ds-space-3);
-  }
+/* 역할 "되돌리기" — 자리는 늘 잡아 두고 권한을 낮춘 행에서만 보인다(나타나도 행이 밀리지 않게).
+   visibility:hidden 이면 포커스·화면낭독기에서도 빠진다 */
+.settings-undo:not([data-shown]) {
+  visibility: hidden;
+}
 
-  .settings-table.ds-table--stack tbody th {
-    display: block;
-    height: auto;
-    padding: 0 0 var(--ds-space-1);
-    border: 0;
+/* 넓은 표 — 구성원 첫 열은 이메일이 한 줄에 들어갈 만큼 둔다(글자를 키워도 잘게 쪼개지지 않게) */
+@media (min-width: 48rem) {
+  .settings-members .settings-person {
+    min-width: var(--ds-size-card-min);
   }
+}
 
-  /* 칸 이름과 값(고르기 상자 등)을 가운데 줄에 맞춘다 */
-  .settings-table.ds-table--stack td {
-    align-items: center;
-  }
-
-  /* 로그인 기록 — 쌓으면 기기 이름을 행의 제목으로 맨 위에 둔다(칸 이름 없이) */
-  #login-table.ds-table--stack tbody tr {
+/* 좁은 폭 — kit 쌓기(ds-table--stack) 위에 이 화면만의 배치 */
+@media (max-width: 47.9375rem) {
+  /* 로그인 기록 — 기기 이름을 카드 제목으로 맨 위에(칸 이름 없이) */
+  .settings-logins.ds-table--stack tbody tr {
     display: flex;
     flex-direction: column;
   }
 
-  #login-table.ds-table--stack td.settings-lead {
-    display: block;
+  .settings-logins.ds-table--stack td.settings-lead {
     order: -1;
+    padding-inline-start: 0;
     padding-block-end: var(--ds-space-1);
   }
 
-  #login-table.ds-table--stack td.settings-lead::before {
+  .settings-logins.ds-table--stack td.settings-lead::before {
     content: none;
   }
 
-  /* 열 이름은 칸마다 붙으므로 빈 머리 띠를 남기지 않는다 */
-  .settings-table.ds-table--stack thead {
-    display: none;
-  }
-
-  /* 알림 표 — 채널 3개를 한 줄에 "메일 [스위치]" 꼴로 늘어놓는다 */
+  /* 알림 표 — 채널 3개를 한 줄에 "[스위치] 메일" 꼴로 늘어놓는다. 칸 이름이 스위치 라벨 안에 있어 같이 눌린다 */
   .settings-matrix.ds-table--stack tbody tr {
     display: flex;
     flex-wrap: wrap;
@@ -214,8 +211,11 @@
   .settings-matrix.ds-table--stack tbody td {
     display: inline-flex;
     align-items: center;
-    gap: var(--ds-space-2);
     width: auto;
+  }
+
+  .settings-matrix .settings-channel {
+    display: inline;
   }
 }
 
@@ -232,6 +232,12 @@
   color: var(--ds-color-fg-muted);
   font-size: var(--ds-text-body-sm-size);
   line-height: var(--ds-text-body-sm-leading);
+}
+
+/* 로그인 중인 다른 기기 수 — 판단 근거라 글자색·굵기로 한 번 더 */
+.settings-meta strong {
+  color: var(--ds-color-fg-default);
+  font-weight: var(--ds-text-label-strong-weight);
 }
 
 .settings-row {
@@ -264,11 +270,7 @@
   gap: var(--ds-space-8);
 }
 
-/* 위험 구역 — 네 변 모두 같은 굵기의 위험색 테두리(한쪽만 두껍게 하지 않는다, SHP-07) */
-.settings-danger {
-  border-color: var(--ds-color-line-danger);
-}
-
+/* 위험 구역 카드(kit .ds-card--danger) 안 배치 — 설명과 버튼을 한 줄에, 좁으면 줄을 바꾼다 */
 .settings-danger__row {
   display: flex;
   flex-wrap: wrap;
@@ -286,11 +288,7 @@
   color: var(--ds-color-fg-muted);
 }
 
-.settings-danger__text .ds-card__title {
-  color: var(--ds-color-fg-default);
-}
-
-#team-empty {
+.settings-team-empty {
   padding-block: var(--ds-space-8);
 }
 
@@ -308,59 +306,104 @@
   padding-inline-start: var(--ds-space-5);
 }
 
-/* ---------- 불러오는 중 — 실제 폼 모양(칸 이름 + 입력 막대) ---------- */
+/* ---------- 불러오는 중 — 패널 내용을 복제한 스켈레톤(배치는 내용과 같고 보이는 것만 바꾼다) ----------
+   - 크기·여백·테두리 굵기는 바꾸지 않는다(색과 보이기만) — 스켈레톤에서 내용으로 바뀌어도 아무것도 밀리지 않게
+   - 옅어짐은 kit 스켈레톤과 같다(ds-fade 4번 = 4.8초 뒤 멈춤, 움직임 줄이기에서 0) */
 
 .settings-skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-5);
-  max-width: var(--ds-size-field-max);
-  padding-block-start: var(--ds-space-2);
+  pointer-events: none;
+  user-select: none;
 }
 
-.settings-skeleton__field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
+/* 글자 마디 → 글자 폭만큼 회색 막대 */
+.settings-skeleton .settings-sk-text {
+  border-radius: var(--ds-radius-xs);
+  background: var(--ds-color-surface-hover);
+  color: transparent;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
-.settings-skeleton .ds-skeleton--title {
-  width: 50%;
+.settings-skeleton :is(.settings-sk-text, .ds-input, .ds-select > select, .ds-btn, .ds-badge, .ds-avatar, .ds-switch__track, .ds-check > input) {
+  animation: ds-fade var(--ds-motion-skeleton) var(--ds-easing-move) 4 alternate;
 }
 
-.settings-skeleton__field .ds-skeleton--short {
-  width: 25%;
+/* 입력·고르기 상자·버튼·배지·얼굴 표시 → 같은 크기의 회색 면 */
+.settings-skeleton :is(.ds-input, .ds-select > select, .ds-btn, .ds-badge, .ds-avatar) {
+  border-color: transparent;
+  background: var(--ds-color-surface-hover);
+  color: transparent;
+  box-shadow: none;
 }
 
-.settings-skeleton__bar.ds-skeleton {
-  height: var(--ds-control-height-md);
-  border-radius: var(--ds-control-radius);
+.settings-skeleton .ds-input::placeholder {
+  color: transparent;
 }
 
-/* ---------- 바닥줄 ---------- */
+.settings-skeleton :is(.ds-btn, .ds-badge, .ds-avatar) .settings-sk-text {
+  background: transparent;
+  animation: none;
+}
+
+/* 스위치 → 손잡이 없는 회색 막대(켜짐·꺼짐을 미리 보이지 않는다) */
+.settings-skeleton .ds-switch__input + .ds-switch__track {
+  border-color: transparent;
+  background: var(--ds-color-surface-hover);
+}
+
+.settings-skeleton .ds-switch__track::before {
+  visibility: hidden;
+}
+
+/* 체크박스 → 같은 크기의 회색 네모 */
+.settings-skeleton .ds-check > input {
+  appearance: none;
+  border-radius: var(--ds-radius-xs);
+  background: var(--ds-color-surface-hover);
+}
+
+/* 아이콘·고르기 화살표는 자리만 */
+.settings-skeleton svg,
+.settings-skeleton .ds-select::after {
+  visibility: hidden;
+}
+
+/* 쌓은 카드의 칸 이름(kit ::before) → 글자 폭만큼 막대 */
+.settings-skeleton .ds-table--stack :is(td, tbody th)[data-label]::before {
+  width: auto;
+  max-width: min(var(--ds-size-dl-key), 40%);
+  border-radius: var(--ds-radius-xs);
+  background: var(--ds-color-surface-hover);
+  color: transparent;
+}
+
+/* 위험 구역·권한 안내 — 색 신호는 내용이 온 뒤에(테두리 굵기는 그대로) */
+.settings-skeleton .ds-card--danger {
+  border-color: var(--ds-color-line-default);
+}
+
+.settings-skeleton .ds-banner {
+  background: var(--ds-color-surface-subtle);
+}
+
+/* 고대비 — 시스템 색이 글자를 다시 보이게 하지 않도록 스켈레톤은 지정한 색을 쓴다 */
+@media (forced-colors: active) {
+  .settings-skeleton {
+    forced-color-adjust: none;
+  }
+}
+
+/* ---------- 바닥줄 — 가상 데이터 안내(kit .ds-sample-note) ---------- */
 
 .settings-footnote {
   padding-block-start: var(--ds-space-4);
   border-block-start: var(--ds-size-hairline) solid var(--ds-color-line-subtle);
-  color: var(--ds-color-fg-muted);
-  font-size: var(--ds-text-caption-size);
-  line-height: var(--ds-text-caption-leading);
 }
 
-/* ---------- 고대비(강제 색) — 점이 바탕색으로 지워지지 않게 ---------- */
+/* ---------- 고대비(강제 색) ---------- */
 
 @media (forced-colors: active) {
-  .settings-tab-dot {
-    forced-color-adjust: none;
-    background: CanvasText;
-  }
-
   .settings-key {
     border: var(--ds-size-hairline) solid CanvasText;
   }
-}
-
-/* hidden 은 위의 display 값보다 이긴다(kit 의 같은 규칙을 이 파일 끝에서 다시 둔다) */
-[hidden] {
-  display: none;
 }
