@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>UI 샘플</title>
+  <meta name="description" content="정적 웹 페이지로 만든 화면 샘플 모음입니다.">
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      --c-bg: #ffffff;
+      --c-surface: #f4f6f8;
+      --c-text: #161b20;
+      --c-text-muted: #56616b;
+      --c-line: #dde2e7;
+      --c-accent: #0b5f8a;
+      --c-accent-hover: #084a6c;
+      --c-on-accent: #ffffff;
+      --c-focus: #0b5f8a;
+
+      --font: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+      --text-title: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+      --text-sample: 1.375rem;
+      --text-body: 1rem;
+      --text-small: 0.875rem;
+
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.5rem;
+      --space-6: 2rem;
+      --space-7: 3rem;
+      --space-8: 4.5rem;
+
+      --radius: 0.5rem;
+      --page-width: 70rem;
+      --target: 2.75rem;
+      --fade: 300ms;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--c-bg);
+      color: var(--c-text);
+      font-family: var(--font);
+      font-size: var(--text-body);
+      line-height: 1.6;
+      word-break: keep-all;
+      text-wrap: pretty;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    a { color: var(--c-accent); text-underline-offset: 0.2em; }
+    a:hover { color: var(--c-accent-hover); }
+    a:focus-visible, .btn:focus-visible {
+      outline: 3px solid var(--c-focus);
+      outline-offset: 3px;
+      border-radius: var(--radius);
+    }
+
+    .page {
+      max-width: var(--page-width);
+      margin: 0 auto;
+      padding: var(--space-7) var(--space-5) var(--space-8);
+    }
+
+    .intro { max-width: 40rem; margin-bottom: var(--space-7); }
+    .intro h1 {
+      margin: 0 0 var(--space-3);
+      font-size: var(--text-title);
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .intro p { margin: 0; color: var(--c-text-muted); }
+
+    .samples { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-7); }
+
+    .sample {
+      display: grid;
+      gap: var(--space-5);
+      padding-top: var(--space-7);
+      border-top: 1px solid var(--c-line);
+    }
+    .sample:first-child { padding-top: 0; border-top: 0; }
+
+    .sample__thumb {
+      position: relative;
+      display: block;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      border-radius: var(--radius);
+      background: var(--c-surface);
+    }
+    .sample__thumb img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .sample__thumb .is-night { opacity: 0; transition: opacity var(--fade) ease-out; }
+    .sample:hover .sample__thumb .is-night,
+    .sample:focus-within .sample__thumb .is-night { opacity: 1; }
+
+    .sample__body { display: flex; flex-direction: column; gap: var(--space-4); align-items: flex-start; }
+    .sample__name { margin: 0; font-size: var(--text-sample); line-height: 1.35; }
+    .sample__desc { margin: 0; }
+    .sample__desc span { display: block; }
+
+    .facts { margin: 0; display: grid; gap: var(--space-2); font-size: var(--text-small); }
+    .facts div { display: grid; grid-template-columns: 4.5rem 1fr; gap: var(--space-3); }
+    .facts dt { color: var(--c-text-muted); }
+    .facts dd { margin: 0; }
+
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); margin-top: var(--space-2); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      min-height: var(--target);
+      padding: 0 var(--space-5);
+      border-radius: var(--radius);
+      background: var(--c-accent);
+      color: var(--c-on-accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .btn:hover { background: var(--c-accent-hover); color: var(--c-on-accent); }
+    .link { display: inline-flex; align-items: center; min-height: var(--target); }
+
+    .foot {
+      margin-top: var(--space-8);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--c-line);
+      color: var(--c-text-muted);
+      font-size: var(--text-small);
+    }
+    .foot p { margin: 0; }
+
+    @media (min-width: 48rem) {
+      .page { padding: var(--space-8) var(--space-6); }
+      .sample { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-6); align-items: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sample__thumb .is-night { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="intro">
+      <h1>UI 샘플</h1>
+      <p>정적 웹 페이지로 만든 화면 샘플을 모았습니다. 서버 없이 브라우저에서 바로 열립니다.</p>
+    </header>
+
+    <ol class="samples">
+      <li class="sample">
+        <a class="sample__thumb" href="island-park/" tabindex="-1" aria-hidden="true">
+          <img src="assets/island-park-day.webp" width="960" height="600" alt="">
+          <img class="is-night" src="assets/island-park-night.webp" width="960" height="600" alt="" loading="lazy">
+        </a>
+        <div class="sample__body">
+          <h2 class="sample__name">바다 위 놀이공원</h2>
+          <p class="sample__desc">
+            <span>바다 위 섬 하나에 놀이공원 명소 다섯 곳을 3D 로 보여 줍니다.</span>
+            <span>시점을 돌려 둘러보고, 명소를 골라 설명을 읽고, 낮과 밤을 바꿀 수 있습니다.</span>
+          </p>
+          <dl class="facts">
+            <div><dt>기술</dt><dd>Three.js · HTML · CSS · JavaScript 모듈</dd></div>
+            <div><dt>화면 폭</dt><dd>휴대폰 · 태블릿 · 데스크톱</dd></div>
+            <div><dt>만든 날</dt><dd><time datetime="2026-11-17">2026. 11. 17.</time></dd></div>
+          </dl>
+          <div class="actions">
+            <a class="btn" href="island-park/">샘플 열기</a>
+            <a class="link" href="https://github.com/s10cho/ui-samples/tree/main/island-park">코드 보기</a>
+            <a class="link" href="https://github.com/s10cho/ui-samples/blob/main/island-park/docs/ui/island-park-landmark.md">화면 설계서</a>
+          </div>
+        </div>
+      </li>
+    </ol>
+
+    <footer class="foot">
+      <p>샘플마다 폴더 하나에 코드·설계서·검수 보고서가 함께 있습니다. 저장소: <a href="https://github.com/s10cho/ui-samples">github.com/s10cho/ui-samples</a></p>
+    </footer>
+  </main>
+</body>
+</html>

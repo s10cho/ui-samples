@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko" data-mode="loading" data-time="day">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>바다 위 놀이공원</title>
+  <meta name="description" content="바다 위 섬 하나에 놀이기구 다섯 곳이 모인 놀이공원을 3D 로 둘러봐요.">
+  <link rel="icon" href="data:,">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="preload" href="vendor/pretendard/PretendardVariable.page.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="vendor/pretendard/pretendard-page-subset.css">
+  <link rel="stylesheet" href="vendor/pretendard/pretendard-dynamic-subset.css">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.custom.min.js" } }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#landmarks">명소 목록으로 건너뛰기</a>
+
+  <main class="page">
+    <div class="panel-backdrop" aria-hidden="true"></div>
+
+    <div class="topbar">
+      <h1 class="park-name">바다 위 놀이공원</h1>
+    </div>
+
+    <section class="scene" id="scene" aria-label="3D 섬 장면">
+      <picture class="scene__poster">
+        <source media="(min-width: 1024px)" srcset="assets/poster-day-wide.webp" width="2400" height="1400" data-size="wide">
+        <source media="(min-width: 600px)" srcset="assets/poster-day-medium.webp" width="2000" height="1120" data-size="medium">
+        <img src="assets/poster-day-narrow.webp" width="900" height="1170"
+             alt="바다 위 섬 하나에 선착장, 회전목마, 대관람차, 롤러코스터, 등대 전망대가 있는 3D 장면">
+      </picture>
+
+      <div class="scene__labels" aria-hidden="true"></div>
+
+      <div class="scene__toggles">
+        <button class="text-btn" type="button" data-action="motion">움직임 멈추기</button>
+        <button class="text-btn" type="button" data-action="time">밤으로 바꾸기</button>
+      </div>
+
+      <div class="scene__controls" role="group" aria-label="시점 조작">
+        <button class="icon-btn" type="button" data-action="rotate-left" aria-label="왼쪽으로 돌리기">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.7 17.7A8 8 0 1 0 6.3 6.3"/><path d="M6.3 1.8v4.5h4.5"/></svg>
+          <span class="tooltip" role="tooltip" id="tip-rotate-left">왼쪽으로 돌리기</span>
+        </button>
+        <button class="icon-btn" type="button" data-action="rotate-right" aria-label="오른쪽으로 돌리기">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.3 17.7A8 8 0 1 1 17.7 6.3"/><path d="M17.7 1.8v4.5h-4.5"/></svg>
+          <span class="tooltip" role="tooltip" id="tip-rotate-right">오른쪽으로 돌리기</span>
+        </button>
+        <button class="icon-btn" type="button" data-action="zoom-in" aria-label="가까이 보기">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="tooltip" role="tooltip" id="tip-zoom-in" data-limit="더 가까이 갈 수 없어요">가까이 보기</span>
+        </button>
+        <button class="icon-btn" type="button" data-action="zoom-out" aria-label="멀리 보기">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+          <span class="tooltip" role="tooltip" id="tip-zoom-out" data-limit="더 멀리 갈 수 없어요">멀리 보기</span>
+        </button>
+        <button class="icon-btn" type="button" data-action="reset" aria-label="처음 시점으로 돌아가기">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v10h12V10"/><path d="M10 20v-5h4v5"/></svg>
+          <span class="tooltip" role="tooltip" id="tip-reset">처음 시점으로 돌아가기</span>
+        </button>
+      </div>
+
+      <p class="scene__progress" role="status"></p>
+    </section>
+
+    <section class="panel" aria-label="명소 안내">
+      <div class="banner-region" aria-live="polite"></div>
+
+      <section class="landmarks" id="landmarks" tabindex="-1" aria-labelledby="landmarks-title">
+        <h2 class="section-title" id="landmarks-title">명소</h2>
+        <ul class="landmark-list">
+          <li><button class="landmark" type="button" data-id="pier"><span class="landmark__name">선착장</span><span class="landmark__where">남쪽 해안</span><span class="landmark__current">보는 중</span></button></li>
+          <li><button class="landmark" type="button" data-id="carousel"><span class="landmark__name">회전목마</span><span class="landmark__where">가운데 광장</span><span class="landmark__current">보는 중</span></button></li>
+          <li><button class="landmark" type="button" data-id="ferris"><span class="landmark__name">대관람차</span><span class="landmark__where">북쪽 언덕</span><span class="landmark__current">보는 중</span></button></li>
+          <li><button class="landmark" type="button" data-id="coaster"><span class="landmark__name">롤러코스터</span><span class="landmark__where">동쪽 해안</span><span class="landmark__current">보는 중</span></button></li>
+          <li><button class="landmark" type="button" data-id="lighthouse"><span class="landmark__name">등대 전망대</span><span class="landmark__where">서쪽 끝</span><span class="landmark__current">보는 중</span></button></li>
+        </ul>
+      </section>
+
+      <section class="detail" aria-label="명소 설명">
+        <div class="detail__item is-current" data-detail="intro">
+          <p class="detail__text">배를 타고 들어가는 섬에 놀이기구 다섯 곳이 모여 있어요.</p>
+          <p class="detail__hint hint--mouse">끌어서 섬을 돌리고, 휠로 가까이 볼 수 있어요.</p>
+          <p class="detail__hint hint--touch">옆으로 밀어 섬을 돌리고, 두 손가락으로 가까이 볼 수 있어요.</p>
+          <p class="detail__hint">명소를 고르면 그곳으로 가까이 가요.</p>
+        </div>
+        <article class="detail__item" data-detail="pier" aria-labelledby="detail-pier">
+          <h3 class="detail__title" id="detail-pier">선착장</h3>
+          <p class="detail__where">남쪽 해안</p>
+          <p class="detail__text">섬으로 오는 배가 닿는 곳이에요. 섬 구경은 여기서 시작해요.</p>
+        </article>
+        <article class="detail__item" data-detail="carousel" aria-labelledby="detail-carousel">
+          <h3 class="detail__title" id="detail-carousel">회전목마</h3>
+          <p class="detail__where">가운데 광장</p>
+          <p class="detail__text">섬 한가운데 광장에서 천천히 돌아요.</p>
+        </article>
+        <article class="detail__item" data-detail="ferris" aria-labelledby="detail-ferris">
+          <h3 class="detail__title" id="detail-ferris">대관람차</h3>
+          <p class="detail__where">북쪽 언덕</p>
+          <p class="detail__text">섬에서 가장 높은 언덕 위에 있어요. 꼭대기에서는 섬 둘레 바다가 다 보여요.</p>
+        </article>
+        <article class="detail__item" data-detail="coaster" aria-labelledby="detail-coaster">
+          <h3 class="detail__title" id="detail-coaster">롤러코스터</h3>
+          <p class="detail__where">동쪽 해안</p>
+          <p class="detail__text">동쪽 해안을 따라 달리다가 바다 위로 잠깐 나가요.</p>
+        </article>
+        <article class="detail__item" data-detail="lighthouse" aria-labelledby="detail-lighthouse">
+          <h3 class="detail__title" id="detail-lighthouse">등대 전망대</h3>
+          <p class="detail__where">서쪽 끝</p>
+          <p class="detail__text">섬 서쪽 끝 바위 위에 있어요. 꼭대기에서 불빛이 돌아요.</p>
+        </article>
+      </section>
+    </section>
+
+    <p class="sr-only" role="status" data-announcer></p>
+  </main>
+
+  <!--
+    화면 스크립트 불러오기
+    - 서버(http·https)로 열면 ES 모듈 js/main.js 를 쓴다. 3D 파일은 필요할 때 따로 받는다.
+    - 파일을 더블클릭해 file:// 로 열면 브라우저가 모듈을 막는다. 그래서 한 파일로 묶은 dist/app.bundle.js 를 쓴다.
+    - 스크립트를 받지 못했거나 6초 안에 시작하지 않으면, 동작하지 않는 버튼을 숨기고 명소 설명을 모두 펼친다.
+  -->
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var script = document.createElement('script');
+      function giveUp() {
+        if (window.islandParkBooted) return;
+        root.classList.remove('js');
+        root.setAttribute('data-mode', 'fallback');
+      }
+      if (location.protocol === 'file:') {
+        script.src = 'dist/app.bundle.js';
+      } else {
+        script.type = 'module';
+        script.src = 'js/main.js';
+      }
+      script.onerror = giveUp;
+      document.body.appendChild(script);
+      setTimeout(giveUp, 6000);
+    })();
+  </script>
+</body>
+</html>

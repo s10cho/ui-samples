@@ -1,0 +1,114 @@
+/*
+ * 디자인 토큰 — docs/ui/island-park-landmark.md 4-1절의 임시 토큰.
+ * DESIGN.md 가 생기면 그 값으로 바꾼다. 화면 코드는 이 변수만 쓴다.
+ */
+:root {
+  /* 색 — UI */
+  --ds-color-bg-surface: #FFFFFF;
+  --ds-color-bg-subtle: #F3F1EC;
+  --ds-color-bg-accent-subtle: #FBEAE5;
+  --ds-color-text-primary: #1C2430;
+  --ds-color-text-secondary: #5A6472;
+  --ds-color-text-on-accent: #FFFFFF;
+  --ds-color-accent: #C43D22;
+  --ds-color-border-subtle: rgba(28, 36, 48, 0.12);
+  --ds-color-focus-inner: #FFFFFF;
+  --ds-color-focus-outer: #1C2430;
+  --ds-color-tooltip-bg: #1C2430;
+  --ds-color-tooltip-fg: #FFFFFF;
+  --ds-color-banner-bg: #F3F1EC;
+
+  /* 색 — 3D 장면이 그려지기 전 바탕(장면 하늘색과 같다) */
+  --ds-color-scene-sky-day: #CFE6F2;
+  --ds-color-scene-sky-night: #18263D;
+
+  /* 글꼴 */
+  /* 화면 글자만 담은 Pretendard → 빠진 글자는 다이나믹 서브셋 조각 → 시스템 한글 글꼴 */
+  --ds-font-family: "Pretendard Page", "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --ds-font-weight-regular: 400;
+  --ds-font-weight-medium: 500;
+  --ds-font-weight-semibold: 600;
+  --ds-font-weight-bold: 700;
+
+  /* 글자 스타일 — 크기(rem) · 행간(비율) */
+  --ds-text-display-size: 1.75rem;   /* 28 */
+  --ds-text-display-leading: 1.357;  /* 38/28 */
+  --ds-text-display-tracking: -0.02em;
+  --ds-text-title-size: 1.25rem;     /* 20 */
+  --ds-text-title-leading: 1.4;      /* 28/20 */
+  --ds-text-title-tracking: -0.01em;
+  --ds-text-label-size: 1rem;        /* 16 */
+  --ds-text-label-leading: 1.375;    /* 22/16 */
+  --ds-text-body-size: 1rem;         /* 16 */
+  --ds-text-body-leading: 1.5;       /* 24/16 */
+  --ds-text-caption-size: 0.8125rem; /* 13 */
+  --ds-text-caption-leading: 1.385;  /* 18/13 */
+
+  /* 글자 스타일 — 굵기. 7종: display · title · label · label-strong · body · caption · caption-strong
+     label-strong 은 label 의 크기·행간, caption-strong 은 caption 의 크기·행간을 쓴다 */
+  --ds-text-display-weight: var(--ds-font-weight-bold);
+  --ds-text-title-weight: var(--ds-font-weight-semibold);
+  --ds-text-label-weight: var(--ds-font-weight-medium);
+  --ds-text-label-strong-weight: var(--ds-font-weight-semibold);
+  --ds-text-body-weight: var(--ds-font-weight-regular);
+  --ds-text-caption-weight: var(--ds-font-weight-regular);
+  --ds-text-caption-strong-weight: var(--ds-font-weight-semibold);
+
+  /* 간격 — 4 · 8 · 12 · 16 · 24 · 32 · 48 */
+  --ds-space-1: 0.25rem;
+  --ds-space-2: 0.5rem;
+  --ds-space-3: 0.75rem;
+  --ds-space-4: 1rem;
+  --ds-space-6: 1.5rem;
+  --ds-space-8: 2rem;
+  --ds-space-12: 3rem;
+
+  /* 크기 */
+  --ds-size-touch: 2.75rem;      /* 44 — 터치 대상 최소 */
+  --ds-size-topbar: 3.5rem;      /* 56 */
+  --ds-size-row: 3.5rem;         /* 56 — 명소 목록 행 */
+  --ds-size-panel: min(22.5rem, 42vw); /* 360 — 넓은 폭 정보 패널. 글자를 키워도 화면의 42% 를 넘지 않는다 */
+  --ds-size-dot: 0.75rem;        /* 12 — 좁은 폭 명소 표지 점 */
+  --ds-size-icon: 1.25rem;       /* 20 */
+  --ds-size-scene-min: 20rem;    /* 320 */
+  --ds-size-scene-height: 60svh; /* 좁은·중간 폭 장면 높이 */
+  --ds-size-hairline: 1px;
+  --ds-size-focus-ring: 2px;
+  --ds-size-tooltip-max: 15rem;
+
+  /* 모서리 */
+  --ds-radius-md: 0.5rem;   /* 8 */
+  --ds-radius-pill: 62.5rem;
+
+  /* 그림자 — 장면 위에 뜨는 요소: 반투명 테두리 + 두 겹 그림자 */
+  --ds-shadow-float: 0 1px 2px rgba(28, 36, 48, 0.08), 0 4px 12px rgba(28, 36, 48, 0.12);
+  --ds-shadow-focus: 0 0 0 var(--ds-size-focus-ring) var(--ds-color-focus-inner);
+
+  /* 투명도 */
+  --ds-opacity-disabled: 0.45;
+
+  /* 움직임 — JS 도 이 값을 읽는다 */
+  --ds-motion-hover: 100ms;
+  --ds-motion-label-enter: 150ms;
+  --ds-motion-label-exit: 100ms;
+  --ds-motion-crossfade: 200ms;
+  --ds-motion-camera: 600ms;        /* 명소로 시점 이동 — 설계서 10절 MOT-01 예외 */
+  --ds-motion-camera-step: 400ms;   /* 돌리기·가까이·멀리 버튼 한 번 */
+  --ds-motion-time-shift: 600ms;    /* 낮·밤 전환 */
+  --ds-motion-loading-delay: 300ms;
+  --ds-motion-loading-min: 400ms;
+  --ds-motion-loading-slow: 10000ms;
+  --ds-motion-context-restore: 3000ms;
+  --ds-motion-hint-hold: 1500ms;    /* 터치로 한계 버튼을 눌렀을 때 이유를 보이는 시간 */
+  --ds-easing-enter: cubic-bezier(0.2, 0, 0, 1);
+  --ds-easing-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* 쌓임 순서 */
+  --ds-z-base: 0;
+  --ds-z-raise: 1;
+  --ds-z-scene-labels: 2;
+  --ds-z-scene-poster: 3;
+  --ds-z-scene-ui: 4;
+  --ds-z-panel: 5;
+  --ds-z-skip-link: 10;
+}
