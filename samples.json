@@ -11,6 +11,13 @@
       ]
     },
     {
+      "id": "mobile",
+      "title": "모바일",
+      "lead": [
+        "휴대폰 화면에서 자주 쓰는 UI 패턴을 분류하고, iOS·Android 모습으로 눌러 봅니다."
+      ]
+    },
+    {
       "id": "3d",
       "title": "3D 장면",
       "lead": [
@@ -359,6 +366,22 @@
       "score": "88.25",
       "spec": "docs/ui/onboarding-setup.md",
       "report": "docs/ui/review/onboarding-setup/20261118-report.md"
+    },
+    {
+      "slug": "mobile-patterns",
+      "group": "mobile",
+      "kit": "app",
+      "build": [],
+      "name": "모바일 UI 패턴",
+      "desc": [
+        "휴대폰 화면에서 자주 쓰는 UI 패턴 33개를 7가지로 나눠 모았습니다.",
+        "패턴마다 iOS·Android 모습을 바꿔 가며 직접 눌러 볼 수 있습니다."
+      ],
+      "switch": "iOS ↔ Android",
+      "score": "",
+      "spec": "docs/ui/mobile-patterns.md",
+      "report": "docs/ui/review/mobile-patterns/20261118-report.md",
+      "draft": true
     }
   ]
 }

@@ -56,7 +56,22 @@ function card(s) {
   return out.join('\n');
 }
 
-const blocks = [];
+// 계열 탭 — 공개 샘플이 있는 계열만. 링크 + 주소 해시(#group-<id>)라 스크립트가 없어도 그 계열로 이동한다(docs/ui/gallery-tabs.md)
+const shown = data.groups
+  .map((g) => ({ g, n: data.samples.filter((s) => s.group === g.id && !s.draft).length }))
+  .filter((x) => x.n > 0);
+const total = shown.reduce((a, x) => a + x.n, 0);
+const tab = (href, id, title, n, current) =>
+  `        <li><a href="${href}" data-group="${id}" data-title="${esc(title)}" data-count="${n}"${current ? ' aria-current="true"' : ''}>${esc(title)} <span class="tabs__n" aria-hidden="true">${n}</span><span class="sr-only">, 샘플 ${n}개</span></a></li>`;
+const blocks = [[
+  '    <nav class="tabs" id="tabs" aria-label="샘플 계열">',
+  '      <ul>',
+  tab('#tabs', '', '전체', total, true),
+  ...shown.map((x) => tab(`#group-${x.g.id}`, x.g.id, x.g.title, x.n, false)),
+  '      </ul>',
+  '    </nav>',
+  '    <p class="sr-only" id="tab-status" role="status"></p>',
+].join('\n')];
 data.groups.forEach((g) => {
   const items = data.samples.filter((s) => s.group === g.id && !s.draft);
   if (!items.length) return;

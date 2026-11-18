@@ -42,6 +42,7 @@
       --fade: 300ms;
       --ring: 3px;
       --hairline: 1px;
+      --z-skip: 10;
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -82,7 +83,44 @@
     .intro p { margin: 0; color: var(--c-text-muted); }
     .intro p span { display: block; }
 
+    .sr-only {
+      position: absolute;
+      width: var(--hairline);
+      height: var(--hairline);
+      margin: calc(-1 * var(--hairline));
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    /* 계열 탭 — 링크 + 주소 해시. 붙이지 않고, 좁은 폭에서는 줄바꿈한다(끝 탭이 화면 밖으로 숨지 않게) */
+    .tabs { margin: 0 0 var(--space-7); }
+    .tabs ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 var(--space-5); }
+    .tabs a {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      min-height: var(--target);
+      color: var(--c-text-muted);
+      text-decoration: none;
+      border-bottom: var(--ring) solid transparent;
+    }
+    .tabs a:hover { color: var(--c-text); }
+    .tabs a[aria-current] { color: var(--c-text); font-weight: 600; border-bottom-color: var(--c-accent); }
+    .tabs__n { font-size: var(--text-small); font-weight: 400; color: var(--c-text-muted); font-variant-numeric: tabular-nums; }
+    @media (forced-colors: active) {
+      .tabs a:not([aria-current]) { border-bottom-color: Canvas; }
+    }
+    /* 건너뛰기 링크 — 포커스를 받을 때만 보인다 */
+    .skip { position: absolute; left: var(--space-4); top: var(--space-4); z-index: var(--z-skip); padding: var(--space-2) var(--space-4); background: var(--c-bg); transform: translateY(-200%); }
+    .skip:focus-visible { transform: none; }
+    /* 마우스 올림 안내는 마우스가 있는 기기에서만 */
+    @media (hover: none) {
+      .intro .hint-hover { display: none; }
+    }
     .group + .group { margin-top: var(--space-8); }
+    .page[data-one] .group { margin-top: 0; }
     .group__head { margin-bottom: var(--space-5); max-width: 44rem; }
     .group__head h2 { margin: 0 0 var(--space-2); font-size: var(--text-section); line-height: 1.35; }
     .group__head p { margin: 0; color: var(--c-text-muted); }
@@ -162,11 +200,21 @@
   </style>
 </head>
 <body>
+  <a class="skip" href="#tabs">목록 바로가기</a>
   <main class="page">
     <header class="intro">
       <h1>UI 샘플</h1>
-      <p><span>정적 웹 페이지로 만든 화면 샘플을 모았습니다. 서버 없이 브라우저에서 바로 열립니다.</span><span>모든 샘플은 화면 폭에 맞춰 바뀝니다. 그림에 마우스를 올리면 다른 상태가 보입니다.</span></p>
+      <p><span>정적 웹 페이지로 만든 화면 샘플을 모았습니다. 서버 없이 브라우저에서 바로 열립니다.</span><span>모든 샘플은 화면 폭에 맞춰 바뀝니다.<span class="hint-hover"> 그림에 마우스를 올리면 다른 상태가 보입니다.</span></span></p>
     </header>
+    <nav class="tabs" id="tabs" aria-label="샘플 계열">
+      <ul>
+        <li><a href="#tabs" data-group="" data-title="전체" data-count="22" aria-current="true">전체 <span class="tabs__n" aria-hidden="true">22</span><span class="sr-only">, 샘플 22개</span></a></li>
+        <li><a href="#group-app" data-group="app" data-title="업무 화면" data-count="13">업무 화면 <span class="tabs__n" aria-hidden="true">13</span><span class="sr-only">, 샘플 13개</span></a></li>
+        <li><a href="#group-3d" data-group="3d" data-title="3D 장면" data-count="6">3D 장면 <span class="tabs__n" aria-hidden="true">6</span><span class="sr-only">, 샘플 6개</span></a></li>
+        <li><a href="#group-2d" data-group="2d" data-title="2D 그림판" data-count="3">2D 그림판 <span class="tabs__n" aria-hidden="true">3</span><span class="sr-only">, 샘플 3개</span></a></li>
+      </ul>
+    </nav>
+    <p class="sr-only" id="tab-status" role="status"></p>
     <section class="group" aria-labelledby="group-app">
       <div class="group__head">
         <h2 id="group-app">업무 화면</h2>
@@ -615,8 +663,66 @@
 
     <footer class="foot">
       <p>샘플마다 폴더 하나에 코드·화면 설계서·검수 보고서가 함께 있습니다. 검수 점수는 만든 쪽과 다른 에이전트가 루브릭(100점, 80점 이상 합격)으로 매긴 값입니다.</p>
-      <p>저장소: <a href="https://github.com/s10cho/ui-samples">github.com/s10cho/ui-samples</a> · 2026. 11. 17. 기준</p>
+      <p>저장소: <a href="https://github.com/s10cho/ui-samples">github.com/s10cho/ui-samples</a> · 2026. 11. 18. 기준</p>
     </footer>
   </main>
+  <script>
+    /* 계열 탭: 고른 계열만 보인다. 스크립트가 없으면 모든 계열이 보이고 탭은 그 계열 제목으로 이동한다 */
+    (function () {
+      var nav = document.querySelector('.tabs');
+      var status = document.getElementById('tab-status');
+      if (!nav || !status) return;
+      var page = document.querySelector('.page');
+      var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-group]'));
+      var groups = Array.prototype.slice.call(document.querySelectorAll('section.group'));
+      function fromHash() {
+        var m = /^#group-(.+)$/.exec(location.hash);
+        return m && document.getElementById('group-' + m[1]) ? m[1] : '';
+      }
+      function linkOf(id) {
+        return links.filter(function (a) { return a.getAttribute('data-group') === id; })[0];
+      }
+      function show(id, announce, focus) {
+        links.forEach(function (a) {
+          if (a.getAttribute('data-group') === id) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+        groups.forEach(function (s) { s.hidden = !!id && s.getAttribute('aria-labelledby') !== 'group-' + id; });
+        if (id) page.setAttribute('data-one', ''); else page.removeAttribute('data-one');
+        var a = linkOf(id);
+        if (announce && a) status.textContent = a.getAttribute('data-title') + ' ' + a.getAttribute('data-count') + '개를 보여 줍니다';
+        var target = id && document.getElementById('group-' + id);
+        var navTop = nav.getBoundingClientRect().top;
+        if (target) {
+          // 탭 줄과 고른 계열 제목이 한 화면에 들어가면 탭 줄을 맨 위로 올려 그 아래 목록이 보이게 한다
+          var tr = target.getBoundingClientRect();
+          if (navTop < 0 || tr.bottom > window.innerHeight) {
+            if (tr.bottom - navTop <= window.innerHeight) nav.scrollIntoView({ block: 'start' });
+            else target.scrollIntoView({ block: 'start' });
+          }
+        } else if (navTop < 0) nav.scrollIntoView({ block: 'start' });
+        // 계열을 고르면 그 제목으로, '전체'는 누른 탭에 포커스를 둔다(알림 문장과 읽히는 이름이 맞게)
+        if (focus && target) {
+          target.setAttribute('tabindex', '-1');
+          target.focus({ preventScroll: true });
+        }
+      }
+      links.forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          var id = a.getAttribute('data-group');
+          var url = location.pathname + location.search + (id ? '#group-' + id : '');
+          if (url !== location.pathname + location.search + location.hash) history.pushState(null, '', url);
+          show(id, true, true);
+        });
+      });
+      window.addEventListener('popstate', function () {
+        // 건너뛰기 링크(#tabs)처럼 계열이 아닌 해시는 고른 계열을 바꾸지 않는다
+        if (location.hash && !/^#group-/.test(location.hash)) return;
+        show(fromHash(), true, false);
+      });
+      show(fromHash(), false, false);
+    })();
+  </script>
 </body>
 </html>
