@@ -9,7 +9,7 @@
 |---|---|
 | `samples.json` | 샘플 목록의 원본. 이름·설명·묶음·점수·설계서·보고서 경로 |
 | `index.html` | 목록 페이지. 샘플 목록 부분은 `tools/build-gallery.mjs` 가 만든다 |
-| `assets/` | 목록 썸네일. `<slug>-day.webp`(필수), `<slug>-night.webp`(마우스 올림 때) |
+| `assets/` | 목록 썸네일. `<slug>-day.webp`(필수), `<slug>-night.webp`(어둡게·마우스 올림 때). `wall/<slug>-<day\|night>.webp` 는 첫 화면 화면 벽용 작은 그림(480×300) |
 | `DESIGN.md` | 디자인 시스템. 토큰·컴포넌트·허용 목록 |
 | `shared/common/` | 모든 샘플에 복사되는 파일(다이나믹 서브셋 글꼴 등) |
 | `shared/<kit>/` | 공용 뼈대 묶음. `scene3d`(3D 장면), `iso2d`(2D 그림판), `app`(업무 화면) |
@@ -53,7 +53,9 @@ python3 -m http.server 8000 --directory _site
 
 ## 목록 — `node tools/build-gallery.mjs`
 
-- `samples.json` 을 고친 뒤 실행한다. `index.html` 목록과 `README.md` 샘플 표를 다시 만든다.
+- `samples.json` 을 고친 뒤 실행한다. `index.html` 의 첫 화면 화면 벽·요약 줄·도구 줄·목록과 `README.md` 샘플 표를 다시 만든다.
+- 샘플을 새로 공개하면 `node tools/make-wall-thumbs.mjs` 로 화면 벽용 작은 그림을 만든다(cwebp 필요, 만든 그림을 커밋). 없으면 큰 썸네일을 대신 쓴다.
+- 목록 페이지 설계: 「목록 페이지 리뉴얼」(`docs/ui/gallery.md`), 계열 탭은 「목록 페이지 계열 탭」(`docs/ui/gallery-tabs.md`).
 - `--check` 는 고칠 것이 있으면 실패한다(자동 검수에서 쓴다).
 
 ## 검수 화면 보관

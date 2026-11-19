@@ -4,13 +4,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#ffffff">
   <title>UI 샘플</title>
   <meta name="description" content="정적 웹 페이지로 만든 화면 샘플 모음입니다. 업무 화면 13개, 3D 장면 6개, 2D 그림판 3개가 있습니다.">
   <link rel="icon" href="data:,">
+  <script>
+    /* 그리기 전에: 스크립트 표시, 저장한 화면 색(없으면 밝게), 움직임 줄이기 설정이면 화면 벽을 멈춘 채 시작 */
+    (function () {
+      var d = document.documentElement;
+      d.classList.add('js');
+      try { if (localStorage.getItem('ui-samples-theme') === 'dark') d.setAttribute('data-theme', 'dark'); } catch (e) { /* 저장소를 못 쓰면 밝게 */ }
+      d.setAttribute('data-motion', window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'off' : 'on');
+      // 그림을 받지 못하면 브라우저의 깨진 그림 표시 대신 투명 그림으로 바꿔 바탕 상자만 남긴다
+      document.addEventListener('error', function (e) {
+        var t = e.target;
+        if (t && t.tagName === 'IMG' && t.src.indexOf('data:') !== 0) t.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+      }, true);
+    })();
+  </script>
   <style>
     :root {
       --c-bg: #ffffff;
-      --c-surface: #f4f6f8;
+      --c-surface: #f3f5f7;
+      --c-raised: #ffffff;
       --c-text: #161b20;
       --c-text-muted: #56616b;
       --c-line: #dde2e7;
@@ -18,10 +34,17 @@
       --c-accent-hover: #084a6c;
       --c-on-accent: #ffffff;
       --c-focus: #0b5f8a;
+      --c-shadow: rgb(22 27 32 / 0.08);
+      --c-tile-ring: rgb(22 27 32 / 0.08);
+      --c-mask: #000000;
 
       --font: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
-      --text-title: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
-      --text-section: 1.25rem;
+      --text-display: clamp(2.75rem, 1.6rem + 4.4vw, 5rem);
+      --text-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+      --text-section: 1.5rem;
+      --weight-regular: 400;
+      --weight-strong: 600;
+      --weight-display: 700;
       --text-sample: 1.125rem;
       --text-body: 1rem;
       --text-small: 0.875rem;
@@ -36,13 +59,48 @@
       --space-8: 4.5rem;
 
       --radius: 0.5rem;
+      --radius-tile: 0.625rem;
+      --radius-pill: 999rem;
       --page-width: 78rem;
+      --gutter: var(--space-4);
       --card-min: 19rem;
       --target: 2.75rem;
-      --fade: 300ms;
       --ring: 3px;
       --hairline: 1px;
+      --shadow-tight: 0 0.0625rem 0.125rem var(--c-shadow), 0 0.125rem 0.375rem var(--c-shadow);
+
+      --dur-2: 250ms;
+      --dur-fade: 200ms;
+      --stagger: 25ms;
+      --ease-out: cubic-bezier(0.2, 0, 0, 1);
+      --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+
+      --wall-tile: 8.5rem;
+      --wall-gap: var(--space-3);
+      --wall-tilt: -12deg;
+      --wall-reach: 6rem;
+      --wall-dur: 30s;
+      --wall-step: -9s;
+
+      --z-above: 1;
+      --z-bar: 5;
       --z-skip: 10;
+      --bar-h: 4rem;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --c-bg: #0e1114;
+      --c-surface: #171b1f;
+      --c-raised: #20262b;
+      --c-text: #e7ebee;
+      --c-text-muted: #9ba6af;
+      --c-line: #2c3339;
+      --c-accent: #6cb6e0;
+      --c-accent-hover: #93cbeb;
+      --c-on-accent: #0a1520;
+      --c-focus: #6cb6e0;
+      --c-shadow: rgb(0 0 0 / 0.35);
+      --c-tile-ring: rgb(255 255 255 / 0.08);
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -55,33 +113,21 @@
       font-size: var(--text-body);
       line-height: 1.6;
       word-break: keep-all;
+      overflow-wrap: break-word;
+      line-break: strict;
       text-wrap: pretty;
       -webkit-text-size-adjust: 100%;
     }
 
     a { color: var(--c-accent); text-underline-offset: 0.2em; }
     a:hover { color: var(--c-accent-hover); }
-    a:focus-visible, .btn:focus-visible {
+    a:focus-visible, button:focus-visible, [tabindex="-1"]:focus-visible {
       outline: var(--ring) solid var(--c-focus);
       outline-offset: var(--ring);
-      border-radius: var(--radius);
     }
-
-    .page {
-      max-width: var(--page-width);
-      margin: 0 auto;
-      padding: var(--space-7) var(--space-5) var(--space-8);
-    }
-
-    .intro { max-width: 44rem; margin-bottom: var(--space-7); }
-    .intro h1 {
-      margin: 0 0 var(--space-3);
-      font-size: var(--text-title);
-      line-height: 1.25;
-      letter-spacing: -0.01em;
-    }
-    .intro p { margin: 0; color: var(--c-text-muted); }
-    .intro p span { display: block; }
+    /* 링크·제목만 포커스 테두리를 둥글린다. 버튼은 제 모양(알약 등)을 그대로 따른다 */
+    a:focus-visible, [tabindex="-1"]:focus-visible { border-radius: var(--radius); }
+    button { font: inherit; color: inherit; }
 
     .sr-only {
       position: absolute;
@@ -94,8 +140,109 @@
       white-space: nowrap;
       border: 0;
     }
-    /* 계열 탭 — 링크 + 주소 해시. 붙이지 않고, 좁은 폭에서는 줄바꿈한다(끝 탭이 화면 밖으로 숨지 않게) */
-    .tabs { margin: 0 0 var(--space-7); }
+    html:not(.js) .js-only { display: none; }
+    /* 마우스 올림 안내는 마우스가 있는 기기에서만 */
+    @media (hover: none) {
+      .hint-hover { display: none; }
+    }
+
+    /* 건너뛰기 링크 — 포커스를 받을 때만 보인다 */
+    .skip { position: absolute; left: var(--space-4); top: var(--space-4); z-index: var(--z-skip); padding: var(--space-2) var(--space-4); background: var(--c-bg); transform: translateY(-200%); }
+    .skip:focus-visible { transform: none; }
+
+    /* ---------- 첫 화면: 글 + 화면 벽 ----------
+       폭 경계는 @container 로 잰다. 컨테이너 조건의 rem 은 지금 글자 크기를 따르므로,
+       글자를 키우면 넓은 배치(글 왼쪽·벽 오른쪽) 대신 쌓는 배치가 되어 글과 그림이 겹치지 않는다(TYP-04) */
+    .hero { position: relative; overflow: hidden; border-bottom: var(--hairline) solid var(--c-line); container: hero / inline-size; }
+    .hero__in { position: relative; z-index: var(--z-above); max-width: var(--page-width); margin: 0 auto; padding: var(--space-7) var(--gutter) var(--space-5); }
+    .hero__text { max-width: 36rem; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+    .hero h1 {
+      margin: 0;
+      font-size: var(--text-display);
+      line-height: 1.04;
+      font-weight: var(--weight-display);
+      letter-spacing: -0.035em;
+    }
+    .hero__lead { margin: 0; font-size: var(--text-lead); line-height: 1.55; }
+    .hero__lead span { display: block; }
+    .hero__lead span + span { color: var(--c-text-muted); }
+    .hero__facts { margin: 0; color: var(--c-text-muted); font-variant-numeric: tabular-nums; }
+    .hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-5); padding-top: var(--space-1); }
+    .hero__hint { margin: 0; color: var(--c-text-muted); font-size: var(--text-small); }
+
+    .wall {
+      position: relative;
+      height: min(16rem, 40vh);
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(to bottom, transparent, var(--c-mask) 18%, var(--c-mask) 82%, transparent);
+      mask-image: linear-gradient(to bottom, transparent, var(--c-mask) 18%, var(--c-mask) 82%, transparent);
+    }
+    .wall__tilt {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      display: flex;
+      gap: var(--wall-gap);
+      transform: translate(-50%, -50%) rotate(var(--wall-tilt));
+    }
+    .wall__col {
+      display: flex;
+      flex-direction: column;
+      gap: var(--wall-gap);
+      width: var(--wall-tile);
+      animation: wall-drift var(--wall-dur) var(--ease-in-out) calc(var(--c) * var(--wall-step)) infinite alternate both;
+      animation-play-state: paused;
+      will-change: transform;
+    }
+    .wall__col:nth-child(even) { animation-direction: alternate-reverse; }
+    [data-motion="on"] .wall__col { animation-play-state: running; }
+    [data-motion="on"] .hero.is-away .wall__col { animation-play-state: paused; }
+    .wall img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 10;
+      border-radius: var(--radius-tile);
+      background: var(--c-surface);
+      box-shadow: 0 0 0 var(--hairline) var(--c-tile-ring), var(--shadow-tight);
+    }
+    @keyframes wall-drift {
+      from { transform: translateY(var(--wall-reach)); }
+      to { transform: translateY(calc(-1 * var(--wall-reach))); }
+    }
+
+    .wall-toggle {
+      position: absolute;
+      right: max(var(--gutter), calc((100% - var(--page-width)) / 2 + var(--gutter)));
+      bottom: var(--space-4);
+      z-index: var(--z-above);
+      min-height: var(--target);
+      padding: 0 var(--space-4);
+      border: var(--hairline) solid var(--c-line);
+      border-radius: var(--radius-pill);
+      background: var(--c-raised);
+      color: var(--c-text);
+      font-size: var(--text-small);
+      cursor: pointer;
+    }
+    .wall-toggle:hover { border-color: var(--c-text-muted); }
+    .wall-toggle[hidden] { display: none; }
+
+    /* ---------- 도구 줄: 계열 탭 + 화면 색 ---------- */
+    .bar { background: var(--c-bg); border-bottom: var(--hairline) solid var(--c-line); }
+    .bar__in {
+      max-width: var(--page-width);
+      margin: 0 auto;
+      padding: var(--space-2) var(--gutter);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2) var(--space-5);
+    }
+
+    /* 계열 탭 — 링크 + 주소 해시. 좁은 폭에서는 줄바꿈한다(끝 탭이 화면 밖으로 숨지 않게) */
+    .tabs { position: relative; }
     .tabs ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 var(--space-5); }
     .tabs a {
       display: inline-flex;
@@ -107,22 +254,79 @@
       border-bottom: var(--ring) solid transparent;
     }
     .tabs a:hover { color: var(--c-text); }
-    .tabs a[aria-current] { color: var(--c-text); font-weight: 600; border-bottom-color: var(--c-accent); }
-    .tabs__n { font-size: var(--text-small); font-weight: 400; color: var(--c-text-muted); font-variant-numeric: tabular-nums; }
+    .tabs a[aria-current] { color: var(--c-text); font-weight: var(--weight-strong); border-bottom-color: var(--c-accent); }
+    .tabs__n { font-size: var(--text-small); font-weight: var(--weight-regular); color: var(--c-text-muted); font-variant-numeric: tabular-nums; }
+    /* 현재 표시 막대 — 스크립트가 고른 탭 아래로 옮긴다(이동·가로 배율만) */
+    .tabs__bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--ring);
+      background: var(--c-accent);
+      transform-origin: 0 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .tabs-ready .tabs__bar { opacity: 1; transition: transform var(--dur-2) var(--ease-out); }
+    .tabs-ready .tabs a[aria-current] { border-bottom-color: transparent; }
     @media (forced-colors: active) {
       .tabs a:not([aria-current]) { border-bottom-color: Canvas; }
+      .tabs__bar { display: none; }
+      .tabs-ready .tabs a[aria-current] { border-bottom-color: CanvasText; }
     }
-    /* 건너뛰기 링크 — 포커스를 받을 때만 보인다 */
-    .skip { position: absolute; left: var(--space-4); top: var(--space-4); z-index: var(--z-skip); padding: var(--space-2) var(--space-4); background: var(--c-bg); transform: translateY(-200%); }
-    .skip:focus-visible { transform: none; }
-    /* 마우스 올림 안내는 마우스가 있는 기기에서만 */
-    @media (hover: none) {
-      .intro .hint-hover { display: none; }
+
+    /* 화면 색 — 두 버튼(aria-pressed). 고른 쪽 아래로 바탕 조각이 미끄러진다 */
+    .theme {
+      position: relative;
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr;
+      padding: var(--space-1);
+      border: var(--hairline) solid var(--c-line);
+      border-radius: var(--radius-pill);
+      background: var(--c-surface);
     }
-    .group + .group { margin-top: var(--space-8); }
-    .page[data-one] .group { margin-top: 0; }
+    .theme { max-width: 100%; }
+    .theme[hidden] { display: none; }
+    .theme__btn {
+      position: relative;
+      z-index: var(--z-above);
+      min-height: var(--target);
+      min-width: 0;
+      padding: 0 var(--space-2);
+      font-size: var(--text-small);
+      border: 0;
+      border-radius: var(--radius-pill);
+      background: none;
+      color: var(--c-text-muted);
+      cursor: pointer;
+    }
+    .theme__btn:hover { color: var(--c-text); }
+    .theme__btn[aria-pressed="true"] { color: var(--c-text); font-weight: var(--weight-strong); }
+    .theme__thumb {
+      position: absolute;
+      top: var(--space-1);
+      bottom: var(--space-1);
+      left: var(--space-1);
+      width: calc(50% - var(--space-1));
+      border-radius: var(--radius-pill);
+      background: var(--c-raised);
+      box-shadow: 0 0 0 var(--hairline) var(--c-text-muted);
+      transition: transform var(--dur-2) var(--ease-out);
+    }
+    [data-theme="dark"] .theme__thumb { transform: translateX(100%); }
+    @media (forced-colors: active) {
+      .theme__thumb { display: none; }
+      .theme__btn[aria-pressed="true"] { outline: var(--ring) solid Highlight; }
+    }
+
+    /* ---------- 계열 묶음과 카드 ---------- */
+    .group, .foot { max-width: var(--page-width); margin-inline: auto; padding-inline: var(--gutter); }
+    .group { padding-top: var(--space-7); }
+    .group + .group { padding-top: var(--space-8); }
+    .page[data-one] .group { padding-top: var(--space-7); }
     .group__head { margin-bottom: var(--space-5); max-width: 44rem; }
-    .group__head h2 { margin: 0 0 var(--space-2); font-size: var(--text-section); line-height: 1.35; }
+    .group__head h2 { width: fit-content; margin: 0 0 var(--space-2); font-size: var(--text-section); line-height: 1.35; letter-spacing: -0.01em; }
     .group__head p { margin: 0; color: var(--c-text-muted); }
 
     .samples {
@@ -140,9 +344,9 @@
       position: relative;
       display: block;
       aspect-ratio: 16 / 10;
-      overflow: hidden;
-      border-radius: var(--radius);
+      border-radius: var(--radius-tile);
       background: var(--c-surface);
+      box-shadow: 0 0 0 var(--hairline) var(--c-line);
     }
     .sample__thumb img {
       position: absolute;
@@ -150,20 +354,38 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: inherit;
     }
-    .sample__thumb .is-alt { opacity: 0; transition: opacity var(--fade) ease-out; }
-    .sample:hover .sample__thumb .is-alt,
+    /* 다른 상태 그림 — 어둡게면 보이고, 마우스를 올리거나 카드 안에 포커스가 있으면 반대로 */
+    .sample__thumb .is-alt { opacity: 0; transition: opacity var(--dur-fade) var(--ease-out); }
+    [data-theme="dark"] .sample__thumb .is-alt { opacity: 1; }
     .sample:focus-within .sample__thumb .is-alt { opacity: 1; }
+    [data-theme="dark"] .sample:focus-within .sample__thumb .is-alt { opacity: 0; }
+    @media (hover: hover) {
+      .sample:hover .sample__thumb .is-alt { opacity: 1; }
+      [data-theme="dark"] .sample:hover .sample__thumb .is-alt { opacity: 0; }
+    }
+    /* 화면 색을 바꾸는 동안만 — 카드 그림이 차례로 바뀐다(최대 8장까지 늦춘다) */
+    .is-theming .sample__thumb .is-alt { transition-delay: calc(min(var(--i), 8) * var(--stagger)); }
 
     .sample__body { display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start; flex: 1; }
     .sample__name { margin: 0; font-size: var(--text-sample); line-height: 1.4; }
     .sample__desc { margin: 0; }
     .sample__desc span { display: block; }
 
-    .facts { margin: 0; display: grid; gap: var(--space-1); font-size: var(--text-small); }
-    .facts div { display: grid; grid-template-columns: 4.5rem 1fr; gap: var(--space-3); }
+    /* 라벨 칸은 가장 긴 라벨 폭(max-content)만큼 — 줄마다 같은 선에 맞추려고 subgrid 를 쓴다. 지원하지 않으면 4.5rem */
+    .facts { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--space-1) var(--space-4); font-size: var(--text-small); }
+    .facts div { display: grid; grid-column: 1 / -1; grid-template-columns: 4.5rem minmax(0, 1fr); grid-template-columns: subgrid; align-items: baseline; }
+    /* 좁은 폭 + 큰 글자에서 "83.25점으로" 같은 긴 낱말도 칸 안에서 줄을 바꾼다 */
+    .facts dd { overflow-wrap: anywhere; }
     .facts dt { color: var(--c-text-muted); }
-    .facts dd { margin: 0; }
+    .facts dd { margin: 0; font-variant-numeric: tabular-nums; }
+    /* 터치 화면에서는 정보 줄·바닥의 링크도 누르는 높이를 44로 넓힌다(A11Y-INPUT-05) */
+    @media (pointer: coarse) {
+      .facts dd a, .foot a { display: inline-flex; align-items: center; min-height: var(--target); }
+      /* inline-flex 링크는 break-word 로 최소 폭이 줄지 않는다 — 긴 주소는 아무 곳에서나 줄을 바꾼다 */
+      .foot a { overflow-wrap: anywhere; }
+    }
 
     .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-5); margin-top: auto; padding-top: var(--space-2); }
     .btn {
@@ -171,10 +393,11 @@
       align-items: center;
       min-height: var(--target);
       padding: 0 var(--space-5);
+      border: var(--hairline) solid transparent;
       border-radius: var(--radius);
       background: var(--c-accent);
       color: var(--c-on-accent);
-      font-weight: 600;
+      font-weight: var(--weight-strong);
       text-decoration: none;
     }
     .btn:hover { background: var(--c-accent-hover); color: var(--c-on-accent); }
@@ -183,37 +406,149 @@
     .foot {
       margin-top: var(--space-8);
       padding-top: var(--space-5);
-      border-top: var(--hairline) solid var(--c-line);
+      padding-bottom: var(--space-8);
       color: var(--c-text-muted);
       font-size: var(--text-small);
     }
+    .foot__in { padding-top: var(--space-5); border-top: var(--hairline) solid var(--c-line); }
     .foot p { margin: 0; }
     .foot p + p { margin-top: var(--space-2); }
+    .nowrap { white-space: nowrap; }
 
+    ::view-transition-group(root) { animation-duration: var(--dur-2); }
+
+    @media (min-width: 30rem) {
+      :root { --gutter: var(--space-5); }
+    }
     @media (min-width: 48rem) {
-      .page { padding: var(--space-8) var(--space-6); }
+      :root { --gutter: var(--space-6); }
+      .theme__btn { padding: 0 var(--space-4); }
+    }
+    @container hero (min-width: 48rem) {
+      .hero__in { padding-top: var(--space-8); }
+      .wall { --wall-tile: 11rem; height: min(20rem, 45vh); }
+    }
+
+    /* 넓은 첫 화면 — 글은 왼쪽, 화면 벽은 글 칸이 끝난 자리부터 오른쪽 끝까지(글 칸과 같은 rem 기준이라 겹치지 않는다) */
+    @container hero (min-width: 64rem) {
+      .hero__in {
+        --hero-text: 27rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: min(40rem, 86vh);
+        padding-block: var(--space-8);
+      }
+      .hero__text { max-width: var(--hero-text); }
+      .wall {
+        --wall-tile: 13rem;
+        --wall-gap: var(--space-4);
+        --wall-reach: 8rem;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: calc(max(0rem, (100% - var(--page-width)) / 2) + var(--gutter) + 27rem + var(--space-5));
+        height: auto;
+        -webkit-mask-image: linear-gradient(to right, transparent, var(--c-mask) 22%), linear-gradient(to bottom, transparent, var(--c-mask) 14%, var(--c-mask) 86%, transparent);
+        -webkit-mask-composite: source-in;
+        mask-image: linear-gradient(to right, transparent, var(--c-mask) 22%), linear-gradient(to bottom, transparent, var(--c-mask) 14%, var(--c-mask) 86%, transparent);
+        mask-composite: intersect;
+      }
+    }
+    @container hero (min-width: 80rem) {
+      .hero__text { max-width: 32rem; }
+      .wall { left: calc(max(0rem, (100% - var(--page-width)) / 2) + var(--gutter) + 32rem + var(--space-5)); }
+    }
+    /* 낮은 창(가로로 든 휴대폰 등)에서는 첫 화면 위 여백을 줄여 벽과 탭이 빨리 보이게 한다 */
+    @media (max-height: 30rem) {
+      .hero .hero__in { padding-top: var(--space-5); padding-bottom: var(--space-4); }
+    }
+    /* 넓고 높은 창에서만 도구 줄을 위에 붙인다. 줄이 창 높이의 12%를 넘으면(큰 글자) 스크립트가 .is-tall 을 붙여 붙이지 않는다 */
+    @media (min-width: 64rem) and (min-height: 40rem) {
+      .bar:not(.is-tall) { position: sticky; top: 0; z-index: var(--z-bar); }
+      html { scroll-padding-top: calc(var(--bar-h) + var(--space-4)); }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .sample__thumb .is-alt { transition: none; }
+      .sample__thumb .is-alt, .theme__thumb, .tabs-ready .tabs__bar { transition: none; }
+      ::view-transition-group(root), ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
     }
   </style>
 </head>
 <body>
   <a class="skip" href="#tabs">목록 바로가기</a>
   <main class="page">
-    <header class="intro">
-      <h1>UI 샘플</h1>
-      <p><span>정적 웹 페이지로 만든 화면 샘플을 모았습니다. 서버 없이 브라우저에서 바로 열립니다.</span><span>모든 샘플은 화면 폭에 맞춰 바뀝니다.<span class="hint-hover"> 그림에 마우스를 올리면 다른 상태가 보입니다.</span></span></p>
+    <header class="hero">
+      <div class="hero__in">
+        <div class="hero__text">
+          <h1>UI 샘플</h1>
+          <p class="hero__lead"><span>디자인 시스템과 디자인 패턴을 분석하려고 만든 화면 샘플입니다.</span><span>정적 웹 페이지라 서버 없이 브라우저에서 바로 열립니다. 모든 샘플은 화면 폭에 맞춰 바뀝니다.</span></p>
+          <!-- facts:start --><p class="hero__facts">샘플 22개가 모두 독립 검수에 합격했고, 평균 점수는 90.4점입니다.</p><!-- facts:end -->
+          <div class="hero__actions">
+            <a class="btn" href="#tabs">샘플 둘러보기</a>
+            <a class="link" href="https://github.com/s10cho/ui-samples">저장소 보기</a>
+          </div>
+          <p class="hero__hint"><span class="js-only">화면 색을 어둡게 바꾸면 카드 그림도 다른 상태로 바뀝니다.</span><span class="hint-hover"> 그림에 마우스를 올리면 그 그림만 바뀝니다.</span></p>
+        </div>
+      </div>
+      <!-- wall:start -->
+      <div class="wall" aria-hidden="true">
+        <div class="wall__tilt">
+          <div class="wall__col" style="--c: 0">
+            <img src="assets/wall/design-system-day.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/settings-night.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/city-night-day.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/space-station-night.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/kanban-board-day.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/role-permissions-night.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+          </div>
+          <div class="wall__col" style="--c: 1">
+            <img src="assets/wall/support-inbox-night.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/ops-dashboard-day.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/ski-mountain-night.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/island-park-iso-day.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/file-manager-night.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/onboarding-setup-day.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+          </div>
+          <div class="wall__col" style="--c: 2">
+            <img src="assets/wall/order-table-day.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/booking-flow-night.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/temple-seasons-day.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/city-night-iso-night.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/notification-center-day.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+          </div>
+          <div class="wall__col" style="--c: 3">
+            <img src="assets/wall/customer-edit-night.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/island-park-day.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/museum-floors-night.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/ski-mountain-iso-day.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+            <img src="assets/wall/search-results-night.webp" width="480" height="300" alt="" decoding="async" fetchpriority="low">
+          </div>
+        </div>
+      </div>
+      <!-- wall:end -->
+      <button type="button" class="wall-toggle" hidden>움직임 멈추기</button>
     </header>
-    <nav class="tabs" id="tabs" aria-label="샘플 계열">
-      <ul>
-        <li><a href="#tabs" data-group="" data-title="전체" data-count="22" aria-current="true">전체 <span class="tabs__n" aria-hidden="true">22</span><span class="sr-only">, 샘플 22개</span></a></li>
-        <li><a href="#group-app" data-group="app" data-title="업무 화면" data-count="13">업무 화면 <span class="tabs__n" aria-hidden="true">13</span><span class="sr-only">, 샘플 13개</span></a></li>
-        <li><a href="#group-3d" data-group="3d" data-title="3D 장면" data-count="6">3D 장면 <span class="tabs__n" aria-hidden="true">6</span><span class="sr-only">, 샘플 6개</span></a></li>
-        <li><a href="#group-2d" data-group="2d" data-title="2D 그림판" data-count="3">2D 그림판 <span class="tabs__n" aria-hidden="true">3</span><span class="sr-only">, 샘플 3개</span></a></li>
-      </ul>
-    </nav>
+    <div class="bar-sentinel" aria-hidden="true"></div>
+    <div class="bar">
+      <div class="bar__in">
+        <nav class="tabs" id="tabs" aria-label="샘플 계열">
+          <ul>
+            <li><a href="#tabs" data-group="" data-title="전체" data-count="22" aria-current="true">전체 <span class="tabs__n">22</span><span class="sr-only">개</span></a></li>
+            <li><a href="#group-app" data-group="app" data-title="업무 화면" data-count="13">업무 화면 <span class="tabs__n">13</span><span class="sr-only">개</span></a></li>
+            <li><a href="#group-3d" data-group="3d" data-title="3D 장면" data-count="6">3D 장면 <span class="tabs__n">6</span><span class="sr-only">개</span></a></li>
+            <li><a href="#group-2d" data-group="2d" data-title="2D 그림판" data-count="3">2D 그림판 <span class="tabs__n">3</span><span class="sr-only">개</span></a></li>
+          </ul>
+          <span class="tabs__bar" aria-hidden="true"></span>
+        </nav>
+        <div class="theme" role="group" aria-label="화면 색" hidden>
+          <button type="button" class="theme__btn" data-theme-value="light" aria-pressed="true">밝게</button>
+          <button type="button" class="theme__btn" data-theme-value="dark" aria-pressed="false">어둡게</button>
+          <span class="theme__thumb" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
     <p class="sr-only" id="tab-status" role="status"></p>
     <section class="group" aria-labelledby="group-app">
       <div class="group__head">
@@ -221,7 +556,7 @@
         <p>목록·상세·폼·대시보드처럼 실제 서비스에서 쓰는 화면입니다. 공용 디자인 시스템(DESIGN.md) 위에서 만들었습니다.</p>
       </div>
       <ol class="samples">
-        <li class="sample">
+        <li class="sample" style="--i: 0">
           <a class="sample__thumb" href="design-system/" tabindex="-1" aria-hidden="true">
             <img src="assets/design-system-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/design-system-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -231,7 +566,7 @@
             <p class="sample__desc"><span>업무 화면 샘플이 함께 쓰는 버튼·입력·표·탭·대화상자 같은 부품을 한 화면에 모았습니다.</span><span>부품마다 기본·포커스·비활성·오류·로딩 상태와 어두운 화면을 볼 수 있습니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>밝게 ↔ 어둡게</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/design-system/docs/ui/review/design-system/20261117-report.md">독립 검수 83.25점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/design-system/docs/ui/review/design-system/20261117-report.md">독립 검수 83.25점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="design-system/">샘플 열기</a>
@@ -240,7 +575,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 1">
           <a class="sample__thumb" href="support-inbox/" tabindex="-1" aria-hidden="true">
             <img src="assets/support-inbox-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/support-inbox-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -250,7 +585,7 @@
             <p class="sample__desc"><span>고객 대화 목록과 대화창, 고객 정보를 한 화면에서 다룹니다.</span><span>상태·담당자로 거르고, 빠른 답변을 골라 보낼 수 있습니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>목록 ↔ 대화(좁은 폭)</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/support-inbox/docs/ui/review/support-inbox/20261117-report.md">독립 검수 93.75점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/support-inbox/docs/ui/review/support-inbox/20261117-report.md">독립 검수 93.75점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="support-inbox/">샘플 열기</a>
@@ -259,7 +594,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 2">
           <a class="sample__thumb" href="order-table/" tabindex="-1" aria-hidden="true">
             <img src="assets/order-table-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/order-table-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -269,7 +604,7 @@
             <p class="sample__desc"><span>주문을 정렬·필터·검색하고, 여러 건을 골라 한꺼번에 처리합니다.</span><span>좁은 폭에서는 표가 카드로 바뀝니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>표 ↔ 카드(폭)</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/order-table/docs/ui/review/order-table/20261117-report.md">독립 검수 94.5점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/order-table/docs/ui/review/order-table/20261117-report.md">독립 검수 94.5점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="order-table/">샘플 열기</a>
@@ -278,7 +613,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 3">
           <a class="sample__thumb" href="customer-edit/" tabindex="-1" aria-hidden="true">
             <img src="assets/customer-edit-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/customer-edit-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -288,7 +623,7 @@
             <p class="sample__desc"><span>고객 정보를 보고 편집 모드에서 고칩니다.</span><span>입력 검증, 저장 중·저장됨·실패, 변경 버리기 확인을 다룹니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>보기 ↔ 편집</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/customer-edit/docs/ui/review/customer-edit/20261117-report.md">독립 검수 85.75점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/customer-edit/docs/ui/review/customer-edit/20261117-report.md">독립 검수 85.75점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="customer-edit/">샘플 열기</a>
@@ -297,7 +632,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 4">
           <a class="sample__thumb" href="settings/" tabindex="-1" aria-hidden="true">
             <img src="assets/settings-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/settings-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -307,7 +642,7 @@
             <p class="sample__desc"><span>계정·알림·보안·팀 설정을 탭으로 나눴습니다.</span><span>저장하지 않은 변경 알림과 위험 구역 확인 대화상자가 있습니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>탭 4개</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/settings/docs/ui/review/settings/20261117-report.md">독립 검수 90.75점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/settings/docs/ui/review/settings/20261117-report.md">독립 검수 90.75점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="settings/">샘플 열기</a>
@@ -316,7 +651,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 5">
           <a class="sample__thumb" href="ops-dashboard/" tabindex="-1" aria-hidden="true">
             <img src="assets/ops-dashboard-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/ops-dashboard-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -326,7 +661,7 @@
             <p class="sample__desc"><span>지표 카드와 추세 그래프, 알림 목록을 보여 줍니다.</span><span>기간을 바꾸고, 그래프마다 표로도 볼 수 있습니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>그래프 ↔ 표</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/ops-dashboard/docs/ui/review/ops-dashboard/20261117-report.md">독립 검수 90점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/ops-dashboard/docs/ui/review/ops-dashboard/20261117-report.md">독립 검수 90점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="ops-dashboard/">샘플 열기</a>
@@ -335,7 +670,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 6">
           <a class="sample__thumb" href="booking-flow/" tabindex="-1" aria-hidden="true">
             <img src="assets/booking-flow-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/booking-flow-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -345,7 +680,7 @@
             <p class="sample__desc"><span>날짜·시간 고르기부터 정보 입력, 확인, 완료까지 여러 단계로 예약합니다.</span><span>뒤로 가도 입력이 남고, 단계가 주소에 남습니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>단계 4개</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/booking-flow/docs/ui/review/booking-flow/20261117-report.md">독립 검수 88.25점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/booking-flow/docs/ui/review/booking-flow/20261117-report.md">독립 검수 88.25점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="booking-flow/">샘플 열기</a>
@@ -354,7 +689,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 7">
           <a class="sample__thumb" href="kanban-board/" tabindex="-1" aria-hidden="true">
             <img src="assets/kanban-board-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/kanban-board-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -364,7 +699,7 @@
             <p class="sample__desc"><span>업무 카드를 단계별 열로 나눠 보고, 카드를 다른 단계로 옮깁니다.</span><span>끌어 놓기와 키보드 &quot;옮기기&quot; 메뉴, 열마다 개수 제한, 필터를 다룹니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>보드 ↔ 목록</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/kanban-board/docs/ui/review/kanban-board/20261118-report.md">독립 검수 82점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/kanban-board/docs/ui/review/kanban-board/20261118-report.md">독립 검수 82점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="kanban-board/">샘플 열기</a>
@@ -373,7 +708,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 8">
           <a class="sample__thumb" href="file-manager/" tabindex="-1" aria-hidden="true">
             <img src="assets/file-manager-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/file-manager-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -383,7 +718,7 @@
             <p class="sample__desc"><span>폴더와 파일을 목록·격자로 보고 올리기·이름 바꾸기·옮기기·지우기를 합니다.</span><span>여러 개 고르기, 올리는 중 진행률, 실패 다시 시도, 되돌리기를 다룹니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>목록 ↔ 격자</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/file-manager/docs/ui/review/file-manager/20261118-report.md">독립 검수 90.75점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/file-manager/docs/ui/review/file-manager/20261118-report.md">독립 검수 90.75점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="file-manager/">샘플 열기</a>
@@ -392,7 +727,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 9">
           <a class="sample__thumb" href="notification-center/" tabindex="-1" aria-hidden="true">
             <img src="assets/notification-center-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/notification-center-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -402,7 +737,7 @@
             <p class="sample__desc"><span>읽지 않은 알림을 묶어 보여 주고 읽음 처리와 알림 끄기를 합니다.</span><span>종류별 거르기, 모두 읽음, 새 알림 도착, 알림 설정으로 가기를 다룹니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>읽지 않음 ↔ 전체</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/notification-center/docs/ui/review/notification-center/20261118-report.md">독립 검수 88.25점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/notification-center/docs/ui/review/notification-center/20261118-report.md">독립 검수 88.25점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="notification-center/">샘플 열기</a>
@@ -411,7 +746,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 10">
           <a class="sample__thumb" href="search-results/" tabindex="-1" aria-hidden="true">
             <img src="assets/search-results-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/search-results-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -421,7 +756,7 @@
             <p class="sample__desc"><span>검색어와 필터로 문서·사람·업무를 찾고 결과를 정렬합니다.</span><span>검색어 강조, 결과가 없을 때 제안, 필터 서랍, 더 보기를 다룹니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>전체 ↔ 종류별</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/search-results/docs/ui/review/search-results/20261118-report.md">독립 검수 85.75점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/search-results/docs/ui/review/search-results/20261118-report.md">독립 검수 85.75점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="search-results/">샘플 열기</a>
@@ -430,7 +765,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 11">
           <a class="sample__thumb" href="role-permissions/" tabindex="-1" aria-hidden="true">
             <img src="assets/role-permissions-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/role-permissions-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -440,7 +775,7 @@
             <p class="sample__desc"><span>역할마다 할 수 있는 일을 표로 정하고 구성원에게 역할을 줍니다.</span><span>권한 표 고치기, 위험한 권한 확인, 변경 내역, 저장 전 미리 보기를 다룹니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>역할 ↔ 구성원</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/role-permissions/docs/ui/review/role-permissions/20261118-report.md">독립 검수 85.75점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/role-permissions/docs/ui/review/role-permissions/20261118-report.md">독립 검수 85.75점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="role-permissions/">샘플 열기</a>
@@ -449,7 +784,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 12">
           <a class="sample__thumb" href="onboarding-setup/" tabindex="-1" aria-hidden="true">
             <img src="assets/onboarding-setup-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/onboarding-setup-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -459,7 +794,7 @@
             <p class="sample__desc"><span>처음 가입한 팀이 작업 공간을 단계별로 꾸립니다.</span><span>단계 표시, 건너뛰기와 나중에 하기, 진행 저장, 다 마친 뒤 첫 화면을 다룹니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>1단계 ↔ 4단계</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/onboarding-setup/docs/ui/review/onboarding-setup/20261118-report.md">독립 검수 88.25점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/onboarding-setup/docs/ui/review/onboarding-setup/20261118-report.md">독립 검수 88.25점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="onboarding-setup/">샘플 열기</a>
@@ -473,10 +808,10 @@
     <section class="group" aria-labelledby="group-3d">
       <div class="group__head">
         <h2 id="group-3d">3D 장면</h2>
-        <p>Three.js 로 그린 3D 첫 화면입니다. 시점을 돌리고, 명소를 골라 설명을 읽을 수 있습니다.</p>
+        <p>Three.js로 그린 3D 첫 화면입니다. 시점을 돌리고, 명소를 골라 설명을 읽을 수 있습니다.</p>
       </div>
       <ol class="samples">
-        <li class="sample">
+        <li class="sample" style="--i: 0">
           <a class="sample__thumb" href="island-park/" tabindex="-1" aria-hidden="true">
             <img src="assets/island-park-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/island-park-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -486,7 +821,7 @@
             <p class="sample__desc"><span>바다 위 섬 하나에 놀이공원 명소 5곳을 3D로 보여 줍니다.</span><span>명소를 고르면 그곳으로 가까이 가고, 낮과 밤을 바꿀 수 있습니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>낮 ↔ 밤</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/island-park/docs/ui/review/island-park-landmark/20261117-report.md">독립 검수 94.5점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/island-park/docs/ui/review/island-park-landmark/20261117-report.md">독립 검수 94.5점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="island-park/">샘플 열기</a>
@@ -495,7 +830,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 1">
           <a class="sample__thumb" href="city-night/" tabindex="-1" aria-hidden="true">
             <img src="assets/city-night-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/city-night-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -505,7 +840,7 @@
             <p class="sample__desc"><span>강을 사이에 둔 가상의 작은 도시 한 블록을 3D로 보여 줍니다.</span><span>밤으로 바꾸면 창문과 가로등, 다리에 불이 켜집니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>해 질 녘 ↔ 밤</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/city-night/docs/ui/review/city-night/20261117-report.md">독립 검수 93.25점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/city-night/docs/ui/review/city-night/20261117-report.md">독립 검수 93.25점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="city-night/">샘플 열기</a>
@@ -514,7 +849,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 2">
           <a class="sample__thumb" href="ski-mountain/" tabindex="-1" aria-hidden="true">
             <img src="assets/ski-mountain-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/ski-mountain-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -524,7 +859,7 @@
             <p class="sample__desc"><span>눈 덮인 가상의 산에 만든 스키장을 3D로 보여 줍니다.</span><span>리프트와 슬로프, 산장을 고르고 눈이 내리게 할 수 있습니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>맑음 ↔ 눈 내림</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/ski-mountain/docs/ui/review/ski-mountain/20261117-report.md">독립 검수 89.5점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/ski-mountain/docs/ui/review/ski-mountain/20261117-report.md">독립 검수 89.5점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="ski-mountain/">샘플 열기</a>
@@ -533,7 +868,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 3">
           <a class="sample__thumb" href="temple-seasons/" tabindex="-1" aria-hidden="true">
             <img src="assets/temple-seasons-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/temple-seasons-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -543,7 +878,7 @@
             <p class="sample__desc"><span>가상의 산속 절과 마을을 3D로 보여 줍니다.</span><span>4계절을 고르면 잎 색이 바뀌고 꽃잎·낙엽·눈이 날립니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>봄 · 여름 · 가을 · 겨울</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/temple-seasons/docs/ui/review/temple-seasons/20261117-report.md">독립 검수 90점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/temple-seasons/docs/ui/review/temple-seasons/20261117-report.md">독립 검수 90점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="temple-seasons/">샘플 열기</a>
@@ -552,7 +887,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 4">
           <a class="sample__thumb" href="museum-floors/" tabindex="-1" aria-hidden="true">
             <img src="assets/museum-floors-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/museum-floors-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -562,7 +897,7 @@
             <p class="sample__desc"><span>가상의 4층 박물관을 층별로 펼쳐 보는 안내 화면입니다.</span><span>층과 전시실을 고르고, 화장실·엘리베이터 같은 편의시설을 켜고 끌 수 있습니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>펼쳐 보기 ↔ 쌓아 보기</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/museum-floors/docs/ui/review/museum-floors/20261117-report.md">독립 검수 100점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/museum-floors/docs/ui/review/museum-floors/20261117-report.md">독립 검수 100점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="museum-floors/">샘플 열기</a>
@@ -571,7 +906,7 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 5">
           <a class="sample__thumb" href="space-station/" tabindex="-1" aria-hidden="true">
             <img src="assets/space-station-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/space-station-night.webp" width="960" height="600" alt="" loading="lazy">
@@ -581,7 +916,7 @@
             <p class="sample__desc"><span>지구 궤도를 도는 가상의 정거장을 3D로 보여 줍니다.</span><span>어두운 화면에 맞춘 UI 샘플입니다. 지구의 낮 쪽과 밤 쪽을 바꿀 수 있습니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>낮 쪽 ↔ 밤 쪽</dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/space-station/docs/ui/review/space-station/20261117-report.md">독립 검수 97점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/space-station/docs/ui/review/space-station/20261117-report.md">독립 검수 97점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="space-station/">샘플 열기</a>
@@ -595,21 +930,21 @@
     <section class="group" aria-labelledby="group-2d">
       <div class="group__head">
         <h2 id="group-2d">2D 그림판</h2>
-        <p>3D 장면과 같은 배치·명소·문구를 2D 그림(SVG)으로 다시 그렸습니다. 라이브러리 없이 첫 방문 전송량이 100KB 아래입니다. 3D 판과 나란히 열어 견줘 보세요.</p>
+        <p>3D 장면과 같은 배치·명소·문구를 2D 그림(SVG)으로 다시 그렸습니다. 라이브러리 없이 첫 방문 전송량이 100KB 아래입니다. 3D 판과 나란히 열어 견줘 볼 수 있습니다.</p>
       </div>
       <ol class="samples">
-        <li class="sample">
+        <li class="sample" style="--i: 0">
           <a class="sample__thumb" href="island-park-iso/" tabindex="-1" aria-hidden="true">
             <img src="assets/island-park-iso-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/island-park-iso-night.webp" width="960" height="600" alt="" loading="lazy">
           </a>
           <div class="sample__body">
             <h3 class="sample__name">바다 위 놀이공원 — 2D 그림판</h3>
-            <p class="sample__desc"><span>같은 섬과 명소 5곳을 2D 그림으로 다시 그렸습니다.</span><span>첫 방문 전송량은 약 90KB 입니다.</span></p>
+            <p class="sample__desc"><span>같은 섬과 명소 5곳을 2D 그림으로 다시 그렸습니다.</span><span>첫 방문 전송량은 약 90KB입니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>낮 ↔ 밤</dd></div>
               <div><dt>3D 판</dt><dd><a href="island-park/">바다 위 놀이공원</a></dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/island-park-iso/docs/ui/review/island-park-iso/20261117-report.md">독립 검수 90.75점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/island-park-iso/docs/ui/review/island-park-iso/20261117-report.md">독립 검수 90.75점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="island-park-iso/">샘플 열기</a>
@@ -618,18 +953,18 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 1">
           <a class="sample__thumb" href="city-night-iso/" tabindex="-1" aria-hidden="true">
             <img src="assets/city-night-iso-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/city-night-iso-night.webp" width="960" height="600" alt="" loading="lazy">
           </a>
           <div class="sample__body">
             <h3 class="sample__name">강을 낀 작은 도시 — 2D 그림판</h3>
-            <p class="sample__desc"><span>3D 판과 같은 건물 배치를 2D 그림으로 다시 그렸습니다.</span><span>첫 방문 전송량은 약 96KB 입니다.</span></p>
+            <p class="sample__desc"><span>3D 판과 같은 건물 배치를 2D 그림으로 다시 그렸습니다.</span><span>첫 방문 전송량은 약 96KB입니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>해 질 녘 ↔ 밤</dd></div>
               <div><dt>3D 판</dt><dd><a href="city-night/">강을 낀 작은 도시</a></dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/city-night-iso/docs/ui/review/city-night-iso/20261117-report.md">독립 검수 93.25점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/city-night-iso/docs/ui/review/city-night-iso/20261117-report.md">독립 검수 93.25점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="city-night-iso/">샘플 열기</a>
@@ -638,18 +973,18 @@
             </div>
           </div>
         </li>
-        <li class="sample">
+        <li class="sample" style="--i: 2">
           <a class="sample__thumb" href="ski-mountain-iso/" tabindex="-1" aria-hidden="true">
             <img src="assets/ski-mountain-iso-day.webp" width="960" height="600" alt="" loading="lazy">
             <img class="is-alt" src="assets/ski-mountain-iso-night.webp" width="960" height="600" alt="" loading="lazy">
           </a>
           <div class="sample__body">
             <h3 class="sample__name">겨울 산 스키장 — 2D 그림판</h3>
-            <p class="sample__desc"><span>3D 판과 같은 산과 명소를 2D 그림으로 다시 그렸습니다.</span><span>눈송이도 그림으로 내립니다. 첫 방문 전송량은 약 95KB 입니다.</span></p>
+            <p class="sample__desc"><span>3D 판과 같은 산과 명소를 2D 그림으로 다시 그렸습니다.</span><span>눈송이도 그림으로 내립니다. 첫 방문 전송량은 약 95KB입니다.</span></p>
             <dl class="facts">
               <div><dt>전환</dt><dd>맑음 ↔ 눈 내림</dd></div>
               <div><dt>3D 판</dt><dd><a href="ski-mountain/">겨울 산 스키장</a></dd></div>
-              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/ski-mountain-iso/docs/ui/review/ski-mountain-iso/20261117-report.md">독립 검수 93.25점 · 합격</a></dd></div>
+              <div><dt>검수</dt><dd><a href="https://github.com/s10cho/ui-samples/blob/main/ski-mountain-iso/docs/ui/review/ski-mountain-iso/20261117-report.md">독립 검수 93.25점으로 합격</a></dd></div>
             </dl>
             <div class="actions">
               <a class="btn" href="ski-mountain-iso/">샘플 열기</a>
@@ -662,17 +997,76 @@
     </section>
 
     <footer class="foot">
-      <p>샘플마다 폴더 하나에 코드·화면 설계서·검수 보고서가 함께 있습니다. 검수 점수는 만든 쪽과 다른 에이전트가 루브릭(100점, 80점 이상 합격)으로 매긴 값입니다.</p>
-      <p>저장소: <a href="https://github.com/s10cho/ui-samples">github.com/s10cho/ui-samples</a> · 2026. 11. 18. 기준</p>
+      <div class="foot__in">
+        <p>샘플마다 폴더 하나에 코드·화면 설계서·검수 보고서가 함께 있습니다. 검수 점수는 만든 쪽과 다른 에이전트가 루브릭(100점, 80점 이상 합격)으로 매긴 값입니다.</p>
+        <p>저장소: <a href="https://github.com/s10cho/ui-samples">github.com/s10cho/ui-samples</a></p>
+        <p><span class="nowrap">2026. 11. 19.</span> 기준입니다.</p>
+      </div>
     </footer>
   </main>
   <script>
-    /* 계열 탭: 고른 계열만 보인다. 스크립트가 없으면 모든 계열이 보이고 탭은 그 계열 제목으로 이동한다 */
     (function () {
+      var root = document.documentElement;
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+      var KEY = 'ui-samples-theme';
+
+      /* ---------- 화면 색 ---------- */
+      var theme = document.querySelector('.theme');
+      var themeBtns = theme ? Array.prototype.slice.call(theme.querySelectorAll('[data-theme-value]')) : [];
+      var themeTimer = 0;
+      function paintTheme(v) {
+        if (v === 'dark') root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+        // 휴대폰 주소창 색도 바탕색에 맞춘다
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', getComputedStyle(root).getPropertyValue('--c-bg').trim());
+        themeBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-theme-value') === v)); });
+      }
+      function setTheme(v) {
+        if ((root.getAttribute('data-theme') || 'light') === v) return;
+        try { localStorage.setItem(KEY, v); } catch (e) { /* 저장하지 못해도 이번 화면에는 적용한다 */ }
+        if (reduce.matches) { paintTheme(v); return; }
+        // 카드 그림이 차례로 바뀌게 잠시 표시를 단다. 페이지 색은 지원하는 브라우저에서 겹쳐 바꾼다
+        root.classList.add('is-theming');
+        clearTimeout(themeTimer);
+        themeTimer = setTimeout(function () { root.classList.remove('is-theming'); }, 700);
+        if (document.startViewTransition) document.startViewTransition(function () { paintTheme(v); });
+        else paintTheme(v);
+      }
+      if (theme) {
+        paintTheme(root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+        theme.hidden = false;
+        themeBtns.forEach(function (b) {
+          b.addEventListener('click', function () { setTheme(b.getAttribute('data-theme-value')); });
+        });
+      }
+
+      /* ---------- 화면 벽: 멈춤 버튼, 첫 화면이 안 보이면 멈춤 ---------- */
+      var hero = document.querySelector('.hero');
+      var wall = document.querySelector('.wall');
+      var wallBtn = document.querySelector('.wall-toggle');
+      function setMotion(on) {
+        root.setAttribute('data-motion', on ? 'on' : 'off');
+        if (wallBtn) wallBtn.textContent = on ? '움직임 멈추기' : '움직임 켜기';
+      }
+      if (wall && wallBtn) {
+        setMotion(root.getAttribute('data-motion') === 'on');
+        wallBtn.hidden = false;
+        wallBtn.addEventListener('click', function () { setMotion(root.getAttribute('data-motion') !== 'on'); });
+        if ('IntersectionObserver' in window) {
+          new IntersectionObserver(function (entries) {
+            hero.classList.toggle('is-away', !entries[0].isIntersecting);
+          }).observe(wall);
+        }
+      }
+
+      /* ---------- 계열 탭: 고른 계열만 보인다. 스크립트가 없으면 모든 계열이 보이고 탭은 그 계열 제목으로 이동한다 ---------- */
       var nav = document.querySelector('.tabs');
       var status = document.getElementById('tab-status');
       if (!nav || !status) return;
       var page = document.querySelector('.page');
+      var bar = document.querySelector('.bar');
+      var sentinel = document.querySelector('.bar-sentinel');
+      var mark = nav.querySelector('.tabs__bar');
       var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-group]'));
       var groups = Array.prototype.slice.call(document.querySelectorAll('section.group'));
       function fromHash() {
@@ -682,30 +1076,66 @@
       function linkOf(id) {
         return links.filter(function (a) { return a.getAttribute('data-group') === id; })[0];
       }
-      function show(id, announce, focus) {
+      // 현재 표시 막대를 고른 탭 아래로 옮긴다. 이동과 가로 배율만 바꾼다
+      function placeMark(animate) {
+        var a = nav.querySelector('a[aria-current]');
+        if (!mark || !a) return;
+        var w = nav.clientWidth || 1;
+        var y = a.offsetTop + a.offsetHeight - mark.offsetHeight;
+        if (!animate) mark.style.transition = 'none';
+        mark.style.transform = 'translate(' + a.offsetLeft + 'px, ' + y + 'px) scaleX(' + (a.offsetWidth / w) + ')';
+        if (!animate) { void mark.offsetWidth; mark.style.transition = ''; }
+        root.classList.add('tabs-ready');
+      }
+      // 탭을 바꾼 직후 화면에 보이는 카드만 차례로 나타난다(최대 8장). 움직임 줄이기면 하지 않는다
+      function enterCards() {
+        if (reduce.matches || !Element.prototype.animate) return;
+        var n = 0;
+        groups.forEach(function (g) {
+          if (g.hidden) return;
+          Array.prototype.forEach.call(g.querySelectorAll('.sample'), function (c) {
+            var r = c.getBoundingClientRect();
+            if (n >= 8 || r.bottom < 0 || r.top > window.innerHeight) return;
+            c.animate([{ opacity: 0, transform: 'translateY(0.5rem)' }, { opacity: 1, transform: 'none' }],
+              { duration: 220, delay: n * 20, easing: 'cubic-bezier(0.2, 0, 0, 1)', fill: 'backwards' });
+            n++;
+          });
+        });
+      }
+      // 도구 줄을 맨 위로 올린다(줄이 붙지 않는 화면에서도 줄이 맨 위에 온다)
+      function barToTop() {
+        if (sentinel) window.scrollTo(0, window.scrollY + sentinel.getBoundingClientRect().top);
+      }
+      // 고른 결과가 화면에 드러나게 한다(STA-10): 첫 카드 줄이 창 아래에 6rem 이상 보이지 않으면
+      // 도구 줄을 맨 위로 올린다. 그래도 안 보이면(제목·설명이 길 때) 계열 제목을 맨 위로 올린다
+      function reveal(target) {
+        var sec = target ? target.closest('section') : groups[0];
+        var card = sec && sec.querySelector('.sample');
+        var peek = 6 * (parseFloat(getComputedStyle(root).fontSize) || 16);
+        var hidden = function () { return card && card.getBoundingClientRect().top > window.innerHeight - peek; };
+        if ((sentinel && sentinel.getBoundingClientRect().top < 0) || hidden()) {
+          barToTop();
+          if (target && hidden()) target.scrollIntoView({ block: 'start' });
+        }
+      }
+      function show(id, announce, focus, animate, scroll) {
         links.forEach(function (a) {
           if (a.getAttribute('data-group') === id) a.setAttribute('aria-current', 'true');
           else a.removeAttribute('aria-current');
         });
         groups.forEach(function (s) { s.hidden = !!id && s.getAttribute('aria-labelledby') !== 'group-' + id; });
         if (id) page.setAttribute('data-one', ''); else page.removeAttribute('data-one');
+        placeMark(animate && !reduce.matches);
         var a = linkOf(id);
         if (announce && a) status.textContent = a.getAttribute('data-title') + ' ' + a.getAttribute('data-count') + '개를 보여 줍니다';
         var target = id && document.getElementById('group-' + id);
-        var navTop = nav.getBoundingClientRect().top;
-        if (target) {
-          // 탭 줄과 고른 계열 제목이 한 화면에 들어가면 탭 줄을 맨 위로 올려 그 아래 목록이 보이게 한다
-          var tr = target.getBoundingClientRect();
-          if (navTop < 0 || tr.bottom > window.innerHeight) {
-            if (tr.bottom - navTop <= window.innerHeight) nav.scrollIntoView({ block: 'start' });
-            else target.scrollIntoView({ block: 'start' });
-          }
-        } else if (navTop < 0) nav.scrollIntoView({ block: 'start' });
+        if (scroll) reveal(target);
         // 계열을 고르면 그 제목으로, '전체'는 누른 탭에 포커스를 둔다(알림 문장과 읽히는 이름이 맞게)
         if (focus && target) {
           target.setAttribute('tabindex', '-1');
           target.focus({ preventScroll: true });
         }
+        if (animate) enterCards();
       }
       links.forEach(function (a) {
         a.addEventListener('click', function (e) {
@@ -713,15 +1143,37 @@
           var id = a.getAttribute('data-group');
           var url = location.pathname + location.search + (id ? '#group-' + id : '');
           if (url !== location.pathname + location.search + location.hash) history.pushState(null, '', url);
-          show(id, true, true);
+          show(id, true, true, true, true);
         });
       });
       window.addEventListener('popstate', function () {
         // 건너뛰기 링크(#tabs)처럼 계열이 아닌 해시는 고른 계열을 바꾸지 않는다
         if (location.hash && !/^#group-/.test(location.hash)) return;
-        show(fromHash(), true, false);
+        show(fromHash(), true, false, false, true);
       });
-      show(fromHash(), false, false);
+      // 건너뛰기 링크·"샘플 둘러보기"(#tabs)는 도구 줄을 맨 위에 두고 포커스를 지금 탭으로 옮긴다.
+      // 주소는 바꾸지 않는다 — 고른 계열(#group-…)이 그대로 남는다. 스크립트가 없으면 보통 링크로 #tabs 로 간다
+      Array.prototype.forEach.call(document.querySelectorAll('a[href="#tabs"]'), function (l) {
+        l.addEventListener('click', function (e) {
+          e.preventDefault();
+          barToTop();
+          var cur = nav.querySelector('a[aria-current]');
+          if (cur) cur.focus({ preventScroll: true });
+        });
+      });
+      // 붙는 도구 줄의 높이 — 포커스된 요소가 줄 밑에 숨지 않게 scroll-padding 에 쓴다.
+      // 글자가 커져 줄이 창 높이의 12%를 넘으면 붙이지 않는다
+      function measure() {
+        if (bar) {
+          bar.classList.toggle('is-tall', bar.offsetHeight > window.innerHeight * 0.12);
+          root.style.setProperty('--bar-h', (getComputedStyle(bar).position === 'sticky' ? bar.offsetHeight : 0) + 'px');
+        }
+        placeMark(false);
+      }
+      window.addEventListener('resize', measure);
+      if ('ResizeObserver' in window) new ResizeObserver(measure).observe(nav);
+      measure();
+      show(fromHash(), false, false, false, !!fromHash());
     })();
   </script>
 </body>
